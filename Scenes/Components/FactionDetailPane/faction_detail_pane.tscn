@@ -1,0 +1,107 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Components/FactionDetailPane/FactionDetailPane.cs" id="1_facdet"]
+[ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+
+[node name="FactionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_headquartersInput", "_descInput", "_goalsInput", "_notesInput", "_notesRenderer", "_deleteButton")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_facdet")
+_nameInput         = NodePath("VBoxContainer/NameRow/NameInput")
+_deleteButton      = NodePath("VBoxContainer/NameRow/DeleteButton")
+_typeInput         = NodePath("VBoxContainer/TypeRow/TypeInput")
+_headquartersInput = NodePath("VBoxContainer/HeadquartersRow/HeadquartersInput")
+_descInput         = NodePath("VBoxContainer/DescriptionInput")
+_goalsInput        = NodePath("VBoxContainer/GoalsInput")
+_notesInput        = NodePath("VBoxContainer/NotesInput")
+_notesRenderer     = NodePath("VBoxContainer/NotesRenderer")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="NameRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="NameInput" type="LineEdit" parent="VBoxContainer/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Name..."
+theme_override_font_sizes/font_size = 22
+
+[node name="DeleteButton" type="Button" parent="VBoxContainer/NameRow"]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="TypeRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TypeLabel" type="Label" parent="VBoxContainer/TypeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "Type"
+
+[node name="TypeInput" type="LineEdit" parent="VBoxContainer/TypeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "e.g. Merchant Guild, Bandit Gang..."
+
+[node name="HeadquartersRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeadquartersLabel" type="Label" parent="VBoxContainer/HeadquartersRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "HQ"
+
+[node name="HeadquartersInput" type="LineEdit" parent="VBoxContainer/HeadquartersRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Headquarters location..."
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Description"
+
+[node name="DescriptionInput" type="TextEdit" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Describe the faction..."
+wrap_mode = 1
+
+[node name="GoalsLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Goals"
+
+[node name="GoalsInput" type="TextEdit" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "What do they want?"
+wrap_mode = 1
+
+[node name="NotesLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Notes"
+
+[node name="NotesInput" type="TextEdit" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "DM notes... use [[Name]] to link"
+wrap_mode = 1
+
+[node name="NotesRenderer" type="RichTextLabel" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+fit_content = true
+scroll_active = false

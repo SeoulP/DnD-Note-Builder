@@ -87,6 +87,7 @@ public partial class AddCampaignModal : Window
         };
 
         int newId = _databaseService.Campaigns.Add(campaign);
+        _databaseService.Species.SeedDefaults(newId);
         EmitSignal(SignalName.CampaignCreated, newId);
         Hide();
         ResetForm();

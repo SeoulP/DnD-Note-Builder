@@ -6,11 +6,12 @@ public partial class DatabaseService : Node
 {
     private SqliteConnection _conn;
 
-    public CampaignRepository Campaigns  { get; private set; }
-    public SessionRepository  Sessions   { get; private set; }
-    public LocationRepository Locations  { get; private set; }
-    public FactionRepository  Factions   { get; private set; }
-    public NpcRepository      Npcs       { get; private set; }
+    public CampaignRepository Campaigns { get; private set; }
+    public SessionRepository  Sessions  { get; private set; }
+    public LocationRepository Locations { get; private set; }
+    public FactionRepository  Factions  { get; private set; }
+    public SpeciesRepository  Species   { get; private set; }
+    public NpcRepository      Npcs      { get; private set; }
 
     public override void _Ready()
     {
@@ -22,6 +23,7 @@ public partial class DatabaseService : Node
         Sessions  = new SessionRepository(_conn);
         Locations = new LocationRepository(_conn);
         Factions  = new FactionRepository(_conn);
+        Species   = new SpeciesRepository(_conn);
         Npcs      = new NpcRepository(_conn);
 
         RunMigrations();
@@ -34,7 +36,8 @@ public partial class DatabaseService : Node
         Sessions .Migrate();
         Locations.Migrate();
         Factions .Migrate();
-        Npcs     .Migrate();   // References factions + locations, so must be last
+        Species  .Migrate();   // Must come before Npcs (npcs.species_id → species.id)
+        Npcs     .Migrate();   // References factions, locations, species — must be last
     }
 
     public override void _ExitTree()

@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://d8nvbscene1x2"]
+
+[ext_resource type="Script" uid="uid://c7nbarscp1x2y" path="res://Scenes/Components/NavBar/NavBar.cs" id="1_navbar"]
+
+[node name="NavBar" type="PanelContainer" node_paths=PackedStringArray("_backButton")]
+custom_minimum_size = Vector2(0, 48)
+script = ExtResource("1_navbar")
+_backButton = NodePath("HBox/BackButton")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BackButton" type="Button" parent="HBox"]
+layout_mode = 2
+text = "← Campaigns"
+visible = false
+
+[node name="Spacer" type="Control" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3

@@ -3,8 +3,9 @@
 [ext_resource type="Script" uid="uid://bo1iiipda7yrx" path="res://Scenes/App.cs" id="1_nmq3k"]
 [ext_resource type="PackedScene" uid="uid://dr4s868xq75ta" path="res://Scenes/Panels/CampaignListPanel/CampaignListPanel.tscn" id="2_sb7qb"]
 [ext_resource type="PackedScene" path="res://Scenes/Panels/CampaignDashboard/CampaignDashboard.tscn" id="3_dash"]
+[ext_resource type="PackedScene" uid="uid://d8nvbscene1x2" path="res://Scenes/Components/NavBar/nav_bar.tscn" id="4_navbar"]
 
-[node name="App" type="Control" unique_id=2117337232 node_paths=PackedStringArray("_appPanel")]
+[node name="App" type="Control" unique_id=2117337232 node_paths=PackedStringArray("_appPanel", "_navBar")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,23 +13,31 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_nmq3k")
-_appPanel = NodePath("MarginBox/AppPanelContainer")
+_appPanel = NodePath("VBoxContainer/MarginBox/AppPanelContainer")
+_navBar = NodePath("VBoxContainer/NavBar")
 _campaignListPanelScene = ExtResource("2_sb7qb")
 _campaignDashboardScene = ExtResource("3_dash")
 
-[node name="MarginBox" type="MarginContainer" parent="." unique_id=2116299469]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="NavBar" parent="VBoxContainer" instance=ExtResource("4_navbar")]
+layout_mode = 2
+
+[node name="MarginBox" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/margin_left = 200
 theme_override_constants/margin_top = 50
 theme_override_constants/margin_right = 200
 theme_override_constants/margin_bottom = 50
 
-[node name="AppPanelContainer" type="BoxContainer" parent="MarginBox" unique_id=882659719]
+[node name="AppPanelContainer" type="BoxContainer" parent="VBoxContainer/MarginBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

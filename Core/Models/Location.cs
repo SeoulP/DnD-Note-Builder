@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace DndBuilder.Core.Models
 {
     public class Location
@@ -8,7 +10,8 @@ namespace DndBuilder.Core.Models
         public string Type             { get; set; } = "";   // e.g. "Town", "Dungeon", "Inn", "Castle"
         public string Description      { get; set; } = "";
         public string Notes            { get; set; } = "";   // DM-facing secrets
-        public string MapRef           { get; set; } = "";   // e.g. "#6 on town map"
-        public int?   ParentLocationId { get; set; }         // Null = top-level location
+        public int?          ParentLocationId { get; set; }  // Null = top-level location
+        public List<Location> SubLocations   { get; set; } = new();
+        public List<int>      FactionIds     { get; set; } = new();
     }
 }
