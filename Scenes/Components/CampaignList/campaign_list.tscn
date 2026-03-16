@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://d0wlwg2ktmkdg"]
+
+[ext_resource type="Script" uid="uid://p04dh4dmrcld" path="res://Scenes/Components/CampaignList/CampaignList.cs" id="1_tlgc7"]
+[ext_resource type="PackedScene" uid="uid://ddivlvwirarno" path="res://Scenes/Components/CampaignCard/campaign_card.tscn" id="2_6okr6"]
+
+[node name="CampaignList" type="VBoxContainer" unique_id=1352534916 node_paths=PackedStringArray("_cardsContainer")]
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+script = ExtResource("1_tlgc7")
+_campaignCardScene = ExtResource("2_6okr6")
+_cardsContainer = NodePath("ScrollContainer/CardsContainer")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=1722377831]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CardsContainer" type="VBoxContainer" parent="ScrollContainer" unique_id=1234567890]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16

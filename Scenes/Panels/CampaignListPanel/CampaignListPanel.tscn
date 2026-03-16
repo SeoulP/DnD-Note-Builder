@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://dr4s868xq75ta"]
+
+[ext_resource type="PackedScene" uid="uid://d0wlwg2ktmkdg" path="res://Scenes/Components/CampaignList/campaign_list.tscn" id="1_mwuvt"]
+[ext_resource type="Script" uid="uid://dq4itgbcw1kwy" path="res://Scenes/Panels/CampaignListPanel/CampaignListPanel.cs" id="1_rj14g"]
+[ext_resource type="PackedScene" uid="uid://buc11k7dyc1de" path="res://Scenes/Modals/NewCampaignModal/add_campaign_modal.tscn" id="2_mwuvt"]
+
+[node name="CampaignListPanel" type="VBoxContainer" unique_id=1191535076 node_paths=PackedStringArray("_addCampaignButton", "_campaignList")]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.5
+offset_top = -17.5
+offset_right = 60.5
+offset_bottom = 17.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_rj14g")
+_addCampaignModalScene = ExtResource("2_mwuvt")
+_addCampaignButton = NodePath("MarginContainer/AddCampaignButton")
+_campaignList = NodePath("CampaignList")
+
+[node name="CampaignList" parent="." unique_id=1352534916 instance=ExtResource("1_mwuvt")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=204118835]
+layout_mode = 2
+theme_override_constants/margin_left = 200
+theme_override_constants/margin_right = 200
+
+[node name="AddCampaignButton" type="Button" parent="MarginContainer" unique_id=236217826]
+layout_mode = 2
+size_flags_vertical = 8
+text = "Add Campaign
+"

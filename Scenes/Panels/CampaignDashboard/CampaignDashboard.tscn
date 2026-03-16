@@ -1,0 +1,131 @@
+[gd_scene format=3 uid="uid://cdngvkiehwlwg"]
+
+[ext_resource type="Script" uid="uid://lryceow5lfda" path="res://Scenes/Panels/CampaignDashboard/CampaignDashboard.cs" id="0_dashscr"]
+[ext_resource type="PackedScene" uid="uid://d3npcmodal001" path="res://Scenes/Modals/AddNpcModal/add_npc_modal.tscn" id="1_npcmod"]
+[ext_resource type="PackedScene" uid="uid://d3facmodal002" path="res://Scenes/Modals/AddFactionModal/add_faction_modal.tscn" id="2_facmod"]
+[ext_resource type="PackedScene" uid="uid://d3locmodal003" path="res://Scenes/Modals/AddLocationModal/add_location_modal.tscn" id="3_locmod"]
+[ext_resource type="PackedScene" uid="uid://d3sesmodal004" path="res://Scenes/Modals/AddSessionModal/add_session_modal.tscn" id="4_sesmod"]
+
+[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addFactionButton", "_addNpcsButton", "_addSessionsButton", "_addLocationsButton", "_factionsFoldablePanel", "_npcsFoldablePanel", "_sessionsFoldablePanel", "_locationsFoldablePanel", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_addNpcModal", "_addFactionModal", "_addLocationModal", "_addSessionModal")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("0_dashscr")
+_addFactionButton = NodePath("HBoxContainer/VBoxContainer/FactionsPanel/VBoxContainer/AddFactionButton")
+_addNpcsButton = NodePath("HBoxContainer/VBoxContainer/NpcsPanel/VBoxContainer/AddNpcsButton")
+_addSessionsButton = NodePath("HBoxContainer/VBoxContainer/SessionsPanel/VBoxContainer/AddSessionsButton")
+_addLocationsButton = NodePath("HBoxContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer/AddLocationsButton")
+_factionsFoldablePanel = NodePath("HBoxContainer/VBoxContainer/FactionsPanel")
+_npcsFoldablePanel = NodePath("HBoxContainer/VBoxContainer/NpcsPanel")
+_sessionsFoldablePanel = NodePath("HBoxContainer/VBoxContainer/SessionsPanel")
+_locationsFoldablePanel = NodePath("HBoxContainer/VBoxContainer/LocationsFoldableContainer")
+_npcsContainer = NodePath("HBoxContainer/VBoxContainer/NpcsPanel/VBoxContainer")
+_factionsContainer = NodePath("HBoxContainer/VBoxContainer/FactionsPanel/VBoxContainer")
+_locationsContainer = NodePath("HBoxContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer")
+_sessionsContainer = NodePath("HBoxContainer/VBoxContainer/SessionsPanel/VBoxContainer")
+_addNpcModal = NodePath("AddNpcModal")
+_addFactionModal = NodePath("AddFactionModal")
+_addLocationModal = NodePath("AddLocationModal")
+_addSessionModal = NodePath("AddSessionModal")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1398420860]
+layout_mode = 0
+offset_right = 70.0
+offset_bottom = 23.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=361838981]
+layout_mode = 2
+
+[node name="NpcsPanel" type="FoldableContainer" parent="HBoxContainer/VBoxContainer" unique_id=2046014427]
+layout_mode = 2
+folded = true
+title = "NPCs"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/VBoxContainer/NpcsPanel" unique_id=269898815]
+visible = false
+layout_mode = 2
+
+[node name="AddNpcsButton" type="Button" parent="HBoxContainer/VBoxContainer/NpcsPanel/VBoxContainer" unique_id=588210271]
+layout_mode = 2
+text = "New +"
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/NpcsPanel/VBoxContainer" unique_id=1196332063]
+layout_mode = 2
+text = "Example"
+horizontal_alignment = 1
+
+[node name="FactionsPanel" type="FoldableContainer" parent="HBoxContainer/VBoxContainer" unique_id=1882093758]
+layout_mode = 2
+folded = true
+title = "Factions"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/VBoxContainer/FactionsPanel" unique_id=381087299]
+visible = false
+layout_mode = 2
+
+[node name="AddFactionButton" type="Button" parent="HBoxContainer/VBoxContainer/FactionsPanel/VBoxContainer" unique_id=498021917]
+layout_mode = 2
+text = "New +"
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/FactionsPanel/VBoxContainer" unique_id=1832752088]
+layout_mode = 2
+text = "Example"
+horizontal_alignment = 1
+
+[node name="LocationsFoldableContainer" type="FoldableContainer" parent="HBoxContainer/VBoxContainer" unique_id=1798234386]
+layout_mode = 2
+folded = true
+title = "Locations"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/VBoxContainer/LocationsFoldableContainer" unique_id=2014651490]
+visible = false
+layout_mode = 2
+
+[node name="AddLocationsButton" type="Button" parent="HBoxContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer" unique_id=1660686624]
+layout_mode = 2
+text = "New +"
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer" unique_id=559577294]
+layout_mode = 2
+text = "Example"
+horizontal_alignment = 1
+
+[node name="SessionsPanel" type="FoldableContainer" parent="HBoxContainer/VBoxContainer" unique_id=431236799]
+layout_mode = 2
+folded = true
+title = "Sessions"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/VBoxContainer/SessionsPanel" unique_id=2020321048]
+visible = false
+layout_mode = 2
+
+[node name="AddSessionsButton" type="Button" parent="HBoxContainer/VBoxContainer/SessionsPanel/VBoxContainer" unique_id=1939495576]
+layout_mode = 2
+text = "New +"
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/SessionsPanel/VBoxContainer" unique_id=158525261]
+layout_mode = 2
+text = "Example"
+horizontal_alignment = 1
+
+[node name="PanelContainer2" type="PanelContainer" parent="HBoxContainer" unique_id=712217800]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/PanelContainer2" unique_id=2025243763]
+layout_mode = 2
+text = "Test"
+
+[node name="AddNpcModal" parent="." unique_id=348082876 instance=ExtResource("1_npcmod")]
+visible = false
+
+[node name="AddFactionModal" parent="." unique_id=1477372103 instance=ExtResource("2_facmod")]
+visible = false
+
+[node name="AddLocationModal" parent="." unique_id=2053021721 instance=ExtResource("3_locmod")]
+visible = false
+
+[node name="AddSessionModal" parent="." unique_id=417663257 instance=ExtResource("4_sesmod")]
+visible = false

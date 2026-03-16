@@ -1,0 +1,132 @@
+[gd_scene format=3 uid="uid://buc11k7dyc1de"]
+
+[ext_resource type="Script" uid="uid://cqrco8en66rb" path="res://Scenes/Modals/NewCampaignModal/AddCampaignModal.cs" id="1_tl31d"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_8kldk"]
+font_color = Color(1, 0, 0, 1)
+
+[node name="AddCampaignModal" type="Window" unique_id=1978320447 node_paths=PackedStringArray("_nameInput", "_systemInput", "_descInput", "_dateLabel", "_errorLabel", "_cancelButton", "_createButton")]
+oversampling_override = 1.0
+position = Vector2i(0, 36)
+size = Vector2i(500, 300)
+script = ExtResource("1_tl31d")
+_nameInput = NodePath("VBoxContainer/HBoxContainer/OptionsVBoxContainer/NameHBoxContainer/NameLineEdit")
+_systemInput = NodePath("VBoxContainer/HBoxContainer/OptionsVBoxContainer/GameSystemHBoxContainer/GameSystemOptionButton")
+_descInput = NodePath("VBoxContainer/HBoxContainer/OptionsVBoxContainer/DescriptionHBoxContainer/DescriptionTextEdit")
+_dateLabel = NodePath("VBoxContainer/HBoxContainer/OptionsVBoxContainer/DateStartedHBoxContainer/DateStartedValueLabel")
+_errorLabel = NodePath("VBoxContainer/ErrorLabel")
+_cancelButton = NodePath("VBoxContainer/ButtonsHBoxContainer/CancelButton")
+_createButton = NodePath("VBoxContainer/ButtonsHBoxContainer/CreateButton")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=44928616]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="NewCampaignLabel" type="Label" parent="VBoxContainer" unique_id=535798673]
+layout_mode = 2
+text = "New Campaign"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1041899769]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LeftMarginContainer" type="MarginContainer" parent="VBoxContainer/HBoxContainer" unique_id=526397169]
+layout_mode = 2
+theme_override_constants/margin_left = 50
+
+[node name="OptionsVBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=1198695811]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="NameHBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer" unique_id=1396155438]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/NameHBoxContainer" unique_id=1729998327]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Campaign Name"
+
+[node name="NameLineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/NameHBoxContainer" unique_id=714386222]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter a Name..."
+
+[node name="GameSystemHBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer" unique_id=977139801]
+layout_mode = 2
+alignment = 1
+
+[node name="GameSystemLabel" type="Label" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/GameSystemHBoxContainer" unique_id=2137104850]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Game System"
+
+[node name="GameSystemOptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/GameSystemHBoxContainer" unique_id=1770892242]
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="DescriptionHBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer" unique_id=1428711493]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/DescriptionHBoxContainer" unique_id=1484904830]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Description"
+
+[node name="DescriptionTextEdit" type="TextEdit" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/DescriptionHBoxContainer" unique_id=1609673716]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Describe your campaign..."
+wrap_mode = 1
+
+[node name="DateStartedHBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer" unique_id=386321645]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DateStartedLabel" type="Label" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/DateStartedHBoxContainer" unique_id=1073052566]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Date Started"
+horizontal_alignment = 1
+
+[node name="DateStartedValueLabel" type="Label" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/DateStartedHBoxContainer" unique_id=447392439]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "DateTime.Now()"
+horizontal_alignment = 1
+
+[node name="RightMarginContainer" type="MarginContainer" parent="VBoxContainer/HBoxContainer" unique_id=1082627305]
+layout_mode = 2
+theme_override_constants/margin_left = 50
+
+[node name="ErrorLabel" type="Label" parent="VBoxContainer" unique_id=238233867]
+visible = false
+layout_mode = 2
+label_settings = SubResource("LabelSettings_8kldk")
+horizontal_alignment = 1
+
+[node name="ButtonsHBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=943215135]
+layout_mode = 2
+alignment = 1
+
+[node name="CancelButton" type="Button" parent="VBoxContainer/ButtonsHBoxContainer" unique_id=458004358]
+layout_mode = 2
+text = "Cancel"
+
+[node name="CreateButton" type="Button" parent="VBoxContainer/ButtonsHBoxContainer" unique_id=775926056]
+layout_mode = 2
+text = "Create"
