@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b8mh1uj874q0g" path="res://Scenes/Components/NpcDetailPane/NpcDetailPane.cs" id="1_npcdet"]
 [ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 
-[node name="NpcDetailPane" type="ScrollContainer" unique_id=1370170876 node_paths=PackedStringArray("_nameInput", "_speciesInput", "_occupationInput", "_genderInput", "_statusInput", "_relationshipInput", "_factionsDropdown", "_deleteButton", "_descInput", "_notesInput", "_notesRenderer")]
+[node name="NpcDetailPane" type="ScrollContainer" unique_id=1370170876 node_paths=PackedStringArray("_nameInput", "_speciesInput", "_occupationInput", "_genderInput", "_statusInput", "_relationshipInput", "_factionSelect", "_addFactionButton", "_factionRowsContainer", "_deleteButton", "_descInput", "_notesInput", "_notesRenderer")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -16,7 +16,9 @@ _occupationInput = NodePath("VBoxContainer/OccupationRow/OccupationInput")
 _genderInput = NodePath("VBoxContainer/GenderRow/GenderInput")
 _statusInput = NodePath("VBoxContainer/StatusRow/StatusInput")
 _relationshipInput = NodePath("VBoxContainer/RelationshipRow/RelationshipInput")
-_factionsDropdown = NodePath("VBoxContainer/FactionsRow/PanelContainer/FactionsDropdown")
+_factionSelect = NodePath("VBoxContainer/FactionsSection/FactionsVBox/AddFactionRow/FactionSelect")
+_addFactionButton = NodePath("VBoxContainer/FactionsSection/FactionsVBox/AddFactionRow/AddFactionButton")
+_factionRowsContainer = NodePath("VBoxContainer/FactionsSection/FactionsVBox/FactionRowsContainer")
 _deleteButton = NodePath("VBoxContainer/NameRow/DeleteButton")
 _descInput = NodePath("VBoxContainer/DescriptionInput")
 _notesInput = NodePath("VBoxContainer/NotesInput")
@@ -53,6 +55,7 @@ text = "Species"
 [node name="SpeciesInput" type="OptionButton" parent="VBoxContainer/SpeciesRow" unique_id=1160907093]
 layout_mode = 2
 size_flags_horizontal = 3
+clip_text = true
 
 [node name="GenderRow" type="HBoxContainer" parent="VBoxContainer" unique_id=1577039184]
 layout_mode = 2
@@ -94,6 +97,7 @@ text = "Status"
 [node name="StatusInput" type="OptionButton" parent="VBoxContainer/StatusRow" unique_id=43387688]
 layout_mode = 2
 size_flags_horizontal = 3
+clip_text = true
 
 [node name="RelationshipRow" type="HBoxContainer" parent="VBoxContainer" unique_id=567819649]
 layout_mode = 2
@@ -107,25 +111,41 @@ text = "Relationship"
 [node name="RelationshipInput" type="OptionButton" parent="VBoxContainer/RelationshipRow" unique_id=1975549227]
 layout_mode = 2
 size_flags_horizontal = 3
+clip_text = true
 
-[node name="FactionsRow" type="HBoxContainer" parent="VBoxContainer" unique_id=761100231]
+[node name="FactionsSection" type="VBoxContainer" parent="VBoxContainer" unique_id=761100231]
 layout_mode = 2
-theme_override_constants/separation = 12
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="FactionsLabel" type="Label" parent="VBoxContainer/FactionsRow" unique_id=599660]
-custom_minimum_size = Vector2(100, 0)
+[node name="FactionsLabel" type="Label" parent="VBoxContainer/FactionsSection" unique_id=599660]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
+vertical_alignment = 1
 text = "Factions"
 
-[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/FactionsRow" unique_id=1072831855]
+[node name="FactionsVBox" type="VBoxContainer" parent="VBoxContainer/FactionsSection" unique_id=1072831855]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="FactionsDropdown" type="MenuButton" parent="VBoxContainer/FactionsRow/PanelContainer" unique_id=20603520]
+[node name="AddFactionRow" type="HBoxContainer" parent="VBoxContainer/FactionsSection/FactionsVBox" unique_id=20603520]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="FactionSelect" type="OptionButton" parent="VBoxContainer/FactionsSection/FactionsVBox/AddFactionRow" unique_id=1072831856]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Select factions..."
-alignment = 0
+clip_text = true
+
+[node name="AddFactionButton" type="Button" parent="VBoxContainer/FactionsSection/FactionsVBox/AddFactionRow" unique_id=1072831857]
+layout_mode = 2
+text = "+ Add"
+
+[node name="FactionRowsContainer" type="VBoxContainer" parent="VBoxContainer/FactionsSection/FactionsVBox" unique_id=1072831858]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
 
 [node name="DescriptionLabel" type="Label" parent="VBoxContainer" unique_id=1053731949]
 layout_mode = 2

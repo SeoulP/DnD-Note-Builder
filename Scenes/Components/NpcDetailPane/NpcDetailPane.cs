@@ -4,11 +4,13 @@ using Godot;
 
 public partial class NpcDetailPane : ScrollContainer
 {
-    private DatabaseService    _db;
-    private Npc                _npc;
-    private List<Species>      _allSpecies = new();
-    private ConfirmationDialog _confirmDialog;
-    private PopupMenu          _factionsPopup;
+    private DatabaseService         _db;
+    private Npc                     _npc;
+    private List<Species>           _allSpecies     = new();
+    private List<NpcStatus>         _statuses       = new();
+    private List<NpcRelationshipType> _relationships = new();
+    private List<Faction>           _availableFactions = new();
+    private ConfirmationDialog      _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
@@ -20,7 +22,9 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private LineEdit      _genderInput;
     [Export] private OptionButton  _statusInput;
     [Export] private OptionButton  _relationshipInput;
-    [Export] private MenuButton    _factionsDropdown;
+    [Export] private OptionButton  _factionSelect;
+    [Export] private Button        _addFactionButton;
+    [Export] private VBoxContainer _factionRowsContainer;
     [Export] private Button        _deleteButton;
     [Export] private TextEdit      _descInput;
     [Export] private TextEdit      _notesInput;
@@ -29,9 +33,6 @@ public partial class NpcDetailPane : ScrollContainer
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
-
-        foreach (var s in System.Enum.GetNames(typeof(NpcStatus)))       _statusInput.AddItem(s);
-        foreach (var r in System.Enum.GetNames(typeof(NpcRelationship))) _relationshipInput.AddItem(r);
 
         _nameInput.TextChanged          += name => { Save(); EmitSignal(SignalName.NameChanged, "npc", _npc?.Id ?? 0, string.IsNullOrEmpty(name) ? "New NPC" : name); };
         _nameInput.FocusExited          += () => { if (_nameInput.Text == "") _nameInput.Text = "New NPC"; };
@@ -54,20 +55,8 @@ public partial class NpcDetailPane : ScrollContainer
             _confirmDialog.PopupCentered();
         };
 
-        // Arrow icon — visual only, matches OptionButton
-        var arrow = _relationshipInput.GetThemeIcon("arrow");
-        if (arrow != null)
-        {
-            _factionsDropdown.Icon          = arrow;
-            _factionsDropdown.IconAlignment = HorizontalAlignment.Right;
-        }
-
-        _factionsPopup = _factionsDropdown.GetPopup();
-        _factionsPopup.HideOnCheckableItemSelection = false;
-        _factionsPopup.HideOnItemSelection         = false;
-        _factionsPopup.ShrinkWidth                 = false;
-        _factionsPopup.AboutToPopup += () => _factionsPopup.Size = new Vector2I((int)_factionsDropdown.Size.X, 0);
-        _factionsPopup.IdPressed += OnFactionToggled;
+        _factionSelect.ItemSelected += _ => _addFactionButton.Disabled = _factionSelect.GetSelectedId() == -1;
+        _addFactionButton.Pressed += OnAddFactionPressed;
     }
 
     public void Load(Npc npc)
@@ -80,77 +69,106 @@ public partial class NpcDetailPane : ScrollContainer
         _speciesInput.AddItem("(unknown)");
         foreach (var s in _allSpecies) _speciesInput.AddItem(s.Name);
 
+        // Populate status and relationship dropdowns from DB
+        _statuses = _db.NpcStatuses.GetAll(npc.CampaignId);
+        _statusInput.Clear();
+        _statusInput.AddItem("— None —");
+        foreach (var s in _statuses) _statusInput.AddItem(s.Name);
+
+        _relationships = _db.NpcRelationshipTypes.GetAll(npc.CampaignId);
+        _relationshipInput.Clear();
+        _relationshipInput.AddItem("— None —");
+        foreach (var r in _relationships) _relationshipInput.AddItem(r.Name);
+
         _nameInput.Text       = string.IsNullOrEmpty(npc.Name) ? "New NPC" : npc.Name;
         _occupationInput.Text = npc.Occupation;
         _genderInput.Text     = npc.Gender;
 
-        if (npc.SpeciesId.HasValue)
-        {
-            int idx = _allSpecies.FindIndex(s => s.Id == npc.SpeciesId.Value);
-            _speciesInput.Select(idx >= 0 ? idx + 1 : 0);
-        }
-        else
-        {
-            _speciesInput.Select(0);
-        }
+        int speciesIdx = npc.SpeciesId.HasValue ? _allSpecies.FindIndex(s => s.Id == npc.SpeciesId.Value) : -1;
+        _speciesInput.Select(speciesIdx >= 0 ? speciesIdx + 1 : 0);
 
-        _statusInput.Select((int)npc.Status);
-        _relationshipInput.Select((int)npc.Relationship);
+        int statusIdx = npc.StatusId.HasValue ? _statuses.FindIndex(s => s.Id == npc.StatusId.Value) : -1;
+        _statusInput.Select(statusIdx >= 0 ? statusIdx + 1 : 0);
 
-        PopulateFactions();
+        int relIdx = npc.RelationshipTypeId.HasValue ? _relationships.FindIndex(r => r.Id == npc.RelationshipTypeId.Value) : -1;
+        _relationshipInput.Select(relIdx >= 0 ? relIdx + 1 : 0);
+
+        PopulateFactionDropdown();
+        LoadFactionRows();
 
         _descInput.Text  = npc.Description;
         _notesInput.Text = npc.Notes;
         RenderNotes();
     }
 
-    private void PopulateFactions()
+    private void PopulateFactionDropdown()
     {
-        _factionsPopup.Clear();
+        var assignedIds = new HashSet<int>(_npc.FactionIds);
+        _availableFactions = _db.Factions.GetAll(_npc.CampaignId)
+            .FindAll(f => !assignedIds.Contains(f.Id));
 
+        _factionSelect.Clear();
+        _factionSelect.AddItem("Pick a faction", -1);
+        foreach (var f in _availableFactions) _factionSelect.AddItem(f.Name, f.Id);
+
+        bool hasAny = _availableFactions.Count > 0;
+        _factionSelect.Disabled      = !hasAny;
+        _addFactionButton.Disabled   = true;
+    }
+
+    private void LoadFactionRows()
+    {
+        foreach (Node child in _factionRowsContainer.GetChildren())
+            child.QueueFree();
+
+        var assignedIds = new HashSet<int>(_npc.FactionIds);
         var allFactions = _db.Factions.GetAll(_npc.CampaignId);
-
-        if (allFactions.Count == 0)
-        {
-            _factionsDropdown.Text     = "None available";
-            _factionsDropdown.Disabled = true;
-            return;
-        }
-
-        _factionsDropdown.Disabled = false;
-        var memberSet = new HashSet<int>(_npc.FactionIds);
 
         foreach (var faction in allFactions)
         {
-            _factionsPopup.AddCheckItem(faction.Name, faction.Id);
-            int idx = _factionsPopup.GetItemIndex(faction.Id);
-            _factionsPopup.SetItemChecked(idx, memberSet.Contains(faction.Id));
+            if (!assignedIds.Contains(faction.Id)) continue;
+
+            int fid   = faction.Id;
+            var panel = new PanelContainer();
+            var row   = new HBoxContainer();
+
+            var navBtn = new Button
+            {
+                Text                = faction.Name,
+                Flat                = true,
+                Alignment           = HorizontalAlignment.Left,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
+            };
+            navBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "faction", fid);
+
+            var removeBtn = new Button { Text = "×", Flat = true };
+            removeBtn.MouseEntered += () => panel.AddThemeStyleboxOverride("panel", DeleteHoverBox);
+            removeBtn.MouseExited  += () => panel.RemoveThemeStyleboxOverride("panel");
+            removeBtn.Pressed += () =>
+            {
+                _db.Npcs.RemoveFaction(_npc.Id, fid);
+                _npc.FactionIds.Remove(fid);
+                PopulateFactionDropdown();
+                LoadFactionRows();
+            };
+
+            row.AddChild(navBtn);
+            row.AddChild(removeBtn);
+            panel.AddChild(row);
+            _factionRowsContainer.AddChild(panel);
         }
-
-        UpdateDropdownText();
     }
 
-    private void OnFactionToggled(long id)
+    private void OnAddFactionPressed()
     {
-        int fid        = (int)id;
-        int idx        = _factionsPopup.GetItemIndex(fid);
-        bool nowChecked = !_factionsPopup.IsItemChecked(idx); // invert — manage toggle manually
-        _factionsPopup.SetItemChecked(idx, nowChecked);
+        int selectedId = (int)_factionSelect.GetSelectedId();
+        if (selectedId == -1) return;
 
-        if (nowChecked) _db.Npcs.AddFaction(_npc.Id, fid);
-        else            _db.Npcs.RemoveFaction(_npc.Id, fid);
-
-        UpdateDropdownText();
-    }
-
-    private void UpdateDropdownText()
-    {
-        var selected = new List<string>();
-        for (int i = 0; i < _factionsPopup.ItemCount; i++)
-            if (_factionsPopup.IsItemChecked(i))
-                selected.Add(_factionsPopup.GetItemText(i));
-
-        _factionsDropdown.Text = selected.Count > 0 ? string.Join(", ", selected) : "Select factions...";
+        _db.Npcs.AddFaction(_npc.Id, selectedId);
+        _npc.FactionIds.Add(selectedId);
+        PopulateFactionDropdown();
+        LoadFactionRows();
     }
 
     private void Save()
@@ -158,15 +176,34 @@ public partial class NpcDetailPane : ScrollContainer
         if (_npc == null) return;
 
         int speciesIdx  = _speciesInput.Selected;
-        _npc.Name       = string.IsNullOrEmpty(_nameInput.Text) ? "New NPC" : _nameInput.Text;
-        _npc.SpeciesId  = speciesIdx == 0 ? null : _allSpecies[speciesIdx - 1].Id;
-        _npc.Occupation = _occupationInput.Text;
-        _npc.Gender     = _genderInput.Text;
-        _npc.Status       = (NpcStatus)_statusInput.Selected;
-        _npc.Relationship = (NpcRelationship)_relationshipInput.Selected;
-        _npc.Description  = _descInput.Text;
-        _npc.Notes        = _notesInput.Text;
+        _npc.Name        = string.IsNullOrEmpty(_nameInput.Text) ? "New NPC" : _nameInput.Text;
+        _npc.SpeciesId   = speciesIdx == 0 ? null : _allSpecies[speciesIdx - 1].Id;
+        _npc.Occupation  = _occupationInput.Text;
+        _npc.Gender      = _genderInput.Text;
+        _npc.StatusId           = _statusInput.Selected      == 0 ? null : _statuses[_statusInput.Selected - 1].Id;
+        _npc.RelationshipTypeId = _relationshipInput.Selected == 0 ? null : _relationships[_relationshipInput.Selected - 1].Id;
+        _npc.Description = _descInput.Text;
+        _npc.Notes       = _notesInput.Text;
         _db.Npcs.Edit(_npc);
+    }
+
+    public override void _UnhandledInput(InputEvent e)
+    {
+        if (_npc == null) return;
+        if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
+        {
+            _confirmDialog.DialogText = $"Delete \"{_npc.Name}\"? This cannot be undone.";
+            _confirmDialog.PopupCentered();
+            AcceptEvent();
+        }
+    }
+
+    private static readonly StyleBoxFlat DeleteHoverBox = MakeDeleteHoverBox();
+    private static StyleBoxFlat MakeDeleteHoverBox()
+    {
+        var box = new StyleBoxFlat { BgColor = new Color(0.90f, 0.55f, 0.55f) };
+        box.SetCornerRadiusAll(3);
+        return box;
     }
 
     private void RenderNotes()

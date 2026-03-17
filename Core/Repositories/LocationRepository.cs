@@ -28,10 +28,12 @@ namespace DndBuilder.Core.Repositories
             )";
             cmd.ExecuteNonQuery();
 
+            // location_faction_roles must exist before this table (created by LocationFactionRoleRepository)
             cmd = _conn.CreateCommand();
             cmd.CommandText = @"CREATE TABLE IF NOT EXISTS location_factions (
-                location_id INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
-                faction_id  INTEGER NOT NULL REFERENCES factions(id)  ON DELETE CASCADE,
+                location_id INTEGER NOT NULL REFERENCES locations(id)              ON DELETE CASCADE,
+                faction_id  INTEGER NOT NULL REFERENCES factions(id)               ON DELETE CASCADE,
+                role_id     INTEGER          REFERENCES location_faction_roles(id) ON DELETE SET NULL,
                 PRIMARY KEY (location_id, faction_id)
             )";
             cmd.ExecuteNonQuery();
@@ -84,16 +86,17 @@ namespace DndBuilder.Core.Repositories
             var location = Map(reader);
             reader.Close();
             location.SubLocations = GetChildren(location.Id);
-            location.FactionIds   = GetFactionIds(location.Id);
+            location.Factions     = GetFactions(location.Id);
             return location;
         }
 
-        public void AddFaction(int locationId, int factionId)
+        public void AddFaction(int locationId, int factionId, int? roleId = null)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = "INSERT OR IGNORE INTO location_factions (location_id, faction_id) VALUES (@lid, @fid)";
+            cmd.CommandText = "INSERT OR IGNORE INTO location_factions (location_id, faction_id, role_id) VALUES (@lid, @fid, @rid)";
             cmd.Parameters.AddWithValue("@lid", locationId);
             cmd.Parameters.AddWithValue("@fid", factionId);
+            cmd.Parameters.AddWithValue("@rid", roleId.HasValue ? roleId.Value : DBNull.Value);
             cmd.ExecuteNonQuery();
         }
 
@@ -106,14 +109,20 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        private List<int> GetFactionIds(int locationId)
+        private List<LocationFaction> GetFactions(int locationId)
         {
-            var list = new List<int>();
+            var list = new List<LocationFaction>();
             var cmd  = _conn.CreateCommand();
-            cmd.CommandText = "SELECT faction_id FROM location_factions WHERE location_id = @lid";
+            cmd.CommandText = "SELECT location_id, faction_id, role_id FROM location_factions WHERE location_id = @lid";
             cmd.Parameters.AddWithValue("@lid", locationId);
             using var reader = cmd.ExecuteReader();
-            while (reader.Read()) list.Add(reader.GetInt32(0));
+            while (reader.Read())
+                list.Add(new LocationFaction
+                {
+                    LocationId = reader.GetInt32(0),
+                    FactionId  = reader.GetInt32(1),
+                    RoleId     = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                });
             return list;
         }
 

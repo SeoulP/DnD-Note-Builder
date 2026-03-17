@@ -49,6 +49,17 @@ public partial class SessionDetailPane : ScrollContainer
         RenderNotes();
     }
 
+    public override void _UnhandledInput(InputEvent e)
+    {
+        if (_session == null) return;
+        if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
+        {
+            _confirmDialog.DialogText = $"Delete \"{_session.Title}\"? This cannot be undone.";
+            _confirmDialog.PopupCentered();
+            AcceptEvent();
+        }
+    }
+
     private void Save()
     {
         if (_session == null) return;

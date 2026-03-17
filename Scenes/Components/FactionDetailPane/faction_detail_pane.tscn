@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scenes/Components/FactionDetailPane/FactionDetailPane.cs" id="1_facdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 
-[node name="FactionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_headquartersInput", "_descInput", "_goalsInput", "_notesInput", "_notesRenderer", "_deleteButton")]
+[node name="FactionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_goalsInput", "_notesInput", "_notesRenderer", "_deleteButton")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -12,9 +12,8 @@ grow_vertical = 2
 script = ExtResource("1_facdet")
 _nameInput         = NodePath("VBoxContainer/NameRow/NameInput")
 _deleteButton      = NodePath("VBoxContainer/NameRow/DeleteButton")
-_typeInput         = NodePath("VBoxContainer/TypeRow/TypeInput")
-_headquartersInput = NodePath("VBoxContainer/HeadquartersRow/HeadquartersInput")
-_descInput         = NodePath("VBoxContainer/DescriptionInput")
+_typeInput = NodePath("VBoxContainer/TypeRow/TypeInput")
+_descInput = NodePath("VBoxContainer/DescriptionInput")
 _goalsInput        = NodePath("VBoxContainer/GoalsInput")
 _notesInput        = NodePath("VBoxContainer/NotesInput")
 _notesRenderer     = NodePath("VBoxContainer/NotesRenderer")
@@ -51,20 +50,6 @@ text = "Type"
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "e.g. Merchant Guild, Bandit Gang..."
-
-[node name="HeadquartersRow" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="HeadquartersLabel" type="Label" parent="VBoxContainer/HeadquartersRow"]
-layout_mode = 2
-custom_minimum_size = Vector2(100, 0)
-text = "HQ"
-
-[node name="HeadquartersInput" type="LineEdit" parent="VBoxContainer/HeadquartersRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Headquarters location..."
 
 [node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2

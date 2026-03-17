@@ -1,6 +1,6 @@
 namespace DndBuilder.Core.Models
 {
-    public class NpcStatus
+    public class LocationFactionRole
     {
         public int    Id          { get; set; }
         public int    CampaignId  { get; set; }

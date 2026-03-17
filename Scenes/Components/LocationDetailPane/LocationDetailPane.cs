@@ -1,13 +1,14 @@
 using System.Collections.Generic;
+using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
 public partial class LocationDetailPane : ScrollContainer
 {
-    private DatabaseService    _db;
-    private Location           _location;
-    private ConfirmationDialog _confirmDialog;
-    private PopupMenu          _factionsPopup;
+    private DatabaseService           _db;
+    private Location                  _location;
+    private List<LocationFactionRole> _roles = new();
+    private ConfirmationDialog        _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
@@ -20,7 +21,10 @@ public partial class LocationDetailPane : ScrollContainer
     [Export] private TextEdit      _notesInput;
     [Export] private RichTextLabel _notesRenderer;
     [Export] private Button        _deleteButton;
-    [Export] private MenuButton    _factionsDropdown;
+    [Export] private VBoxContainer _factionRowsContainer;
+    [Export] private OptionButton  _factionSelect;
+    [Export] private OptionButton  _roleSelect;
+    [Export] private Button        _addFactionButton;
     [Export] private Button        _addSubLocationButton;
     [Export] private VBoxContainer _subLocationsContainer;
 
@@ -36,12 +40,21 @@ public partial class LocationDetailPane : ScrollContainer
 
         _notesRenderer.MetaClicked += OnMetaClicked;
 
-        _factionsPopup = _factionsDropdown.GetPopup();
-        _factionsPopup.HideOnCheckableItemSelection = false;
-        _factionsPopup.HideOnItemSelection         = false;
-        _factionsPopup.ShrinkWidth                 = false;
-        _factionsPopup.AboutToPopup += () => _factionsPopup.Size = new Vector2I((int)_factionsDropdown.Size.X, 0);
-        _factionsPopup.IdPressed    += OnFactionToggled;
+        _factionSelect.ItemSelected += _ => _addFactionButton.Disabled = _factionSelect.GetSelectedId() == -1;
+
+        _addFactionButton.Pressed += () =>
+        {
+            if (_location == null || _factionSelect.GetSelectedId() == -1) return;
+            int  factionId = _factionSelect.GetSelectedId();
+            int  rawRoleId = _roleSelect.GetSelectedId();
+            int? roleId    = rawRoleId == -1 ? null : rawRoleId;
+
+            _db.Locations.AddFaction(_location.Id, factionId, roleId);
+            _location.Factions.Add(new LocationFaction { LocationId = _location.Id, FactionId = factionId, RoleId = roleId });
+
+            PopulateFactionDropdowns();
+            LoadFactionRows();
+        };
 
         _confirmDialog = new ConfirmationDialog { Title = "Delete Location" };
         AddChild(_confirmDialog);
@@ -57,13 +70,14 @@ public partial class LocationDetailPane : ScrollContainer
             if (_location == null) return;
 
             var popup = new PopupMenu();
+            popup.MaxSize = new Vector2I(0, 120);
             AddChild(popup);
             popup.AddItem("New...", 0);
 
             foreach (var loc in _db.Locations.GetAll(_location.CampaignId))
             {
                 if (loc.Id == _location.Id) continue;
-                if (loc.ParentLocationId == _location.Id) continue; // already a child
+                if (loc.ParentLocationId == _location.Id) continue;
                 popup.AddItem(loc.Name, loc.Id);
             }
 
@@ -89,22 +103,25 @@ public partial class LocationDetailPane : ScrollContainer
             };
 
             var btnRect = _addSubLocationButton.GetGlobalRect();
-            int btnRight  = (int)(btnRect.Position.X + btnRect.Size.X);
-            int btnBottom = (int)(btnRect.Position.Y + btnRect.Size.Y);
-            popup.Popup(new Rect2I(btnRight, btnBottom, 0, 0));
-            popup.Position = new Vector2I(btnRight - popup.Size.X, btnBottom);
+            int x = (int)btnRect.Position.X;
+            int offset = Mathf.Min((int)btnRect.Size.Y * popup.ItemCount, 120);
+            int y      = Mathf.Max(0, (int)btnRect.Position.Y - offset);
+            popup.Popup(new Rect2I(x, y, (int)btnRect.Size.X, 120));
         };
     }
 
     public void Load(Location location)
     {
         _location = location;
+        _roles    = _db.LocationFactionRoles.GetAll(location.CampaignId);
+
         _nameInput.Text  = string.IsNullOrEmpty(location.Name) ? "New Location" : location.Name;
         _typeInput.Text  = location.Type;
         _descInput.Text  = location.Description;
         _notesInput.Text = location.Notes;
         RenderNotes();
-        PopulateFactions();
+        PopulateFactionDropdowns();
+        LoadFactionRows();
         LoadSubLocations();
     }
 
@@ -115,61 +132,112 @@ public partial class LocationDetailPane : ScrollContainer
 
         foreach (var sub in _location.SubLocations)
         {
-            int id = sub.Id;
-            var btn = new Button { Text = sub.Name, Flat = true, Alignment = HorizontalAlignment.Left, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+            int id     = sub.Id;
+            var btn    = new Button { Text = sub.Name, Flat = true, Alignment = HorizontalAlignment.Left, SizeFlagsHorizontal = SizeFlags.ExpandFill };
             btn.Pressed += () => EmitSignal(SignalName.NavigateTo, "location", id);
-            var panel = new PanelContainer();
-            panel.AddChild(btn);
+
+            var panel  = new PanelContainer();
+            var delBtn = new Button { Text = "×", Flat = true };
+            delBtn.MouseEntered += () => panel.AddThemeStyleboxOverride("panel", DeleteHoverBox);
+            delBtn.MouseExited  += () => panel.RemoveThemeStyleboxOverride("panel");
+            delBtn.Pressed += () =>
+            {
+                var subloc = _db.Locations.Get(id);
+                if (subloc != null)
+                {
+                    subloc.ParentLocationId = null;
+                    _db.Locations.Edit(subloc);
+                }
+                _location.SubLocations.RemoveAll(s => s.Id == id);
+                LoadSubLocations();
+            };
+
+            var row = new HBoxContainer();
+            row.AddChild(btn);
+            row.AddChild(delBtn);
+            panel.AddChild(row);
             _subLocationsContainer.AddChild(panel);
         }
     }
 
-    private void PopulateFactions()
+    private void PopulateFactionDropdowns()
     {
-        _factionsPopup.Clear();
-        var allFactions = _db.Factions.GetAll(_location.CampaignId);
+        var assignedIds  = new HashSet<int>(_location.Factions.Select(f => f.FactionId));
+        var available    = _db.Factions.GetAll(_location.CampaignId)
+                             .Where(f => !assignedIds.Contains(f.Id))
+                             .ToList();
+        bool hasAvailable = available.Count > 0;
 
-        if (allFactions.Count == 0)
-        {
-            _factionsDropdown.Text     = "None available";
-            _factionsDropdown.Disabled = true;
-            return;
-        }
+        _factionSelect.Clear();
+        _factionSelect.AddItem("Pick a faction", -1);
+        foreach (var f in available) _factionSelect.AddItem(f.Name, f.Id);
+        _factionSelect.Disabled = !hasAvailable;
 
-        _factionsDropdown.Disabled = false;
-        var memberSet = new HashSet<int>(_location.FactionIds);
+        _roleSelect.Clear();
+        _roleSelect.AddItem("No role", -1);
+        foreach (var r in _roles) _roleSelect.AddItem(r.Name, r.Id);
+        _roleSelect.Disabled = !hasAvailable;
 
-        foreach (var faction in allFactions)
-        {
-            _factionsPopup.AddCheckItem(faction.Name, faction.Id);
-            int idx = _factionsPopup.GetItemIndex(faction.Id);
-            _factionsPopup.SetItemChecked(idx, memberSet.Contains(faction.Id));
-        }
-
-        UpdateFactionDropdownText();
+        _addFactionButton.Disabled = true; // enabled only when a real faction is selected
     }
 
-    private void OnFactionToggled(long id)
+    private void LoadFactionRows()
     {
-        int  fid        = (int)id;
-        int  idx        = _factionsPopup.GetItemIndex(fid);
-        bool nowChecked = !_factionsPopup.IsItemChecked(idx);
-        _factionsPopup.SetItemChecked(idx, nowChecked);
+        foreach (Node child in _factionRowsContainer.GetChildren())
+            child.QueueFree();
 
-        if (nowChecked) _db.Locations.AddFaction(_location.Id, fid);
-        else            _db.Locations.RemoveFaction(_location.Id, fid);
+        var allFactions  = _db.Factions.GetAll(_location.CampaignId);
+        var factionNames = new Dictionary<int, string>();
+        foreach (var f in allFactions) factionNames[f.Id] = f.Name;
 
-        UpdateFactionDropdownText();
+        var roleNames = new Dictionary<int, string>();
+        foreach (var r in _roles) roleNames[r.Id] = r.Name;
+
+        foreach (var lf in _location.Factions)
+        {
+            int    capturedFactionId = lf.FactionId;
+            string factionName       = factionNames.TryGetValue(lf.FactionId, out var fn) ? fn : "Unknown";
+            string roleName          = lf.RoleId.HasValue && roleNames.TryGetValue(lf.RoleId.Value, out var rn) ? rn : "No role";
+
+            var navBtn = new Button
+            {
+                Text                = $"{factionName} — {roleName}",
+                Flat                = true,
+                Alignment           = HorizontalAlignment.Left,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
+            };
+            navBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
+
+            var panel  = new PanelContainer();
+            var delBtn = new Button { Text = "×", Flat = true };
+            delBtn.MouseEntered += () => panel.AddThemeStyleboxOverride("panel", DeleteHoverBox);
+            delBtn.MouseExited  += () => panel.RemoveThemeStyleboxOverride("panel");
+            delBtn.Pressed += () =>
+            {
+                _db.Locations.RemoveFaction(_location.Id, capturedFactionId);
+                _location.Factions.RemoveAll(f => f.FactionId == capturedFactionId);
+                PopulateFactionDropdowns();
+                LoadFactionRows();
+            };
+
+            var row = new HBoxContainer();
+            row.AddChild(navBtn);
+            row.AddChild(delBtn);
+            panel.AddChild(row);
+            _factionRowsContainer.AddChild(panel);
+        }
     }
 
-    private void UpdateFactionDropdownText()
+    public override void _UnhandledInput(InputEvent e)
     {
-        var selected = new List<string>();
-        for (int i = 0; i < _factionsPopup.ItemCount; i++)
-            if (_factionsPopup.IsItemChecked(i))
-                selected.Add(_factionsPopup.GetItemText(i));
-
-        _factionsDropdown.Text = selected.Count > 0 ? string.Join(", ", selected) : "Select factions...";
+        if (_location == null) return;
+        if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
+        {
+            _confirmDialog.DialogText = $"Delete \"{_location.Name}\"? This cannot be undone.";
+            _confirmDialog.PopupCentered();
+            AcceptEvent();
+        }
     }
 
     private void Save()
@@ -180,6 +248,14 @@ public partial class LocationDetailPane : ScrollContainer
         _location.Description = _descInput.Text;
         _location.Notes       = _notesInput.Text;
         _db.Locations.Edit(_location);
+    }
+
+    private static readonly StyleBoxFlat DeleteHoverBox = MakeDeleteHoverBox();
+    private static StyleBoxFlat MakeDeleteHoverBox()
+    {
+        var box = new StyleBoxFlat { BgColor = new Color(0.90f, 0.55f, 0.55f) };
+        box.SetCornerRadiusAll(3);
+        return box;
     }
 
     private void RenderNotes()

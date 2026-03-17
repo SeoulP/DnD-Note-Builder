@@ -24,7 +24,6 @@ namespace DndBuilder.Core.Repositories
                 description  TEXT    NOT NULL DEFAULT '',
                 notes        TEXT    NOT NULL DEFAULT '',
                 goals        TEXT    NOT NULL DEFAULT '',
-                headquarters TEXT    NOT NULL DEFAULT '',
                 reputation   INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
@@ -34,7 +33,7 @@ namespace DndBuilder.Core.Repositories
         {
             var list = new List<Faction>();
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = @"SELECT id, campaign_id, name, type, description, notes, goals, headquarters, reputation
+            cmd.CommandText = @"SELECT id, campaign_id, name, type, description, notes, goals, reputation
                                 FROM factions WHERE campaign_id = @cid ORDER BY name ASC";
             cmd.Parameters.AddWithValue("@cid", campaignId);
             using var reader = cmd.ExecuteReader();
@@ -45,7 +44,7 @@ namespace DndBuilder.Core.Repositories
         public Faction Get(int id)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = @"SELECT id, campaign_id, name, type, description, notes, goals, headquarters, reputation
+            cmd.CommandText = @"SELECT id, campaign_id, name, type, description, notes, goals, reputation
                                 FROM factions WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", id);
             using var reader = cmd.ExecuteReader();
@@ -55,8 +54,8 @@ namespace DndBuilder.Core.Repositories
         public int Add(Faction faction)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = @"INSERT INTO factions (campaign_id, name, type, description, notes, goals, headquarters, reputation)
-                                VALUES (@cid, @name, @type, @desc, @notes, @goals, @hq, @rep);
+            cmd.CommandText = @"INSERT INTO factions (campaign_id, name, type, description, notes, goals, reputation)
+                                VALUES (@cid, @name, @type, @desc, @notes, @goals, @rep);
                                 SELECT last_insert_rowid();";
             cmd.Parameters.AddWithValue("@cid",   faction.CampaignId);
             cmd.Parameters.AddWithValue("@name",  faction.Name);
@@ -64,7 +63,6 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@desc",  faction.Description);
             cmd.Parameters.AddWithValue("@notes", faction.Notes);
             cmd.Parameters.AddWithValue("@goals", faction.Goals);
-            cmd.Parameters.AddWithValue("@hq",    faction.Headquarters);
             cmd.Parameters.AddWithValue("@rep",   faction.Reputation);
             return (int)(long)cmd.ExecuteScalar();
         }
@@ -74,7 +72,7 @@ namespace DndBuilder.Core.Repositories
             var cmd = _conn.CreateCommand();
             cmd.CommandText = @"UPDATE factions
                                 SET name = @name, type = @type, description = @desc,
-                                    notes = @notes, goals = @goals, headquarters = @hq, reputation = @rep
+                                    notes = @notes, goals = @goals, reputation = @rep
                                 WHERE id = @id";
             cmd.Parameters.AddWithValue("@id",    faction.Id);
             cmd.Parameters.AddWithValue("@name",  faction.Name);
@@ -82,7 +80,6 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@desc",  faction.Description);
             cmd.Parameters.AddWithValue("@notes", faction.Notes);
             cmd.Parameters.AddWithValue("@goals", faction.Goals);
-            cmd.Parameters.AddWithValue("@hq",    faction.Headquarters);
             cmd.Parameters.AddWithValue("@rep",   faction.Reputation);
             cmd.ExecuteNonQuery();
         }
@@ -97,15 +94,14 @@ namespace DndBuilder.Core.Repositories
 
         private static Faction Map(SqliteDataReader r) => new Faction
         {
-            Id           = r.GetInt32(0),
-            CampaignId   = r.GetInt32(1),
-            Name         = r.GetString(2),
-            Type         = r.GetString(3),
-            Description  = r.GetString(4),
-            Notes        = r.GetString(5),
-            Goals        = r.GetString(6),
-            Headquarters = r.GetString(7),
-            Reputation   = r.GetInt32(8),
+            Id          = r.GetInt32(0),
+            CampaignId  = r.GetInt32(1),
+            Name        = r.GetString(2),
+            Type        = r.GetString(3),
+            Description = r.GetString(4),
+            Notes       = r.GetString(5),
+            Goals       = r.GetString(6),
+            Reputation  = r.GetInt32(7),
         };
     }
 }

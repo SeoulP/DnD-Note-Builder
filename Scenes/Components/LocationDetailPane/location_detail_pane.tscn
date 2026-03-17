@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scenes/Components/LocationDetailPane/LocationDetailPane.cs" id="1_locdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 
-[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_factionsDropdown", "_addSubLocationButton", "_subLocationsContainer")]
+[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_addSubLocationButton", "_subLocationsContainer")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -16,7 +16,10 @@ _typeInput             = NodePath("VBoxContainer/TypeRow/TypeInput")
 _descInput             = NodePath("VBoxContainer/DescriptionInput")
 _notesInput            = NodePath("VBoxContainer/NotesInput")
 _notesRenderer         = NodePath("VBoxContainer/NotesRenderer")
-_factionsDropdown      = NodePath("VBoxContainer/FactionsRow/PanelContainer/FactionsDropdown")
+_factionRowsContainer  = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/FactionRowsContainer")
+_factionSelect         = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow/FactionSelect")
+_roleSelect            = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow/RoleSelect")
+_addFactionButton      = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow/AddFactionButton")
 _addSubLocationButton  = NodePath("VBoxContainer/SubLocationsRow/AddSubLocationButton")
 _subLocationsContainer = NodePath("VBoxContainer/SubLocationsContainer")
 
@@ -82,24 +85,44 @@ bbcode_enabled = true
 fit_content = true
 scroll_active = false
 
-[node name="FactionsRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="FactionsLabel" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="FactionsLabel" type="Label" parent="VBoxContainer/FactionsRow"]
-custom_minimum_size = Vector2(100, 0)
+[node name="Label" type="Label" parent="VBoxContainer/FactionsLabel"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
+vertical_alignment = 1
 text = "Factions"
 
-[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/FactionsRow"]
+[node name="FactionsVBox" type="VBoxContainer" parent="VBoxContainer/FactionsLabel"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="FactionsDropdown" type="MenuButton" parent="VBoxContainer/FactionsRow/PanelContainer"]
+[node name="AddFactionRow" type="HBoxContainer" parent="VBoxContainer/FactionsLabel/FactionsVBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="FactionSelect" type="OptionButton" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Select factions..."
-alignment = 0
+clip_text = true
+
+[node name="RoleSelect" type="OptionButton" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+
+[node name="AddFactionButton" type="Button" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
+layout_mode = 2
+text = "+ Add"
+
+[node name="FactionRowsContainer" type="VBoxContainer" parent="VBoxContainer/FactionsLabel/FactionsVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
 
 [node name="SubLocationsRow" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2

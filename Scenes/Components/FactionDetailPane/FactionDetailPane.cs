@@ -13,7 +13,6 @@ public partial class FactionDetailPane : ScrollContainer
 
     [Export] private LineEdit      _nameInput;
     [Export] private LineEdit      _typeInput;
-    [Export] private LineEdit      _headquartersInput;
     [Export] private TextEdit      _descInput;
     [Export] private TextEdit      _goalsInput;
     [Export] private TextEdit      _notesInput;
@@ -26,9 +25,8 @@ public partial class FactionDetailPane : ScrollContainer
 
         _nameInput.TextChanged         += name => { Save(); EmitSignal(SignalName.NameChanged, "faction", _faction?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Faction" : name); };
         _nameInput.FocusExited         += () => { if (_nameInput.Text == "") _nameInput.Text = "New Faction"; };
-        _typeInput.TextChanged         += _ => Save();
-        _headquartersInput.TextChanged += _ => Save();
-        _descInput.TextChanged         += () => Save();
+        _typeInput.TextChanged += _ => Save();
+        _descInput.TextChanged += () => Save();
         _goalsInput.TextChanged        += () => Save();
         _notesInput.TextChanged        += () => { Save(); RenderNotes(); };
 
@@ -47,22 +45,31 @@ public partial class FactionDetailPane : ScrollContainer
     public void Load(Faction faction)
     {
         _faction = faction;
-        _nameInput.Text         = string.IsNullOrEmpty(faction.Name) ? "New Faction" : faction.Name;
-        _typeInput.Text         = faction.Type;
-        _headquartersInput.Text = faction.Headquarters;
-        _descInput.Text         = faction.Description;
+        _nameInput.Text = string.IsNullOrEmpty(faction.Name) ? "New Faction" : faction.Name;
+        _typeInput.Text = faction.Type;
+        _descInput.Text = faction.Description;
         _goalsInput.Text        = faction.Goals;
         _notesInput.Text        = faction.Notes;
         RenderNotes();
     }
 
+    public override void _UnhandledInput(InputEvent e)
+    {
+        if (_faction == null) return;
+        if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
+        {
+            _confirmDialog.DialogText = $"Delete \"{_faction.Name}\"? This cannot be undone.";
+            _confirmDialog.PopupCentered();
+            AcceptEvent();
+        }
+    }
+
     private void Save()
     {
         if (_faction == null) return;
-        _faction.Name         = string.IsNullOrEmpty(_nameInput.Text) ? "New Faction" : _nameInput.Text;
-        _faction.Type         = _typeInput.Text;
-        _faction.Headquarters = _headquartersInput.Text;
-        _faction.Description  = _descInput.Text;
+        _faction.Name        = string.IsNullOrEmpty(_nameInput.Text) ? "New Faction" : _nameInput.Text;
+        _faction.Type        = _typeInput.Text;
+        _faction.Description = _descInput.Text;
         _faction.Goals        = _goalsInput.Text;
         _faction.Notes        = _notesInput.Text;
         _db.Factions.Edit(_faction);

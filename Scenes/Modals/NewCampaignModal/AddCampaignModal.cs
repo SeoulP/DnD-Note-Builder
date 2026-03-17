@@ -87,7 +87,11 @@ public partial class AddCampaignModal : Window
         };
 
         int newId = _databaseService.Campaigns.Add(campaign);
-        _databaseService.Species.SeedDefaults(newId);
+        _databaseService.Species             .SeedDefaults(newId);
+        _databaseService.LocationFactionRoles.SeedDefaults(newId);
+        _databaseService.NpcRelationshipTypes.SeedDefaults(newId);
+        _databaseService.NpcStatuses         .SeedDefaults(newId);
+        _databaseService.ItemTypes           .SeedDefaults(newId);
         EmitSignal(SignalName.CampaignCreated, newId);
         Hide();
         ResetForm();

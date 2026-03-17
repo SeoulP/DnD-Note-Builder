@@ -57,6 +57,16 @@ public partial class CampaignDashboard : Control
             ShowDetailPane("session", id);
         };
 
+        StyleAddButton(_addNpcsButton,      NpcColor);
+        StyleAddButton(_addFactionButton,   FactionColor);
+        StyleAddButton(_addLocationsButton, LocationColor);
+        StyleAddButton(_addSessionsButton,  SessionColor);
+
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NpcsPanel"),                  NpcColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/FactionsPanel"),              FactionColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), LocationColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              SessionColor);
+
         LoadAll();
     }
 
@@ -73,13 +83,18 @@ public partial class CampaignDashboard : Control
         LoadSessions();
     }
 
+    private static readonly Color NpcColor      = new Color(0.53f, 0.72f, 0.90f); // pastel blue
+    private static readonly Color FactionColor  = new Color(0.90f, 0.58f, 0.58f); // pastel red
+    private static readonly Color LocationColor = new Color(0.58f, 0.82f, 0.64f); // pastel green
+    private static readonly Color SessionColor  = new Color(0.74f, 0.62f, 0.90f); // pastel purple
+
     private void LoadNpcs()
     {
         ClearItems(_npcsContainer, _addNpcsButton);
         foreach (var npc in _db.Npcs.GetAll(_campaignId))
         {
             int id = npc.Id;
-            var btn = new Button { Text = npc.Name, Flat = true, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis };
+            var btn = MakeSidebarButton(npc.Name, NpcColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("npc", id);
             _npcsContainer.AddChild(btn);
@@ -92,7 +107,7 @@ public partial class CampaignDashboard : Control
         foreach (var faction in _db.Factions.GetAll(_campaignId))
         {
             int id = faction.Id;
-            var btn = new Button { Text = faction.Name, Flat = true, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis };
+            var btn = MakeSidebarButton(faction.Name, FactionColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("faction", id);
             _factionsContainer.AddChild(btn);
@@ -105,7 +120,7 @@ public partial class CampaignDashboard : Control
         foreach (var location in _db.Locations.GetAll(_campaignId))
         {
             int id = location.Id;
-            var btn = new Button { Text = location.Name, Flat = true, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis };
+            var btn = MakeSidebarButton(location.Name, LocationColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("location", id);
             _locationsContainer.AddChild(btn);
@@ -118,11 +133,72 @@ public partial class CampaignDashboard : Control
         foreach (var session in _db.Sessions.GetAll(_campaignId))
         {
             int id = session.Id;
-            var btn = new Button { Text = $"#{session.Number:D3} – {session.Title}", Flat = true, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis };
+            var btn = MakeSidebarButton($"#{session.Number:D3} – {session.Title}", SessionColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("session", id);
             _sessionsContainer.AddChild(btn);
         }
+    }
+
+    private static readonly Color DarkText = new Color(0.10f, 0.10f, 0.10f);
+
+    private static Button MakeSidebarButton(string text, Color color)
+    {
+        var btn = new Button
+        {
+            Text                = text,
+            Flat                = false,
+            Alignment           = HorizontalAlignment.Left,
+            TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
+        };
+        ApplyButtonStyle(btn, color);
+        return btn;
+    }
+
+    private static void ApplyButtonStyle(Button btn, Color color)
+    {
+        var normal  = MakeBox(color,                padding: 2);
+        var hover   = MakeBox(color.Lightened(0.12f), padding: 2);
+        var pressed = MakeBox(color.Darkened(0.12f),  padding: 2);
+        btn.AddThemeStyleboxOverride("normal",  normal);
+        btn.AddThemeStyleboxOverride("hover",   hover);
+        btn.AddThemeStyleboxOverride("pressed", pressed);
+        btn.AddThemeStyleboxOverride("focus",   hover);
+        btn.AddThemeColorOverride("font_color",          DarkText);
+        btn.AddThemeColorOverride("font_hover_color",    DarkText);
+        btn.AddThemeColorOverride("font_pressed_color",  DarkText);
+        btn.AddThemeColorOverride("font_focus_color",    DarkText);
+        btn.AddThemeFontSizeOverride("font_size", 12);
+    }
+
+    private static void StyleAddButton(Button btn, Color baseColor)
+    {
+        ApplyButtonStyle(btn, baseColor.Darkened(0.25f));
+        btn.Alignment = HorizontalAlignment.Left;
+    }
+
+    private static void StyleAccordion(Control accordion, Color baseColor)
+    {
+        // "title_panel" = header row, "panel" = content area behind buttons
+        accordion.AddThemeStyleboxOverride("title_panel",              MakeBox(baseColor.Darkened(0.50f)));
+        accordion.AddThemeStyleboxOverride("title_hover_panel",        MakeBox(baseColor.Darkened(0.40f)));
+        accordion.AddThemeStyleboxOverride("title_collapsed_panel",    MakeBox(baseColor.Darkened(0.50f)));
+        accordion.AddThemeStyleboxOverride("title_collapsed_hover_panel", MakeBox(baseColor.Darkened(0.40f)));
+        accordion.AddThemeStyleboxOverride("panel",                    MakeBox(baseColor.Darkened(0.35f)));
+    }
+
+    private static StyleBoxFlat MakeBox(Color color, int padding = 0)
+    {
+        var box = new StyleBoxFlat { BgColor = color };
+        box.SetCornerRadiusAll(3);
+        if (padding > 0)
+        {
+            box.ContentMarginLeft   = padding;
+            box.ContentMarginRight  = padding;
+            box.ContentMarginTop    = padding / 2f;
+            box.ContentMarginBottom = padding / 2f;
+        }
+        return box;
     }
 
     private void ShowDetailPane(string entityType, int entityId)
