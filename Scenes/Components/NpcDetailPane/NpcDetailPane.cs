@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
@@ -6,12 +7,12 @@ public partial class NpcDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
     private Npc                _npc;
-    private List<Faction>      _availableFactions = new();
     private ConfirmationDialog _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
+    [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit          _nameInput;
     [Export] private TypeOptionButton  _speciesInput;
@@ -19,7 +20,7 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private LineEdit          _genderInput;
     [Export] private TypeOptionButton  _statusInput;
     [Export] private TypeOptionButton  _relationshipInput;
-    [Export] private OptionButton      _factionSelect;
+    [Export] private TypeOptionButton  _factionSelect;
     [Export] private TypeOptionButton  _roleSelect;
     [Export] private Button            _addFactionButton;
     [Export] private VBoxContainer     _factionRowsContainer;
@@ -53,7 +54,7 @@ public partial class NpcDetailPane : ScrollContainer
             _confirmDialog.PopupCentered();
         };
 
-        _factionSelect.ItemSelected += _ => _addFactionButton.Disabled = _factionSelect.GetSelectedId() == -1;
+        _factionSelect.TypeSelected += id => _addFactionButton.Disabled = (id == -1);
         _roleSelect.TypeSelected    += _ => { };  // no-op; role is read at add-time
         _addFactionButton.Pressed   += OnAddFactionPressed;
     }
@@ -81,6 +82,18 @@ public partial class NpcDetailPane : ScrollContainer
             id   => _db.NpcRelationshipTypes.Delete(id));
         _relationshipInput.SelectById(npc.RelationshipTypeId);
 
+        _factionSelect.NoneText        = "Pick a faction";
+        _factionSelect.AutoSelectOnAdd = true;
+        _factionSelect.Setup(
+            () => _db.Factions.GetAll(npc.CampaignId)
+                      .Where(f => !_npc.Factions.Any(nf => nf.FactionId == f.Id))
+                      .Select(f => (f.Id, f.Name))
+                      .ToList(),
+            name => _db.Factions.Add(new Faction { CampaignId = _npc.CampaignId, Name = name }),
+            id   => _db.Factions.Delete(id));
+        _factionSelect.TypeCreated += id => EmitSignal(SignalName.EntityCreated, "faction", id);
+        _factionSelect.SelectById(null);
+
         _roleSelect.NoneText = "No role";
         _roleSelect.Setup(
             () => _db.NpcFactionRoles.GetAll(npc.CampaignId).ConvertAll(r => (r.Id, r.Name)),
@@ -102,17 +115,7 @@ public partial class NpcDetailPane : ScrollContainer
 
     private void PopulateFactionDropdown()
     {
-        var assignedIds = new HashSet<int>(_npc.Factions.ConvertAll(f => f.FactionId));
-        _availableFactions = _db.Factions.GetAll(_npc.CampaignId)
-            .FindAll(f => !assignedIds.Contains(f.Id));
-
-        _factionSelect.Clear();
-        _factionSelect.AddItem("Pick a faction", -1);
-        foreach (var f in _availableFactions) _factionSelect.AddItem(f.Name, f.Id);
-
-        bool hasAny = _availableFactions.Count > 0;
-        _factionSelect.Disabled    = !hasAny;
-        _roleSelect.Disabled       = !hasAny;
+        _factionSelect.SelectById(null);
         _roleSelect.SelectById(null);
         _addFactionButton.Disabled = true;
     }
@@ -136,23 +139,9 @@ public partial class NpcDetailPane : ScrollContainer
             string factionName       = factionNames.TryGetValue(nf.FactionId, out var fn) ? fn : "Unknown";
             string roleName          = nf.RoleId.HasValue && roleNames.TryGetValue(nf.RoleId.Value, out var rn) ? rn : "No role";
 
-            var panel = new PanelContainer();
-            var row   = new HBoxContainer();
-
-            var navBtn = new Button
-            {
-                Text                = $"{factionName} — {roleName}",
-                Flat                = true,
-                Alignment           = HorizontalAlignment.Left,
-                SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
-            };
-            navBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
-
-            var removeBtn = new Button { Text = "×", Flat = true };
-            removeBtn.MouseEntered += () => panel.AddThemeStyleboxOverride("panel", DeleteHoverBox);
-            removeBtn.MouseExited  += () => panel.RemoveThemeStyleboxOverride("panel");
-            removeBtn.Pressed += () =>
+            var row = new EntityRow { Text = $"{factionName} — {roleName}" };
+            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
+            row.DeletePressed   += () =>
             {
                 _db.Npcs.RemoveFaction(_npc.Id, capturedFactionId);
                 _npc.Factions.RemoveAll(f => f.FactionId == capturedFactionId);
@@ -160,22 +149,18 @@ public partial class NpcDetailPane : ScrollContainer
                 PopulateFactionDropdown();
                 LoadFactionRows();
             };
-
-            row.AddChild(navBtn);
-            row.AddChild(removeBtn);
-            panel.AddChild(row);
-            _factionRowsContainer.AddChild(panel);
+            _factionRowsContainer.AddChild(row);
         }
     }
 
     private void OnAddFactionPressed()
     {
-        int factionId = (int)_factionSelect.GetSelectedId();
-        if (factionId == -1) return;
+        if (!_factionSelect.SelectedId.HasValue) return;
+        int  factionId = _factionSelect.SelectedId.Value;
+        int? roleId    = _roleSelect.SelectedId;
 
-        int? roleId = _roleSelect.SelectedId;
         _db.Npcs.AddFaction(_npc.Id, factionId, roleId);
-        _npc.Factions.Add(new DndBuilder.Core.Models.NpcFaction { NpcId = _npc.Id, FactionId = factionId, RoleId = roleId });
+        _npc.Factions.Add(new NpcFaction { NpcId = _npc.Id, FactionId = factionId, RoleId = roleId });
         _npc.FactionIds.Add(factionId);
         PopulateFactionDropdown();
         LoadFactionRows();
@@ -204,14 +189,6 @@ public partial class NpcDetailPane : ScrollContainer
             _confirmDialog.PopupCentered();
             AcceptEvent();
         }
-    }
-
-    private static readonly StyleBoxFlat DeleteHoverBox = MakeDeleteHoverBox();
-    private static StyleBoxFlat MakeDeleteHoverBox()
-    {
-        var box = new StyleBoxFlat { BgColor = new Color(0.90f, 0.55f, 0.55f) };
-        box.SetCornerRadiusAll(3);
-        return box;
     }
 
     private void RenderNotes()

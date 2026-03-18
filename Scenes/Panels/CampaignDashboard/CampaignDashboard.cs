@@ -240,9 +240,10 @@ public partial class CampaignDashboard : Control
                 if (npc == null) return;
                 var npcPane = _npcDetailPaneScene.Instantiate<NpcDetailPane>();
                 AddDetailPane(npcPane);
-                npcPane.NavigateTo  += ShowDetailPane;
-                npcPane.NameChanged += OnNameChanged;
-                npcPane.Deleted     += OnEntityDeleted;
+                npcPane.NavigateTo     += ShowDetailPane;
+                npcPane.NameChanged    += OnNameChanged;
+                npcPane.Deleted        += OnEntityDeleted;
+                npcPane.EntityCreated  += (type, _) => { if (type == "faction") LoadFactions(); };
                 npcPane.Load(npc);
                 break;
 

@@ -136,15 +136,10 @@ public partial class LocationDetailPane : ScrollContainer
 
         foreach (var sub in _location.SubLocations)
         {
-            int id     = sub.Id;
-            var btn    = new Button { Text = sub.Name, Flat = true, Alignment = HorizontalAlignment.Left, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-            btn.Pressed += () => EmitSignal(SignalName.NavigateTo, "location", id);
-
-            var panel  = new PanelContainer();
-            var delBtn = new Button { Text = "×", Flat = true };
-            delBtn.MouseEntered += () => panel.AddThemeStyleboxOverride("panel", DeleteHoverBox);
-            delBtn.MouseExited  += () => panel.RemoveThemeStyleboxOverride("panel");
-            delBtn.Pressed += () =>
+            int id  = sub.Id;
+            var row = new EntityRow { Text = sub.Name };
+            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "location", id);
+            row.DeletePressed   += () =>
             {
                 var subloc = _db.Locations.Get(id);
                 if (subloc != null)
@@ -155,12 +150,7 @@ public partial class LocationDetailPane : ScrollContainer
                 _location.SubLocations.RemoveAll(s => s.Id == id);
                 LoadSubLocations();
             };
-
-            var row = new HBoxContainer();
-            row.AddChild(btn);
-            row.AddChild(delBtn);
-            panel.AddChild(row);
-            _subLocationsContainer.AddChild(panel);
+            _subLocationsContainer.AddChild(row);
         }
     }
 
@@ -200,33 +190,16 @@ public partial class LocationDetailPane : ScrollContainer
             string factionName       = factionNames.TryGetValue(lf.FactionId, out var fn) ? fn : "Unknown";
             string roleName          = lf.RoleId.HasValue && roleNames.TryGetValue(lf.RoleId.Value, out var rn) ? rn : "No role";
 
-            var navBtn = new Button
-            {
-                Text                = $"{factionName} — {roleName}",
-                Flat                = true,
-                Alignment           = HorizontalAlignment.Left,
-                SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
-            };
-            navBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
-
-            var panel  = new PanelContainer();
-            var delBtn = new Button { Text = "×", Flat = true };
-            delBtn.MouseEntered += () => panel.AddThemeStyleboxOverride("panel", DeleteHoverBox);
-            delBtn.MouseExited  += () => panel.RemoveThemeStyleboxOverride("panel");
-            delBtn.Pressed += () =>
+            var row = new EntityRow { Text = $"{factionName} — {roleName}" };
+            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
+            row.DeletePressed   += () =>
             {
                 _db.Locations.RemoveFaction(_location.Id, capturedFactionId);
                 _location.Factions.RemoveAll(f => f.FactionId == capturedFactionId);
                 PopulateFactionDropdowns();
                 LoadFactionRows();
             };
-
-            var row = new HBoxContainer();
-            row.AddChild(navBtn);
-            row.AddChild(delBtn);
-            panel.AddChild(row);
-            _factionRowsContainer.AddChild(panel);
+            _factionRowsContainer.AddChild(row);
         }
     }
 
@@ -249,14 +222,6 @@ public partial class LocationDetailPane : ScrollContainer
         _location.Description = _descInput.Text;
         _location.Notes       = _notesInput.Text;
         _db.Locations.Edit(_location);
-    }
-
-    private static readonly StyleBoxFlat DeleteHoverBox = MakeDeleteHoverBox();
-    private static StyleBoxFlat MakeDeleteHoverBox()
-    {
-        var box = new StyleBoxFlat { BgColor = new Color(0.90f, 0.55f, 0.55f) };
-        box.SetCornerRadiusAll(3);
-        return box;
     }
 
     private void RenderNotes()
