@@ -43,6 +43,12 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="SearchInput" type="LineEdit" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search..."
+clear_button_enabled = true
+
 [node name="NpcsPanel" type="FoldableContainer" parent="ScrollContainer/VBoxContainer" unique_id=2046014427]
 layout_mode = 2
 folded = true

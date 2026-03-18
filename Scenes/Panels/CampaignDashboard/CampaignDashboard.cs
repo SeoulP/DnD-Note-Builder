@@ -1,3 +1,4 @@
+using System;
 using DndBuilder.Core.Models;
 using Godot;
 
@@ -97,6 +98,8 @@ public partial class CampaignDashboard : Control
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), LocationColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              SessionColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/ItemsPanel"),                 ItemColor);
+
+        GetNode<LineEdit>("ScrollContainer/VBoxContainer/SearchInput").TextChanged += FilterSidebar;
 
         LoadAll();
     }
@@ -360,5 +363,116 @@ public partial class CampaignDashboard : Control
     {
         foreach (Node child in container.GetChildren())
             if (child != keepButton) child.QueueFree();
+    }
+
+    // ── sidebar search ────────────────────────────────────────────────────────
+
+    private void FilterSidebar(string query)
+    {
+        bool searching = !string.IsNullOrEmpty(query);
+
+        var sections = new (Control Panel, VBoxContainer Items)[]
+        {
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NpcsPanel"),                  _npcsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/FactionsPanel"),              _factionsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), _locationsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              _sessionsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/ItemsPanel"),                 _itemsContainer),
+        };
+
+        foreach (var (panel, items) in sections)
+        {
+            if (!searching)
+            {
+                panel.Visible = true;
+                panel.Set("folded", true);
+                items.Visible = false;
+                foreach (Node child in items.GetChildren())
+                    if (child is Control c) c.Visible = true;
+                continue;
+            }
+
+            bool hasMatch = false;
+            foreach (Node child in items.GetChildren())
+            {
+                if (child is Button btn && btn.HasMeta("id"))
+                {
+                    bool match = FuzzyMatch(query, btn.Text);
+                    btn.Visible = match;
+                    if (match) hasMatch = true;
+                }
+            }
+
+            panel.Visible = hasMatch;
+            if (hasMatch)
+            {
+                panel.Set("folded", false);
+                items.Visible = true;
+            }
+        }
+    }
+
+    private const float FuzzyThreshold = 0.7f;
+
+    private static bool FuzzyMatch(string query, string target)
+    {
+        if (string.IsNullOrEmpty(query)) return true;
+        query  = query.ToLowerInvariant();
+        target = target.ToLowerInvariant();
+
+        // 1. Direct substring
+        if (target.Contains(query)) return true;
+
+        // 2. Subsequence (handles abbreviations like "tfac" → "Test Faction")
+        if (IsSubsequence(query, target)) return true;
+
+        // 3. Sliding-window Levenshtein — catches typos like "Boblins" → "Goblins"
+        int qLen = query.Length;
+        int tLen = target.Length;
+        int windowLen = qLen;
+
+        if (windowLen <= tLen)
+        {
+            for (int start = 0; start <= tLen - windowLen; start++)
+            {
+                float sim = Similarity(query, target.Substring(start, windowLen));
+                if (sim >= FuzzyThreshold) return true;
+            }
+        }
+        else
+        {
+            // Query longer than target — compare against the whole target
+            if (Similarity(query, target) >= FuzzyThreshold) return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsSubsequence(string query, string target)
+    {
+        int qi = 0;
+        for (int i = 0; i < target.Length && qi < query.Length; i++)
+            if (target[i] == query[qi]) qi++;
+        return qi == query.Length;
+    }
+
+    private static float Similarity(string a, string b)
+    {
+        int dist = LevenshteinDistance(a, b);
+        return 1f - (float)dist / Math.Max(a.Length, b.Length);
+    }
+
+    private static int LevenshteinDistance(string a, string b)
+    {
+        int aLen = a.Length, bLen = b.Length;
+        var dp = new int[aLen + 1, bLen + 1];
+        for (int i = 0; i <= aLen; i++) dp[i, 0] = i;
+        for (int j = 0; j <= bLen; j++) dp[0, j] = j;
+        for (int i = 1; i <= aLen; i++)
+            for (int j = 1; j <= bLen; j++)
+                dp[i, j] = a[i - 1] == b[j - 1]
+                    ? dp[i - 1, j - 1]
+                    : 1 + Math.Min(dp[i - 1, j - 1], Math.Min(dp[i - 1, j], dp[i, j - 1]));
+        return dp[aLen, bLen];
     }
 }
