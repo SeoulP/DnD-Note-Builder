@@ -20,6 +20,7 @@ namespace DndBuilder.Core.Repositories
             ("Informant of",     "Secretly supplies information to the other"),
             ("Former Friend of", "Once close; now estranged or fallen out"),
             ("Colleague of",     "Works alongside without strong personal bond"),
+            ("Acquainted with",  "Knows of each other — extent unknown"),
         };
 
         public CharacterRelationshipTypeRepository(SqliteConnection conn)

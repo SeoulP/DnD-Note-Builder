@@ -17,6 +17,7 @@ public partial class App : Control
 	private void ShowCampaignList()
 	{
 		_navBar.ShowBack(false);
+		SetMargins(200, 200, 50, 50);
 		ClearPanel();
 		var panel = _campaignListPanelScene.Instantiate<CampaignListPanel>();
 		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -28,12 +29,23 @@ public partial class App : Control
 	private void ShowDashboard(int campaignId)
 	{
 		_navBar.ShowBack(true);
+		SetMargins(0, 0, 0, 0);
 		ClearPanel();
 		var dashboard = _campaignDashboardScene.Instantiate<CampaignDashboard>();
 		dashboard.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		dashboard.SizeFlagsVertical = SizeFlags.ExpandFill;
 		dashboard.SetCampaign(campaignId);
 		_appPanel.AddChild(dashboard);
+	}
+
+	private void SetMargins(int left, int right, int top, int bottom)
+	{
+		var margin = _appPanel.GetParent<MarginContainer>();
+		if (margin == null) return;
+		margin.AddThemeConstantOverride("margin_left",   left);
+		margin.AddThemeConstantOverride("margin_right",  right);
+		margin.AddThemeConstantOverride("margin_top",    top);
+		margin.AddThemeConstantOverride("margin_bottom", bottom);
 	}
 
 	private void ClearPanel()

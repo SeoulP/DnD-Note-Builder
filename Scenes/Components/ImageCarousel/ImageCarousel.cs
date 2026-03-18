@@ -54,9 +54,10 @@ public partial class ImageCarousel : Control
         // ── image (receives clicks → opens lightbox) ──────────────────────────
         _image = new TextureRect
         {
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize,
-            MouseFilter = MouseFilterEnum.Stop,
+            StretchMode            = TextureRect.StretchModeEnum.KeepAspectCentered,
+            ExpandMode             = TextureRect.ExpandModeEnum.IgnoreSize,
+            MouseFilter            = MouseFilterEnum.Stop,
+            MouseDefaultCursorShape = CursorShape.PointingHand,
         };
         _image.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _image.GuiInput      += OnImageGuiInput;
@@ -220,6 +221,7 @@ public partial class ImageCarousel : Control
         if (scene == null) return;
         var lightbox = scene.Instantiate<ImageLightbox>();
         lightbox.Setup(_images, _index);
+        GetViewport().GuiReleaseFocus();
         GetTree().Root.AddChild(lightbox);
     }
 

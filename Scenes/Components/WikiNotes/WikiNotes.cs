@@ -70,6 +70,7 @@ public partial class WikiNotes : VBoxContainer
         _renderer.CustomMinimumSize = new Vector2(0, _input.CustomMinimumSize.Y);
 
         _input.TextChanged += () => EmitSignal(SignalName.TextChanged);
+        _input.TextChanged += UpdateInputHeight;
         _input.TextChanged += CheckAutocomplete;
         _input.FocusExited += OnInputFocusExited;
         _input.GuiInput    += OnInputKey;
@@ -90,6 +91,7 @@ public partial class WikiNotes : VBoxContainer
             {
                 _input.Visible    = true;
                 _renderer.Visible = false;
+                UpdateInputHeight();
                 _input.GrabFocus();
             }
         };
@@ -116,6 +118,43 @@ public partial class WikiNotes : VBoxContainer
         bool hasText      = !string.IsNullOrEmpty(_input.Text);
         _input.Visible    = !hasText;
         _renderer.Visible = hasText;
+    }
+
+    private void UpdateInputHeight()
+    {
+        float lh = _input.GetLineHeight();
+        if (lh <= 0) return;
+        int visualLines = 0;
+        for (int i = 0; i < _input.GetLineCount(); i++)
+            visualLines += 1 + _input.GetLineWrapCount(i);
+        _input.CustomMinimumSize = new Vector2(0, Mathf.Max(120f, visualLines * lh + 16f));
+        CallDeferred(nameof(ScrollToCaretInParent));
+    }
+
+    private void ScrollToCaretInParent()
+    {
+        if (_input == null || !_input.HasFocus()) return;
+        var scroll = FindParentScrollContainer();
+        if (scroll == null) return;
+
+        int caretLine = _input.GetCaretLine();
+        var caretRect = _input.GetRectAtLineColumn(caretLine, _input.GetCaretColumn());
+        float caretBottom = _input.GlobalPosition.Y + caretRect.End.Y;
+
+        float visibleBottom = scroll.GlobalPosition.Y + scroll.Size.Y;
+        if (caretBottom > visibleBottom - 8f)
+            scroll.ScrollVertical += (int)(caretBottom - visibleBottom + 40f);
+    }
+
+    private ScrollContainer FindParentScrollContainer()
+    {
+        Node node = GetParent();
+        while (node != null)
+        {
+            if (node is ScrollContainer sc) return sc;
+            node = node.GetParent();
+        }
+        return null;
     }
 
     // ── autocomplete ──────────────────────────────────────────────────────────

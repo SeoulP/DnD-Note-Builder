@@ -46,9 +46,10 @@ public partial class ImageLightbox : CanvasLayer
         // ── image ─────────────────────────────────────────────────────────────
         _imageDisplay = new TextureRect
         {
-            StretchMode = TextureRect.StretchModeEnum.KeepAspect,
-            ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize,
-            MouseFilter = Control.MouseFilterEnum.Stop,
+            StretchMode             = TextureRect.StretchModeEnum.KeepAspect,
+            ExpandMode              = TextureRect.ExpandModeEnum.IgnoreSize,
+            MouseFilter             = Control.MouseFilterEnum.Stop,
+            MouseDefaultCursorShape = Control.CursorShape.Move,
         };
         _imageDisplay.GuiInput += OnImageInput;
         AddChild(_imageDisplay);

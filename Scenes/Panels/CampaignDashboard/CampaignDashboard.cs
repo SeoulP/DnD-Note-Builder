@@ -35,14 +35,16 @@ public partial class CampaignDashboard : Control
             ApplySidebarWidth();
     }
 
-    private const float DetailPadding = 8f;
+    private const float DetailPadding       = 8f;
+    private const float DetailFooterPadding = 24f;
 
     private void ApplySidebarWidth()
     {
         float width = Mathf.Min(Size.X * 0.25f, SidebarMaxWidth);
         GetNode<Control>("ScrollContainer").OffsetRight = width;
-        _detailPanel.OffsetLeft  =  width + DetailPadding;
-        _detailPanel.OffsetRight = -DetailPadding;
+        _detailPanel.OffsetLeft   =  width + DetailPadding;
+        _detailPanel.OffsetRight  = -DetailPadding;
+        _detailPanel.OffsetBottom = -DetailFooterPadding;
     }
 
     public override void _Ready()
@@ -169,7 +171,7 @@ public partial class CampaignDashboard : Control
         foreach (var session in _db.Sessions.GetAll(_campaignId))
         {
             int id = session.Id;
-            var btn = MakeSidebarButton($"#{session.Number:D3} – {session.Title}", SessionColor);
+            var btn = MakeSidebarButton(string.IsNullOrEmpty(session.Title) ? "Untitled Session" : session.Title, SessionColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("session", id);
             _sessionsContainer.AddChild(btn);

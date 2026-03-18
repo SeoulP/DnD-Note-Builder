@@ -23,7 +23,7 @@ public partial class SessionDetailPane : ScrollContainer
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
 
-        _titleInput.TextChanged    += title => { Save(); EmitSignal(SignalName.NameChanged, "session", _session?.Id ?? 0, $"#{_session?.Number ?? 0:D3} \u2013 {(string.IsNullOrEmpty(title) ? "New Session" : title)}"); };
+        _titleInput.TextChanged    += title => { Save(); EmitSignal(SignalName.NameChanged, "session", _session?.Id ?? 0, string.IsNullOrEmpty(title) ? "Untitled Session" : title); };
         _titleInput.FocusExited    += () => { if (_titleInput.Text == "") _titleInput.Text = "New Session"; };
         _playedOnInput.TextChanged += _ => Save();
         _notes.TextChanged += () => Save();

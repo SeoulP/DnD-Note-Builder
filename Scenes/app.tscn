@@ -32,10 +32,10 @@ layout_mode = 2
 [node name="MarginBox" type="MarginContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/margin_left = 200
-theme_override_constants/margin_top = 50
-theme_override_constants/margin_right = 200
-theme_override_constants/margin_bottom = 50
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="AppPanelContainer" type="BoxContainer" parent="VBoxContainer/MarginBox"]
 layout_mode = 2

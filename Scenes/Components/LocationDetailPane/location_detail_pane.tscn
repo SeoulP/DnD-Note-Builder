@@ -89,15 +89,6 @@ size_flags_horizontal = 3
 placeholder_text = "Describe this location..."
 wrap_mode = 1
 
-[node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 17
-text = "Notes"
-
-[node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("5_wikinotes")]
-layout_mode = 2
-size_flags_horizontal = 3
-
 [node name="FactionsLabel" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -159,6 +150,15 @@ layout_mode = 2
 text = "+ Add"
 
 [node name="SubLocationsContainer" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Notes"
+
+[node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("5_wikinotes")]
 layout_mode = 2
 size_flags_horizontal = 3
 

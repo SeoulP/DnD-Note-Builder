@@ -15,6 +15,23 @@ This document defines the standards, naming conventions, and architectural decis
 
 SQLite via `Microsoft.Data.Sqlite` (NuGet). The `.db` file is the entire save — portable by design. Cloud sync can be added later by syncing the file; no app code changes required.
 
+### Additive Migration Rule
+
+Once real user data exists in a table, schema changes to that table must be additive only. This is a hard rule, not a guideline.
+
+**Permitted:**
+- New columns with `DEFAULT` values
+- New join tables
+- New tables
+
+**Prohibited:**
+- Column drops
+- Column renames
+- Column type changes
+- Table drops or renames
+
+> **Why:** The `.db` file is the user's only save. A destructive migration that runs against real data cannot be undone. When in doubt, add — never remove.
+
 ### Schema Simulation via Table Naming
 
 SQLite does not support schemas. Logical grouping is enforced through a table name prefix convention. All table names are `snake_case`. Core system-agnostic tables use no prefix; system-specific tables use a system prefix.
@@ -166,6 +183,51 @@ The sidebar is user-configurable per campaign. Each section (Factions, Locations
 
 ---
 
+## Tab System Conventions
+
+The detail pane supports multiple open records simultaneously as tabs.
+
+### Core Rules
+
+- **One tab per record.** A record can only be open in one tab at a time.
+- **No duplicates.** Navigating to a record that already has a tab switches focus to that tab rather than opening a second instance. This applies regardless of whether the existing tab is pinned.
+
+### Navigation Priority
+
+When navigating to a record (via sidebar, wiki link, entity row, or + button):
+
+1. If the record is already open in any tab → switch to that tab
+2. Else if the current tab is unpinned → load into the current tab
+3. Else if another unpinned tab exists → load into the next unpinned tab
+4. Else → open a new tab
+
+### What Triggers Tab Navigation
+
+- Sidebar item click
+- `[[Wiki link]]` click in notes
+- `EntityRow` component click
+- `+` button (opens a blank tab explicitly)
+
+### Tab Bar
+
+- Scrolls horizontally — no cap on tab count
+- Auto-scrolls to keep the active tab visible
+- `+` button fixed at the end of the tab sequence
+
+### Closing Tabs
+
+- Middle-click anywhere on the tab
+- Hover the tab to reveal an `×` button
+
+### Pinning
+
+- Pinned tabs are never replaced by navigation
+- Navigation skips pinned tabs and follows the priority order above
+- Pin icon to be designed separately
+- Pinned and unpinned tabs must be visually distinct (icon state at minimum)
+
+---
+
 ## Future TODOs
 
 Tracked here so nothing gets lost. Items are added as decisions are made during development. Priority is approximate.
@@ -173,16 +235,30 @@ Tracked here so nothing gets lost. Items are added as decisions are made during 
 | Feature | Priority | Notes |
 |---------|----------|-------|
 | Campaign Settings — Type Editors | High | UI screens to manage seeded-but-editable types per campaign: Species, ItemType, LocationFactionRole, NpcRelationshipType, NpcStatus. These are nearly identical in structure — build a single generic screen with a tab or dropdown per type rather than five separate screens. |
+| Import / Export DB | High | Export = `File.Copy` the `.db` to a user-chosen location. Import = close SQLite connection, overwrite `.db`, reconnect. Natural home in the navbar. Show a confirmation prompt before import. |
+| Session detail pane | High | Needs: entity tagging panel (NPCs/locations/factions/quests present), inline stub creation, wiki link hover preview, quest status updates. Plan alongside the three-column layout — they are the same body of work. |
+| PC abilities / class features | High | New `abilities` table. Greenfield. Schema maps directly from the Obsidian frontmatter pattern (uses, uses_remaining, recovery, action, cost, effect). Linked to `player_character_id`. |
+| Tab system | Medium | One tab per record. Deduplication — navigating to an open record switches to its tab. Scrollable tab bar, pinning, middle-click / hover-× to close. New `TabBar` component integrated into `CampaignDashboard`. Full spec in Tab System Conventions section above. |
 | Sidebar Customisation | Medium | Per-campaign show/hide and reordering of sidebar sections. Drag-and-drop preferred; index-based input acceptable for v1. Store in `sidebar_config` (`CampaignId`, `SectionKey`, `IsVisible`, `SortIndex`). |
-| Copy / Paste Between Campaigns | Medium | Allow copying an entity (NPC, Item, Location, etc.) from one campaign to another. System-specific data (DnD5e mechanics, character sheet stats) must be dropped on copy if the destination campaign uses a different system. Show a clear warning before confirming: *"This item has DnD5e mechanics which will not be copied as the destination campaign uses a different system."* |
-| Wiki Link Typed Relationships | Low | Upgrade the wiki link editor so that links carry intent (e.g. `[[Phandalin\|lives in]]`). Parsed links create structured relationships. Possibly integrates with a small popup that pulls from seeded role tables. Phase 4 linking layer territory. |
+| Three-column layout | Medium | Sidebar / detail / wiki panel. Extend `ApplySidebarWidth()` to a three-way split. Start on `LocationDetailPane`, propagate. Wiki panel is read-only digest: faction affiliations, sub-locations, relationships, last-seen info. |
+| Quests entity | Medium | New `quests` + `quest_history` tables. Quest giver FK to `characters`, location FK, seeded status type (Active, Completed, Failed, On Hold). Quest History: `quest_id`, `session_id`, `note`. |
+| NPC–Location relationship | Medium | Design open. `Npc.cs` has no location fields. Options: (1) `HomeLocationId` FK + `LastSeenNote` freetext, (2) `npc_locations` join table with `location_id`, `session_id`, `note`. No decision yet — revisit when building the NPC detail pane update. |
+| NPC–NPC relationships UI | Medium | `NpcRelationship` model exists. Direction TBD — treat as directional by default. "Acquainted with" seed needs a one-time check-and-insert migration for existing campaigns. |
+| OS-native file picker | Medium | `DisplayServer.FileDialogShow()` added in Godot 4.3 — calls the OS dialog natively, no plugin needed. Check project Godot version first. |
+| Players section | Medium | Add Players accordion to `CampaignDashboard`. `PlayerCharacter.cs` model already exists. Basic display: name, species, class, level. |
+| Copy / Paste Between Campaigns | Medium | Allow copying an entity (NPC, Item, Location, etc.) from one campaign to another. System-specific data must be dropped on copy if the destination campaign uses a different system. Show a clear warning before confirming. |
+| Nested locations sidebar | Low | `GetTopLevel()` and `GetChildren()` already exist in `LocationRepository`. Switch `LoadLocations()` from `GetAll()` to recursive tree. Ship together with the parent picker in `LocationDetailPane`. |
+| Campaign cover image | Low | Add `Campaign` to the `EntityType` enum. `EntityImageRepository` and `ImageCarousel` already work generically — no other data layer changes needed. |
+| Godot Theme resource | Low | Investigate `.tres` theme resource before any visual overhaul. Centralises colours, fonts, and StyleBoxes. Change once, affects everything. |
+| Wiki Link Typed Relationships | Low | Upgrade the wiki link editor so links carry intent (e.g. `[[Phandalin\|lives in]]`). Parsed links create structured relationships. Phase 4 linking layer territory. |
 | DnD 5.5e ItemDefinition Fields | Phase 2 | Define the full `dnd5e_item_mechanics` column list (Rarity, RequiresAttunement, DamageDice, DamageType, Weight, BonusModifier, Properties). Deferred until the character sheet module is built. |
 | Markdown Rendering | Phase 6+ | Notes fields currently plain text. Render markdown in read mode. Godot has no built-in markdown renderer — requires a custom implementation or third-party solution. |
-| Portraits | Phase 6+ | Character and NPC portrait images. `PortraitPath` field already exists on `Character`. UI for uploading and displaying portraits is deferred. |
+| Portraits | Phase 6+ | `PortraitPath` field already exists on `Character`. UI for uploading and displaying portraits is deferred. Now superseded by the `EntityImage` carousel system — `PortraitPath` is legacy. |
 | Cloud Sync | Phase 6+ | Dropbox / Google Drive sync by syncing the `.db` file. No app code changes required — purely an onboarding / documentation task. |
+| History section | TBD | Concept only. May be covered by Quest History once built. If the pattern proves useful it can be generalised to NPCs, Locations, etc. |
 | `DateTime` Migration | TBD | `Campaign.DateStarted` and `Session.PlayedOn` are currently stored as ISO-8601 strings. Decide whether to migrate to `DateTime?` for proper sorting and filtering. |
 | Pathfinder Support | TBD | Add `pathfinder_character_sheet` and `pathfinder_item_mechanics` tables. No core model changes required — add `Campaign.System` value and new module folder. |
 
 ---
 
-*Generated March 2026 · TTRPG Companion App · Project Standards v1.0 · Living Document*
+*Generated March 2026 · TTRPG Companion App · Project Standards v1.1 · Living Document*
