@@ -19,8 +19,7 @@ public partial class LocationDetailPane : ScrollContainer
     [Export] private LineEdit         _nameInput;
     [Export] private LineEdit         _typeInput;
     [Export] private TextEdit         _descInput;
-    [Export] private TextEdit         _notesInput;
-    [Export] private RichTextLabel    _notesRenderer;
+    [Export] private WikiNotes _notes;
     [Export] private Button           _deleteButton;
     [Export] private VBoxContainer    _factionRowsContainer;
     [Export] private TypeOptionButton _factionSelect;
@@ -39,9 +38,8 @@ public partial class LocationDetailPane : ScrollContainer
         _nameInput.FocusExited  += () => { if (_nameInput.Text == "") _nameInput.Text = "New Location"; };
         _typeInput.TextChanged  += _ => Save();
         _descInput.TextChanged  += () => Save();
-        _notesInput.TextChanged += () => { Save(); RenderNotes(); };
-
-        _notesRenderer.MetaClicked += OnMetaClicked;
+        _notes.TextChanged += () => Save();
+        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
         _factionSelect.TypeSelected += id => _addFactionButton.Disabled = (id == -1);
         _factionSelect.TypeCreated  += id => EmitSignal(SignalName.EntityCreated, "faction", id);
@@ -113,8 +111,8 @@ public partial class LocationDetailPane : ScrollContainer
         _nameInput.Text  = string.IsNullOrEmpty(location.Name) ? "New Location" : location.Name;
         _typeInput.Text  = location.Type;
         _descInput.Text  = location.Description;
-        _notesInput.Text = location.Notes;
-        RenderNotes();
+        _notes.Setup(location.CampaignId, _db);
+        _notes.Text = location.Notes;
         _factionSelect.NoneText       = "Pick a faction";
         _factionSelect.AutoSelectOnAdd = true;
         _factionSelect.Setup(
@@ -217,20 +215,8 @@ public partial class LocationDetailPane : ScrollContainer
         _location.Name        = string.IsNullOrEmpty(_nameInput.Text) ? "New Location" : _nameInput.Text;
         _location.Type        = _typeInput.Text;
         _location.Description = _descInput.Text;
-        _location.Notes       = _notesInput.Text;
+        _location.Notes       = _notes.Text;
         _db.Locations.Edit(_location);
     }
 
-    private void RenderNotes()
-    {
-        if (_location == null) return;
-        _notesRenderer.Text = WikiLinkParser.Parse(_notesInput.Text, _db, _location.CampaignId);
-    }
-
-    private void OnMetaClicked(Variant meta)
-    {
-        var parts = meta.AsString().Split(':');
-        if (parts.Length == 2 && int.TryParse(parts[1], out int id))
-            EmitSignal(SignalName.NavigateTo, parts[0], id);
-    }
 }

@@ -16,8 +16,7 @@ public partial class ItemDetailPane : ScrollContainer
     [Export] private TypeOptionButton _typeInput;
     [Export] private CheckBox         _isUniqueInput;
     [Export] private TextEdit         _descInput;
-    [Export] private TextEdit         _notesInput;
-    [Export] private RichTextLabel    _notesRenderer;
+    [Export] private WikiNotes _notes;
     [Export] private Button           _deleteButton;
     [Export] private ImageCarousel    _imageCarousel;
 
@@ -30,9 +29,8 @@ public partial class ItemDetailPane : ScrollContainer
         _typeInput.TypeSelected  += _ => Save();
         _isUniqueInput.Toggled   += _ => Save();
         _descInput.TextChanged   += () => Save();
-        _notesInput.TextChanged  += () => { Save(); RenderNotes(); };
-
-        _notesRenderer.MetaClicked += OnMetaClicked;
+        _notes.TextChanged += () => Save();
+        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete Item");
         AddChild(_confirmDialog);
@@ -59,8 +57,8 @@ public partial class ItemDetailPane : ScrollContainer
         _nameInput.Text              = string.IsNullOrEmpty(item.Name) ? "New Item" : item.Name;
         _isUniqueInput.ButtonPressed = item.IsUnique;
         _descInput.Text              = item.Description;
-        _notesInput.Text             = item.Notes;
-        RenderNotes();
+        _notes.Setup(item.CampaignId, _db);
+        _notes.Text = item.Notes;
     }
 
     private void Save()
@@ -70,7 +68,7 @@ public partial class ItemDetailPane : ScrollContainer
         _item.TypeId      = _typeInput.SelectedId;
         _item.IsUnique    = _isUniqueInput.ButtonPressed;
         _item.Description = _descInput.Text;
-        _item.Notes       = _notesInput.Text;
+        _item.Notes       = _notes.Text;
         _db.Items.Edit(_item);
     }
 
@@ -84,16 +82,4 @@ public partial class ItemDetailPane : ScrollContainer
         }
     }
 
-    private void RenderNotes()
-    {
-        if (_item == null) return;
-        _notesRenderer.Text = WikiLinkParser.Parse(_notesInput.Text, _db, _item.CampaignId);
-    }
-
-    private void OnMetaClicked(Variant meta)
-    {
-        var parts = meta.AsString().Split(':');
-        if (parts.Length == 2 && int.TryParse(parts[1], out int id))
-            EmitSignal(SignalName.NavigateTo, parts[0], id);
-    }
 }

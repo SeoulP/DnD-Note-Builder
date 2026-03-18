@@ -27,8 +27,7 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private VBoxContainer     _factionRowsContainer;
     [Export] private Button            _deleteButton;
     [Export] private TextEdit          _descInput;
-    [Export] private TextEdit          _notesInput;
-    [Export] private RichTextLabel     _notesRenderer;
+    [Export] private WikiNotes _notes;
     [Export] private ImageCarousel     _imageCarousel;
 
     public override void _Ready()
@@ -43,9 +42,8 @@ public partial class NpcDetailPane : ScrollContainer
         _statusInput.TypeSelected       += _ => Save();
         _relationshipInput.TypeSelected += _ => Save();
         _descInput.TextChanged          += () => Save();
-        _notesInput.TextChanged         += () => { Save(); RenderNotes(); };
-
-        _notesRenderer.MetaClicked += OnMetaClicked;
+        _notes.TextChanged += () => Save();
+        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete NPC");
         AddChild(_confirmDialog);
@@ -112,8 +110,8 @@ public partial class NpcDetailPane : ScrollContainer
         LoadFactionRows();
 
         _descInput.Text  = npc.Description;
-        _notesInput.Text = npc.Notes;
-        RenderNotes();
+        _notes.Setup(npc.CampaignId, _db);
+        _notes.Text = npc.Notes;
     }
 
     private void PopulateFactionDropdown()
@@ -179,7 +177,7 @@ public partial class NpcDetailPane : ScrollContainer
         _npc.StatusId          = _statusInput.SelectedId;
         _npc.RelationshipTypeId = _relationshipInput.SelectedId;
         _npc.Description       = _descInput.Text;
-        _npc.Notes             = _notesInput.Text;
+        _npc.Notes             = _notes.Text;
         _db.Npcs.Edit(_npc);
     }
 
@@ -193,16 +191,4 @@ public partial class NpcDetailPane : ScrollContainer
         }
     }
 
-    private void RenderNotes()
-    {
-        if (_npc == null) return;
-        _notesRenderer.Text = WikiLinkParser.Parse(_notesInput.Text, _db, _npc.CampaignId);
-    }
-
-    private void OnMetaClicked(Variant meta)
-    {
-        var parts = meta.AsString().Split(':');
-        if (parts.Length == 2 && int.TryParse(parts[1], out int id))
-            EmitSignal(SignalName.NavigateTo, parts[0], id);
-    }
 }

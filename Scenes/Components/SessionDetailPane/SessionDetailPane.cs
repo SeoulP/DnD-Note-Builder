@@ -15,8 +15,7 @@ public partial class SessionDetailPane : ScrollContainer
     [Export] private Label         _numberLabel;
     [Export] private LineEdit      _titleInput;
     [Export] private LineEdit      _playedOnInput;
-    [Export] private TextEdit      _notesInput;
-    [Export] private RichTextLabel _notesRenderer;
+    [Export] private WikiNotes _notes;
     [Export] private Button        _deleteButton;
     [Export] private ImageCarousel _imageCarousel;
 
@@ -27,9 +26,8 @@ public partial class SessionDetailPane : ScrollContainer
         _titleInput.TextChanged    += title => { Save(); EmitSignal(SignalName.NameChanged, "session", _session?.Id ?? 0, $"#{_session?.Number ?? 0:D3} \u2013 {(string.IsNullOrEmpty(title) ? "New Session" : title)}"); };
         _titleInput.FocusExited    += () => { if (_titleInput.Text == "") _titleInput.Text = "New Session"; };
         _playedOnInput.TextChanged += _ => Save();
-        _notesInput.TextChanged    += () => { Save(); RenderNotes(); };
-
-        _notesRenderer.MetaClicked += OnMetaClicked;
+        _notes.TextChanged += () => Save();
+        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete Session");
         AddChild(_confirmDialog);
@@ -49,8 +47,8 @@ public partial class SessionDetailPane : ScrollContainer
         _numberLabel.Text   = $"Session #{session.Number:D3}";
         _titleInput.Text    = string.IsNullOrEmpty(session.Title) ? "New Session" : session.Title;
         _playedOnInput.Text = session.PlayedOn;
-        _notesInput.Text    = session.Notes;
-        RenderNotes();
+        _notes.Setup(session.CampaignId, _db);
+        _notes.Text = session.Notes;
     }
 
     public override void _UnhandledInput(InputEvent e)
@@ -68,20 +66,8 @@ public partial class SessionDetailPane : ScrollContainer
         if (_session == null) return;
         _session.Title    = string.IsNullOrEmpty(_titleInput.Text) ? "New Session" : _titleInput.Text;
         _session.PlayedOn = _playedOnInput.Text;
-        _session.Notes    = _notesInput.Text;
+        _session.Notes    = _notes.Text;
         _db.Sessions.Edit(_session);
     }
 
-    private void RenderNotes()
-    {
-        if (_session == null) return;
-        _notesRenderer.Text = WikiLinkParser.Parse(_notesInput.Text, _db, _session.CampaignId);
-    }
-
-    private void OnMetaClicked(Variant meta)
-    {
-        var parts = meta.AsString().Split(':');
-        if (parts.Length == 2 && int.TryParse(parts[1], out int id))
-            EmitSignal(SignalName.NavigateTo, parts[0], id);
-    }
 }

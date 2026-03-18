@@ -16,8 +16,7 @@ public partial class FactionDetailPane : ScrollContainer
     [Export] private LineEdit      _typeInput;
     [Export] private TextEdit      _descInput;
     [Export] private TextEdit      _goalsInput;
-    [Export] private TextEdit      _notesInput;
-    [Export] private RichTextLabel _notesRenderer;
+    [Export] private WikiNotes _notes;
     [Export] private Button        _deleteButton;
     [Export] private ImageCarousel _imageCarousel;
 
@@ -30,9 +29,8 @@ public partial class FactionDetailPane : ScrollContainer
         _typeInput.TextChanged += _ => Save();
         _descInput.TextChanged += () => Save();
         _goalsInput.TextChanged        += () => Save();
-        _notesInput.TextChanged        += () => { Save(); RenderNotes(); };
-
-        _notesRenderer.MetaClicked += OnMetaClicked;
+        _notes.TextChanged += () => Save();
+        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete Faction");
         AddChild(_confirmDialog);
@@ -53,8 +51,8 @@ public partial class FactionDetailPane : ScrollContainer
         _typeInput.Text = faction.Type;
         _descInput.Text = faction.Description;
         _goalsInput.Text        = faction.Goals;
-        _notesInput.Text        = faction.Notes;
-        RenderNotes();
+        _notes.Setup(faction.CampaignId, _db);
+        _notes.Text = faction.Notes;
     }
 
     public override void _UnhandledInput(InputEvent e)
@@ -74,20 +72,8 @@ public partial class FactionDetailPane : ScrollContainer
         _faction.Type        = _typeInput.Text;
         _faction.Description = _descInput.Text;
         _faction.Goals        = _goalsInput.Text;
-        _faction.Notes        = _notesInput.Text;
+        _faction.Notes        = _notes.Text;
         _db.Factions.Edit(_faction);
     }
 
-    private void RenderNotes()
-    {
-        if (_faction == null) return;
-        _notesRenderer.Text = WikiLinkParser.Parse(_notesInput.Text, _db, _faction.CampaignId);
-    }
-
-    private void OnMetaClicked(Variant meta)
-    {
-        var parts = meta.AsString().Split(':');
-        if (parts.Length == 2 && int.TryParse(parts[1], out int id))
-            EmitSignal(SignalName.NavigateTo, parts[0], id);
-    }
 }
