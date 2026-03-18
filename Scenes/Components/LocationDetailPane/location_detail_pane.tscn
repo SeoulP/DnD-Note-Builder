@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="3_typeopt"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 
-[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
+[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_subLocationSelect", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -22,6 +22,7 @@ _factionRowsContainer  = NodePath("VBoxContainer/ContentHBox/FieldsLeft/Factions
 _factionSelect         = NodePath("VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/FactionSelect")
 _roleSelect            = NodePath("VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/RoleSelect")
 _addFactionButton      = NodePath("VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/AddFactionButton")
+_subLocationSelect     = NodePath("VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow/SubLocationSelect")
 _addSubLocationButton  = NodePath("VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow/AddSubLocationButton")
 _subLocationsContainer = NodePath("VBoxContainer/ContentHBox/FieldsLeft/SubLocationsContainer")
 _imageCarousel         = NodePath("VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
@@ -118,10 +119,10 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="FactionSelect" type="OptionButton" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow"]
+[node name="FactionSelect" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-clip_text = true
+script = ExtResource("3_typeopt")
 
 [node name="RoleSelect" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
@@ -139,11 +140,18 @@ theme_override_constants/separation = 2
 
 [node name="SubLocationsRow" type="HBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
+theme_override_constants/separation = 4
 
 [node name="SubLocationsLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Sub-locations"
+vertical_alignment = 1
+
+[node name="SubLocationSelect" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Sub-locations"
+script = ExtResource("3_typeopt")
 
 [node name="AddSubLocationButton" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow"]
 layout_mode = 2

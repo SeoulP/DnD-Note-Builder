@@ -288,7 +288,12 @@ public partial class CampaignDashboard : Control
                 locPane.NavigateTo      += ShowDetailPane;
                 locPane.NameChanged     += OnNameChanged;
                 locPane.Deleted         += OnEntityDeleted;
-                locPane.SubLocationAdded += (parentId, newId) => { LoadLocations(); ShowDetailPane("location", newId); };
+                locPane.SubLocationAdded += (_, __)     => LoadLocations();
+                locPane.EntityCreated    += (type, id) =>
+                {
+                    if (type == "faction")  LoadFactions();
+                    if (type == "location") LoadLocations();
+                };
                 locPane.Load(location);
                 break;
 

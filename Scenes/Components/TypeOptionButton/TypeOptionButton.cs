@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 /// <summary>
-/// A Button that, when clicked, shows a popup listing available types.
-/// Each row has a hover-reveal × delete button. A "New type..." form sits at the bottom.
+/// A Button that, when clicked, shows a searchable popup listing available types.
+/// Type to filter, hover-reveal × to delete, "New type..." form at the bottom.
 /// Replaces OptionButton for all seeded-type dropdowns (Species, NPC Status, etc.).
 /// </summary>
 public partial class TypeOptionButton : Button
@@ -23,7 +24,7 @@ public partial class TypeOptionButton : Button
     private int                _pendingDeleteId;
     private string             _pendingDeleteName;
 
-    public string NoneText       { get; set; } = "— None —";
+    public string NoneText        { get; set; } = "— None —";
     public bool   AutoSelectOnAdd { get; set; } = false;
 
     public int? SelectedId => _selectedId;
@@ -90,7 +91,17 @@ public partial class TypeOptionButton : Button
         outer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         outer.AddThemeConstantOverride("separation", 0);
 
-        // ── scrollable list ──────────────────────────────────────────────────
+        // ── search input ──────────────────────────────────────────────────────
+        var searchInput = new LineEdit
+        {
+            PlaceholderText     = "Search...",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            ClearButtonEnabled  = true,
+        };
+        outer.AddChild(searchInput);
+        outer.AddChild(new HSeparator());
+
+        // ── scrollable list ───────────────────────────────────────────────────
         var scroll = new ScrollContainer();
         scroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         scroll.SizeFlagsVertical   = SizeFlags.ExpandFill;
@@ -102,15 +113,23 @@ public partial class TypeOptionButton : Button
         scroll.AddChild(vbox);
         outer.AddChild(scroll);
 
-        BuildTypeRows(vbox, popup);
+        BuildTypeRows(vbox, popup, _items);
 
-        // ── add-new form ─────────────────────────────────────────────────────
+        searchInput.TextChanged += text =>
+        {
+            var filtered = string.IsNullOrEmpty(text.Trim())
+                ? _items
+                : _items.Where(i => FuzzyMatch(text.Trim(), i.Name)).ToList();
+            BuildTypeRows(vbox, popup, filtered);
+        };
+
+        // ── add-new form ──────────────────────────────────────────────────────
         outer.AddChild(new HSeparator());
 
         var addRow    = new HBoxContainer();
         var nameInput = new LineEdit
         {
-            PlaceholderText     = "New type...",
+            PlaceholderText     = "New...",
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
         };
         var addBtn = new Button { Text = "+ Add" };
@@ -122,9 +141,8 @@ public partial class TypeOptionButton : Button
             _addItem?.Invoke(typeName);
             _items         = _getAll?.Invoke() ?? _items;
             nameInput.Text = "";
+            searchInput.Text = "";
             var created = _items.Find(i => i.Name == typeName);
-            if (created != default)
-                EmitSignal(SignalName.TypeCreated, created.Id);
             if (AutoSelectOnAdd)
             {
                 if (created != default)
@@ -134,10 +152,14 @@ public partial class TypeOptionButton : Button
                     EmitSignal(SignalName.TypeSelected, created.Id);
                 }
                 popup.Hide();
+                if (created != default)
+                    EmitSignal(SignalName.TypeCreated, created.Id);
                 return;
             }
+            if (created != default)
+                EmitSignal(SignalName.TypeCreated, created.Id);
             // Refresh the list in-place — popup stays open
-            BuildTypeRows(vbox, popup);
+            BuildTypeRows(vbox, popup, _items);
             nameInput.GrabFocus();
         };
         addBtn.Pressed          += doAdd;
@@ -162,15 +184,17 @@ public partial class TypeOptionButton : Button
         popup.PopupHide += () => popup.QueueFree();
         AddChild(popup);
 
-        // Position below this button; height fits visible items + add row
+        // Position below this button; height fits search bar + visible items + add row
         var rect      = GetGlobalRect();
         int popWidth  = Mathf.Max((int)rect.Size.X, 200);
         int listRows  = Math.Min(_items.Count + 1, 8);
-        int popHeight = listRows * 28 + 40;
+        int popHeight = listRows * 28 + 40 + 36; // +36 for search bar
         popup.Popup(new Rect2I((int)rect.Position.X, (int)rect.Position.Y + (int)rect.Size.Y, popWidth, popHeight));
+
+        searchInput.CallDeferred(LineEdit.MethodName.GrabFocus);
     }
 
-    private void BuildTypeRows(VBoxContainer vbox, PopupPanel popup)
+    private void BuildTypeRows(VBoxContainer vbox, PopupPanel popup, List<(int Id, string Name)> items)
     {
         foreach (Node child in vbox.GetChildren())
             child.QueueFree();
@@ -186,7 +210,7 @@ public partial class TypeOptionButton : Button
         };
         vbox.AddChild(noneBtn);
 
-        foreach (var (id, name) in _items)
+        foreach (var (id, name) in items)
         {
             int    cId   = id;
             string cName = name;
@@ -227,6 +251,54 @@ public partial class TypeOptionButton : Button
             vbox.AddChild(panel);
         }
     }
+
+    // ── fuzzy matching ────────────────────────────────────────────────────────
+
+    private const float FuzzyThreshold = 0.7f;
+
+    private static bool FuzzyMatch(string query, string target)
+    {
+        query  = query.ToLowerInvariant();
+        target = target.ToLowerInvariant();
+
+        if (target.Contains(query)) return true;
+
+        int qLen = query.Length;
+        int tLen = target.Length;
+        if (qLen <= tLen)
+        {
+            for (int start = 0; start <= tLen - qLen; start++)
+            {
+                if (Similarity(query, target.Substring(start, qLen)) >= FuzzyThreshold)
+                    return true;
+            }
+        }
+        else if (Similarity(query, target) >= FuzzyThreshold) return true;
+
+        return false;
+    }
+
+    private static float Similarity(string a, string b)
+    {
+        int dist = LevenshteinDistance(a, b);
+        return 1f - (float)dist / Math.Max(a.Length, b.Length);
+    }
+
+    private static int LevenshteinDistance(string a, string b)
+    {
+        int aLen = a.Length, bLen = b.Length;
+        var dp = new int[aLen + 1, bLen + 1];
+        for (int i = 0; i <= aLen; i++) dp[i, 0] = i;
+        for (int j = 0; j <= bLen; j++) dp[0, j] = j;
+        for (int i = 1; i <= aLen; i++)
+            for (int j = 1; j <= bLen; j++)
+                dp[i, j] = a[i - 1] == b[j - 1]
+                    ? dp[i - 1, j - 1]
+                    : 1 + Math.Min(dp[i - 1, j - 1], Math.Min(dp[i - 1, j], dp[i, j - 1]));
+        return dp[aLen, bLen];
+    }
+
+    // ── styles ────────────────────────────────────────────────────────────────
 
     private static readonly StyleBoxFlat RowHoverBox    = MakeRowHoverBox();
     private static readonly StyleBoxFlat DeleteHoverBox = MakeDeleteHoverBox();

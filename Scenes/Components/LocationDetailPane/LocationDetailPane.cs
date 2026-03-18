@@ -14,6 +14,7 @@ public partial class LocationDetailPane : ScrollContainer
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
     [Signal] public delegate void SubLocationAddedEventHandler(int parentLocationId, int newLocationId);
+    [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit         _nameInput;
     [Export] private LineEdit         _typeInput;
@@ -22,9 +23,10 @@ public partial class LocationDetailPane : ScrollContainer
     [Export] private RichTextLabel    _notesRenderer;
     [Export] private Button           _deleteButton;
     [Export] private VBoxContainer    _factionRowsContainer;
-    [Export] private OptionButton     _factionSelect;
+    [Export] private TypeOptionButton _factionSelect;
     [Export] private TypeOptionButton _roleSelect;
     [Export] private Button           _addFactionButton;
+    [Export] private TypeOptionButton _subLocationSelect;
     [Export] private Button           _addSubLocationButton;
     [Export] private VBoxContainer    _subLocationsContainer;
     [Export] private ImageCarousel    _imageCarousel;
@@ -41,18 +43,19 @@ public partial class LocationDetailPane : ScrollContainer
 
         _notesRenderer.MetaClicked += OnMetaClicked;
 
-        _factionSelect.ItemSelected += _ => _addFactionButton.Disabled = _factionSelect.GetSelectedId() == -1;
+        _factionSelect.TypeSelected += id => _addFactionButton.Disabled = (id == -1);
+        _factionSelect.TypeCreated  += id => EmitSignal(SignalName.EntityCreated, "faction", id);
 
         _addFactionButton.Pressed += () =>
         {
-            if (_location == null || _factionSelect.GetSelectedId() == -1) return;
-            int  factionId = _factionSelect.GetSelectedId();
+            if (_location == null || !_factionSelect.SelectedId.HasValue) return;
+            int  factionId = _factionSelect.SelectedId.Value;
             int? roleId    = _roleSelect.SelectedId;
 
             _db.Locations.AddFaction(_location.Id, factionId, roleId);
             _location.Factions.Add(new LocationFaction { LocationId = _location.Id, FactionId = factionId, RoleId = roleId });
 
-            PopulateFactionDropdowns();
+            _factionSelect.SelectById(null);
             LoadFactionRows();
         };
 
@@ -64,48 +67,33 @@ public partial class LocationDetailPane : ScrollContainer
             DialogHelper.Show(_confirmDialog, $"Delete \"{_location?.Name}\"? This cannot be undone.");
         };
 
+        _subLocationSelect.TypeSelected += id => _addSubLocationButton.Disabled = (id == -1);
+        _subLocationSelect.TypeCreated  += id =>
+        {
+            EmitSignal(SignalName.EntityCreated, "location", id);
+            if (_location == null) return;
+            var loc = _db.Locations.Get(id);
+            if (loc == null) return;
+            loc.ParentLocationId = _location.Id;
+            _db.Locations.Edit(loc);
+            _location.SubLocations.Add(loc);
+            _subLocationSelect.SelectById(null);
+            LoadSubLocations();
+            EmitSignal(SignalName.SubLocationAdded, _location.Id, id);
+        };
+
         _addSubLocationButton.Pressed += () =>
         {
-            if (_location == null) return;
-
-            var popup = new PopupMenu();
-            popup.MaxSize = new Vector2I(0, 120);
-            AddChild(popup);
-            popup.AddItem("New...", 0);
-
-            foreach (var loc in _db.Locations.GetAll(_location.CampaignId))
-            {
-                if (loc.Id == _location.Id) continue;
-                if (loc.ParentLocationId == _location.Id) continue;
-                popup.AddItem(loc.Name, loc.Id);
-            }
-
-            popup.IdPressed += (id) =>
-            {
-                if (id == 0)
-                {
-                    var child = new Location { CampaignId = _location.CampaignId, Name = "New Location", ParentLocationId = _location.Id };
-                    int newId = _db.Locations.Add(child);
-                    EmitSignal(SignalName.SubLocationAdded, _location.Id, newId);
-                }
-                else
-                {
-                    var existing = _db.Locations.Get((int)id);
-                    if (existing != null)
-                    {
-                        existing.ParentLocationId = _location.Id;
-                        _db.Locations.Edit(existing);
-                        EmitSignal(SignalName.SubLocationAdded, _location.Id, _location.Id);
-                    }
-                }
-                popup.QueueFree();
-            };
-
-            var btnRect = _addSubLocationButton.GetGlobalRect();
-            int x      = (int)btnRect.Position.X;
-            int offset = Mathf.Min((int)btnRect.Size.Y * popup.ItemCount, 120);
-            int y      = Mathf.Max(0, (int)btnRect.Position.Y - offset);
-            popup.Popup(new Rect2I(x, y, (int)btnRect.Size.X, 120));
+            if (_location == null || !_subLocationSelect.SelectedId.HasValue) return;
+            int subId    = _subLocationSelect.SelectedId.Value;
+            var existing = _db.Locations.Get(subId);
+            if (existing == null) return;
+            existing.ParentLocationId = _location.Id;
+            _db.Locations.Edit(existing);
+            _location.SubLocations.Add(existing);
+            _subLocationSelect.SelectById(null);
+            LoadSubLocations();
+            EmitSignal(SignalName.SubLocationAdded, _location.Id, subId);
         };
     }
 
@@ -127,7 +115,30 @@ public partial class LocationDetailPane : ScrollContainer
         _descInput.Text  = location.Description;
         _notesInput.Text = location.Notes;
         RenderNotes();
-        PopulateFactionDropdowns();
+        _factionSelect.NoneText       = "Pick a faction";
+        _factionSelect.AutoSelectOnAdd = true;
+        _factionSelect.Setup(
+            () => _db.Factions.GetAll(_location.CampaignId)
+                      .Where(f => !_location.Factions.Any(lf => lf.FactionId == f.Id))
+                      .Select(f => (f.Id, f.Name))
+                      .ToList(),
+            name => _db.Factions.Add(new Faction { CampaignId = _location.CampaignId, Name = name }),
+            id   => _db.Factions.Delete(id));
+        _factionSelect.SelectById(null);
+        _subLocationSelect.NoneText       = "Pick a sub-location";
+        _subLocationSelect.AutoSelectOnAdd = true;
+        _subLocationSelect.Setup(
+            () => _db.Locations.GetAll(_location.CampaignId)
+                      .Where(l => l.Id != _location.Id && l.ParentLocationId != _location.Id)
+                      .Select(l => (l.Id, l.Name))
+                      .ToList(),
+            name => _db.Locations.Add(new Location { CampaignId = _location.CampaignId, Name = name }),
+            id =>
+            {
+                var loc = _db.Locations.Get(id);
+                if (loc != null) { loc.ParentLocationId = null; _db.Locations.Edit(loc); }
+            });
+        _subLocationSelect.SelectById(null);
         LoadFactionRows();
         LoadSubLocations();
     }
@@ -157,22 +168,6 @@ public partial class LocationDetailPane : ScrollContainer
         }
     }
 
-    private void PopulateFactionDropdowns()
-    {
-        var assignedIds   = new HashSet<int>(_location.Factions.Select(f => f.FactionId));
-        var available     = _db.Factions.GetAll(_location.CampaignId)
-                             .Where(f => !assignedIds.Contains(f.Id))
-                             .ToList();
-        bool hasAvailable = available.Count > 0;
-
-        _factionSelect.Clear();
-        _factionSelect.AddItem("Pick a faction", -1);
-        foreach (var f in available) _factionSelect.AddItem(f.Name, f.Id);
-        _factionSelect.Disabled = !hasAvailable;
-
-        _roleSelect.Disabled      = !hasAvailable;
-        _addFactionButton.Disabled = true;
-    }
 
     private void LoadFactionRows()
     {
@@ -199,7 +194,7 @@ public partial class LocationDetailPane : ScrollContainer
             {
                 _db.Locations.RemoveFaction(_location.Id, capturedFactionId);
                 _location.Factions.RemoveAll(f => f.FactionId == capturedFactionId);
-                PopulateFactionDropdowns();
+                _factionSelect.SelectById(null);
                 LoadFactionRows();
             };
             _factionRowsContainer.AddChild(row);
