@@ -5,8 +5,9 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/FactionDetailPane/faction_detail_pane.tscn" id="2_facdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/LocationDetailPane/location_detail_pane.tscn" id="3_locdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/SessionDetailPane/session_detail_pane.tscn" id="4_sesdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ItemDetailPane/item_detail_pane.tscn" id="5_itemdet"]
 
-[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_detailPanel")]
+[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_detailPanel")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -18,15 +19,18 @@ _addNpcsButton = NodePath("ScrollContainer/VBoxContainer/NpcsPanel/VBoxContainer
 _addFactionButton = NodePath("ScrollContainer/VBoxContainer/FactionsPanel/VBoxContainer/AddFactionButton")
 _addLocationsButton = NodePath("ScrollContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer/AddLocationsButton")
 _addSessionsButton = NodePath("ScrollContainer/VBoxContainer/SessionsPanel/VBoxContainer/AddSessionsButton")
+_addItemsButton = NodePath("ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer/AddItemsButton")
 _npcsContainer = NodePath("ScrollContainer/VBoxContainer/NpcsPanel/VBoxContainer")
 _factionsContainer = NodePath("ScrollContainer/VBoxContainer/FactionsPanel/VBoxContainer")
 _locationsContainer = NodePath("ScrollContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer")
 _sessionsContainer = NodePath("ScrollContainer/VBoxContainer/SessionsPanel/VBoxContainer")
+_itemsContainer = NodePath("ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer")
 _detailPanel = NodePath("DetailPanel")
 _npcDetailPaneScene = ExtResource("1_npcdet")
 _factionDetailPaneScene = ExtResource("2_facdet")
 _locationDetailPaneScene = ExtResource("3_locdet")
 _sessionDetailPaneScene = ExtResource("4_sesdet")
+_itemDetailPaneScene = ExtResource("5_itemdet")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=620386472]
 layout_mode = 1
@@ -88,6 +92,19 @@ visible = false
 layout_mode = 2
 
 [node name="AddSessionsButton" type="Button" parent="ScrollContainer/VBoxContainer/SessionsPanel/VBoxContainer" unique_id=1939495576]
+layout_mode = 2
+text = "New +"
+
+[node name="ItemsPanel" type="FoldableContainer" parent="ScrollContainer/VBoxContainer" unique_id=111111101]
+layout_mode = 2
+folded = true
+title = "Items"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/ItemsPanel" unique_id=111111102]
+visible = false
+layout_mode = 2
+
+[node name="AddItemsButton" type="Button" parent="ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer" unique_id=111111103]
 layout_mode = 2
 text = "New +"
 

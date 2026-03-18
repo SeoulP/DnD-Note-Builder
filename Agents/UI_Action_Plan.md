@@ -238,4 +238,10 @@ Items will need a sidebar section. Follow the same pattern as the Locations or N
 
 ---
 
+## Future TODOs
+
+- **Remember last opened file per campaign.** When reopening a campaign, restore the last viewed entity (type + id) so the detail pane is shown immediately rather than landing on a bare sidebar.
+
+---
+
 *Generated March 2026 · TTRPG Companion App · Post-Model-Refactor UI Plan · v1.0*

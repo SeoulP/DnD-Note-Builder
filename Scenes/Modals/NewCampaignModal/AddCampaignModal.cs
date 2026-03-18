@@ -91,6 +91,7 @@ public partial class AddCampaignModal : Window
         _databaseService.LocationFactionRoles.SeedDefaults(newId);
         _databaseService.NpcRelationshipTypes.SeedDefaults(newId);
         _databaseService.NpcStatuses         .SeedDefaults(newId);
+        _databaseService.NpcFactionRoles     .SeedDefaults(newId);
         _databaseService.ItemTypes           .SeedDefaults(newId);
         EmitSignal(SignalName.CampaignCreated, newId);
         Hide();

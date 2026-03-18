@@ -53,11 +53,22 @@ namespace DndBuilder.Core.Repositories
             // character_factions — replaces npc_factions; keyed on character.id
             cmd = _conn.CreateCommand();
             cmd.CommandText = @"CREATE TABLE IF NOT EXISTS character_factions (
-                character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-                faction_id   INTEGER NOT NULL REFERENCES factions(id)   ON DELETE CASCADE,
+                character_id INTEGER NOT NULL REFERENCES characters(id)    ON DELETE CASCADE,
+                faction_id   INTEGER NOT NULL REFERENCES factions(id)      ON DELETE CASCADE,
+                role_id      INTEGER          REFERENCES npc_faction_roles(id) ON DELETE SET NULL,
                 PRIMARY KEY (character_id, faction_id)
             )";
             cmd.ExecuteNonQuery();
+
+            // Migration: add role_id to existing character_factions tables
+            var hasRoleId = _conn.CreateCommand();
+            hasRoleId.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_factions') WHERE name = 'role_id'";
+            if ((long)hasRoleId.ExecuteScalar() == 0)
+            {
+                var alter = _conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE character_factions ADD COLUMN role_id INTEGER REFERENCES npc_faction_roles(id) ON DELETE SET NULL";
+                alter.ExecuteNonQuery();
+            }
         }
 
         private const string SelectColumns = @"
@@ -80,7 +91,10 @@ namespace DndBuilder.Core.Repositories
 
             var factionMap = LoadFactionMap(campaignId);
             foreach (var npc in list)
-                npc.FactionIds = factionMap.TryGetValue(npc.Id, out var fids) ? fids : new List<int>();
+            {
+                npc.Factions   = factionMap.TryGetValue(npc.Id, out var facs) ? facs : new List<DndBuilder.Core.Models.NpcFaction>();
+                npc.FactionIds = npc.Factions.ConvertAll(f => f.FactionId);
+            }
 
             return list;
         }
@@ -94,7 +108,8 @@ namespace DndBuilder.Core.Repositories
             if (!reader.Read()) return null;
             var npc = Map(reader);
             reader.Close();
-            npc.FactionIds = GetFactionIds(id);
+            npc.Factions   = GetFactions(id);
+            npc.FactionIds = npc.Factions.ConvertAll(f => f.FactionId);
             return npc;
         }
 
@@ -108,7 +123,11 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@fid", factionId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read()) list.Add(Map(reader));
-            foreach (var npc in list) npc.FactionIds = GetFactionIds(npc.Id);
+            foreach (var npc in list)
+            {
+                npc.Factions   = GetFactions(npc.Id);
+                npc.FactionIds = npc.Factions.ConvertAll(f => f.FactionId);
+            }
             return list;
         }
 
@@ -134,7 +153,7 @@ namespace DndBuilder.Core.Repositories
             BindNpc(cmd, npc);
             cmd.ExecuteNonQuery();
 
-            SetFactions(newId, npc.FactionIds);
+            SetFactions(newId, npc.Factions);
             return newId;
         }
 
@@ -159,7 +178,7 @@ namespace DndBuilder.Core.Repositories
             BindNpc(cmd, npc);
             cmd.ExecuteNonQuery();
 
-            SetFactions(npc.Id, npc.FactionIds);
+            SetFactions(npc.Id, npc.Factions);
         }
 
         public void Delete(int id)
@@ -171,12 +190,13 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        public void AddFaction(int characterId, int factionId)
+        public void AddFaction(int characterId, int factionId, int? roleId = null)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = "INSERT OR IGNORE INTO character_factions (character_id, faction_id) VALUES (@cid, @fid)";
+            cmd.CommandText = "INSERT OR IGNORE INTO character_factions (character_id, faction_id, role_id) VALUES (@cid, @fid, @rid)";
             cmd.Parameters.AddWithValue("@cid", characterId);
             cmd.Parameters.AddWithValue("@fid", factionId);
+            cmd.Parameters.AddWithValue("@rid", roleId.HasValue ? roleId.Value : DBNull.Value);
             cmd.ExecuteNonQuery();
         }
 
@@ -189,39 +209,46 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        private void SetFactions(int characterId, List<int> factionIds)
+        private void SetFactions(int characterId, List<DndBuilder.Core.Models.NpcFaction> factions)
         {
             var del = _conn.CreateCommand();
             del.CommandText = "DELETE FROM character_factions WHERE character_id = @cid";
             del.Parameters.AddWithValue("@cid", characterId);
             del.ExecuteNonQuery();
 
-            foreach (var fid in factionIds)
+            foreach (var f in factions)
             {
                 var ins = _conn.CreateCommand();
-                ins.CommandText = "INSERT INTO character_factions (character_id, faction_id) VALUES (@cid, @fid)";
+                ins.CommandText = "INSERT INTO character_factions (character_id, faction_id, role_id) VALUES (@cid, @fid, @rid)";
                 ins.Parameters.AddWithValue("@cid", characterId);
-                ins.Parameters.AddWithValue("@fid", fid);
+                ins.Parameters.AddWithValue("@fid", f.FactionId);
+                ins.Parameters.AddWithValue("@rid", f.RoleId.HasValue ? f.RoleId.Value : DBNull.Value);
                 ins.ExecuteNonQuery();
             }
         }
 
-        private List<int> GetFactionIds(int characterId)
+        private List<DndBuilder.Core.Models.NpcFaction> GetFactions(int characterId)
         {
-            var list = new List<int>();
+            var list = new List<DndBuilder.Core.Models.NpcFaction>();
             var cmd  = _conn.CreateCommand();
-            cmd.CommandText = "SELECT faction_id FROM character_factions WHERE character_id = @cid";
+            cmd.CommandText = "SELECT character_id, faction_id, role_id FROM character_factions WHERE character_id = @cid";
             cmd.Parameters.AddWithValue("@cid", characterId);
             using var reader = cmd.ExecuteReader();
-            while (reader.Read()) list.Add(reader.GetInt32(0));
+            while (reader.Read())
+                list.Add(new DndBuilder.Core.Models.NpcFaction
+                {
+                    NpcId     = reader.GetInt32(0),
+                    FactionId = reader.GetInt32(1),
+                    RoleId    = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                });
             return list;
         }
 
-        private Dictionary<int, List<int>> LoadFactionMap(int campaignId)
+        private Dictionary<int, List<DndBuilder.Core.Models.NpcFaction>> LoadFactionMap(int campaignId)
         {
-            var map = new Dictionary<int, List<int>>();
+            var map = new Dictionary<int, List<DndBuilder.Core.Models.NpcFaction>>();
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = @"SELECT cf.character_id, cf.faction_id
+            cmd.CommandText = @"SELECT cf.character_id, cf.faction_id, cf.role_id
                                 FROM character_factions cf
                                 JOIN characters c ON c.id = cf.character_id
                                 WHERE c.campaign_id = @cid";
@@ -230,9 +257,13 @@ namespace DndBuilder.Core.Repositories
             while (reader.Read())
             {
                 int charId = reader.GetInt32(0);
-                int facId  = reader.GetInt32(1);
-                if (!map.ContainsKey(charId)) map[charId] = new List<int>();
-                map[charId].Add(facId);
+                if (!map.ContainsKey(charId)) map[charId] = new List<DndBuilder.Core.Models.NpcFaction>();
+                map[charId].Add(new DndBuilder.Core.Models.NpcFaction
+                {
+                    NpcId     = charId,
+                    FactionId = reader.GetInt32(1),
+                    RoleId    = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                });
             }
             return map;
         }

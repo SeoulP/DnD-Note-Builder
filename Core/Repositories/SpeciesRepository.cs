@@ -34,9 +34,19 @@ namespace DndBuilder.Core.Repositories
             cmd.CommandText = @"CREATE TABLE IF NOT EXISTS species (
                 id          INTEGER PRIMARY KEY,
                 campaign_id INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
-                name        TEXT    NOT NULL
+                name        TEXT    NOT NULL,
+                inactive    INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
+
+            var hasInactive = _conn.CreateCommand();
+            hasInactive.CommandText = "SELECT COUNT(*) FROM pragma_table_info('species') WHERE name = 'inactive'";
+            if ((long)hasInactive.ExecuteScalar() == 0)
+            {
+                var alter = _conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE species ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
         }
 
         public void SeedDefaults(int campaignId)
@@ -44,7 +54,9 @@ namespace DndBuilder.Core.Repositories
             foreach (var name in Defaults)
             {
                 var cmd = _conn.CreateCommand();
-                cmd.CommandText = "INSERT INTO species (campaign_id, name) VALUES (@cid, @name)";
+                cmd.CommandText = @"INSERT INTO species (campaign_id, name)
+                    SELECT @cid, @name WHERE NOT EXISTS
+                        (SELECT 1 FROM species WHERE campaign_id = @cid AND name = @name)";
                 cmd.Parameters.AddWithValue("@cid",  campaignId);
                 cmd.Parameters.AddWithValue("@name", name);
                 cmd.ExecuteNonQuery();
@@ -55,7 +67,7 @@ namespace DndBuilder.Core.Repositories
         {
             var list = new List<Species>();
             var cmd  = _conn.CreateCommand();
-            cmd.CommandText = "SELECT id, campaign_id, name FROM species WHERE campaign_id = @cid ORDER BY name ASC";
+            cmd.CommandText = "SELECT id, campaign_id, name FROM species WHERE campaign_id = @cid AND inactive = 0 ORDER BY name ASC";
             cmd.Parameters.AddWithValue("@cid", campaignId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -75,7 +87,7 @@ namespace DndBuilder.Core.Repositories
         public void Delete(int id)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = "DELETE FROM species WHERE id = @id";
+            cmd.CommandText = "UPDATE species SET inactive = 1 WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", id);
             cmd.ExecuteNonQuery();
         }

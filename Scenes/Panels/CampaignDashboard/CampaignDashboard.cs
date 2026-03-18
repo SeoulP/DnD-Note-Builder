@@ -10,11 +10,13 @@ public partial class CampaignDashboard : Control
     [Export] private Button _addFactionButton;
     [Export] private Button _addLocationsButton;
     [Export] private Button _addSessionsButton;
+    [Export] private Button _addItemsButton;
 
     [Export] private VBoxContainer _npcsContainer;
     [Export] private VBoxContainer _factionsContainer;
     [Export] private VBoxContainer _locationsContainer;
     [Export] private VBoxContainer _sessionsContainer;
+    [Export] private VBoxContainer _itemsContainer;
 
     [Export] private Control _detailPanel;
 
@@ -22,6 +24,7 @@ public partial class CampaignDashboard : Control
     [Export] private PackedScene _factionDetailPaneScene;
     [Export] private PackedScene _locationDetailPaneScene;
     [Export] private PackedScene _sessionDetailPaneScene;
+    [Export] private PackedScene _itemDetailPaneScene;
 
     public override void _Ready()
     {
@@ -56,16 +59,25 @@ public partial class CampaignDashboard : Control
             LoadSessions();
             ShowDetailPane("session", id);
         };
+        _addItemsButton.Pressed += () =>
+        {
+            var item = new Item { CampaignId = _campaignId, Name = "New Item" };
+            int id = _db.Items.Add(item);
+            LoadItems();
+            ShowDetailPane("item", id);
+        };
 
         StyleAddButton(_addNpcsButton,      NpcColor);
         StyleAddButton(_addFactionButton,   FactionColor);
         StyleAddButton(_addLocationsButton, LocationColor);
         StyleAddButton(_addSessionsButton,  SessionColor);
+        StyleAddButton(_addItemsButton,     ItemColor);
 
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NpcsPanel"),                  NpcColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/FactionsPanel"),              FactionColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), LocationColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              SessionColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/ItemsPanel"),                 ItemColor);
 
         LoadAll();
     }
@@ -81,12 +93,14 @@ public partial class CampaignDashboard : Control
         LoadFactions();
         LoadLocations();
         LoadSessions();
+        LoadItems();
     }
 
     private static readonly Color NpcColor      = new Color(0.53f, 0.72f, 0.90f); // pastel blue
     private static readonly Color FactionColor  = new Color(0.90f, 0.58f, 0.58f); // pastel red
     private static readonly Color LocationColor = new Color(0.58f, 0.82f, 0.64f); // pastel green
     private static readonly Color SessionColor  = new Color(0.74f, 0.62f, 0.90f); // pastel purple
+    private static readonly Color ItemColor     = new Color(0.95f, 0.78f, 0.50f); // pastel amber
 
     private void LoadNpcs()
     {
@@ -137,6 +151,19 @@ public partial class CampaignDashboard : Control
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("session", id);
             _sessionsContainer.AddChild(btn);
+        }
+    }
+
+    private void LoadItems()
+    {
+        ClearItems(_itemsContainer, _addItemsButton);
+        foreach (var item in _db.Items.GetAll(_campaignId))
+        {
+            int id = item.Id;
+            var btn = MakeSidebarButton(item.Name, ItemColor);
+            btn.SetMeta("id", id);
+            btn.Pressed += () => ShowDetailPane("item", id);
+            _itemsContainer.AddChild(btn);
         }
     }
 
@@ -252,6 +279,17 @@ public partial class CampaignDashboard : Control
                 sesPane.Deleted     += OnEntityDeleted;
                 sesPane.Load(session);
                 break;
+
+            case "item":
+                var item = _db.Items.Get(entityId);
+                if (item == null) return;
+                var itemPane = _itemDetailPaneScene.Instantiate<ItemDetailPane>();
+                AddDetailPane(itemPane);
+                itemPane.NavigateTo  += ShowDetailPane;
+                itemPane.NameChanged += OnNameChanged;
+                itemPane.Deleted     += OnEntityDeleted;
+                itemPane.Load(item);
+                break;
         }
     }
 
@@ -263,6 +301,7 @@ public partial class CampaignDashboard : Control
             case "faction":  _db.Factions.Delete(entityId);  LoadFactions();  break;
             case "location": _db.Locations.Delete(entityId); LoadLocations(); break;
             case "session":  _db.Sessions.Delete(entityId);  LoadSessions();  break;
+            case "item":     _db.Items.Delete(entityId);     LoadItems();     break;
         }
         foreach (Node child in _detailPanel.GetChildren())
             child.QueueFree();
@@ -276,6 +315,7 @@ public partial class CampaignDashboard : Control
             "faction"  => _factionsContainer,
             "location" => _locationsContainer,
             "session"  => _sessionsContainer,
+            "item"     => _itemsContainer,
             _          => null
         };
         if (container == null) return;

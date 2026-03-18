@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://Scenes/Components/LocationDetailPane/LocationDetailPane.cs" id="1_locdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="3_typeopt"]
 
 [node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_addSubLocationButton", "_subLocationsContainer")]
 anchors_preset = 15
@@ -110,10 +111,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 clip_text = true
 
-[node name="RoleSelect" type="OptionButton" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
+[node name="RoleSelect" type="Button" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-clip_text = true
+script = ExtResource("3_typeopt")
 
 [node name="AddFactionButton" type="Button" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2

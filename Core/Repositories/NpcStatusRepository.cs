@@ -29,9 +29,19 @@ namespace DndBuilder.Core.Repositories
                 id          INTEGER PRIMARY KEY,
                 campaign_id INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
                 name        TEXT    NOT NULL DEFAULT '',
-                description TEXT    NOT NULL DEFAULT ''
+                description TEXT    NOT NULL DEFAULT '',
+                inactive    INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
+
+            var hasInactive = _conn.CreateCommand();
+            hasInactive.CommandText = "SELECT COUNT(*) FROM pragma_table_info('npc_statuses') WHERE name = 'inactive'";
+            if ((long)hasInactive.ExecuteScalar() == 0)
+            {
+                var alter = _conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE npc_statuses ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
         }
 
         public void SeedDefaults(int campaignId)
@@ -39,7 +49,9 @@ namespace DndBuilder.Core.Repositories
             foreach (var (name, desc) in Defaults)
             {
                 var cmd = _conn.CreateCommand();
-                cmd.CommandText = "INSERT INTO npc_statuses (campaign_id, name, description) VALUES (@cid, @name, @desc)";
+                cmd.CommandText = @"INSERT INTO npc_statuses (campaign_id, name, description)
+                    SELECT @cid, @name, @desc WHERE NOT EXISTS
+                        (SELECT 1 FROM npc_statuses WHERE campaign_id = @cid AND name = @name)";
                 cmd.Parameters.AddWithValue("@cid",  campaignId);
                 cmd.Parameters.AddWithValue("@name", name);
                 cmd.Parameters.AddWithValue("@desc", desc);
@@ -51,7 +63,7 @@ namespace DndBuilder.Core.Repositories
         {
             var list = new List<NpcStatus>();
             var cmd  = _conn.CreateCommand();
-            cmd.CommandText = "SELECT id, campaign_id, name, description FROM npc_statuses WHERE campaign_id = @cid ORDER BY name ASC";
+            cmd.CommandText = "SELECT id, campaign_id, name, description FROM npc_statuses WHERE campaign_id = @cid AND inactive = 0 ORDER BY name ASC";
             cmd.Parameters.AddWithValue("@cid", campaignId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -78,7 +90,7 @@ namespace DndBuilder.Core.Repositories
         public void Delete(int id)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = "DELETE FROM npc_statuses WHERE id = @id";
+            cmd.CommandText = "UPDATE npc_statuses SET inactive = 1 WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", id);
             cmd.ExecuteNonQuery();
         }

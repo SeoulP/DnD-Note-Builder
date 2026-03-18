@@ -5,28 +5,27 @@ using Godot;
 
 public partial class LocationDetailPane : ScrollContainer
 {
-    private DatabaseService           _db;
-    private Location                  _location;
-    private List<LocationFactionRole> _roles = new();
-    private ConfirmationDialog        _confirmDialog;
+    private DatabaseService    _db;
+    private Location           _location;
+    private ConfirmationDialog _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
     [Signal] public delegate void SubLocationAddedEventHandler(int parentLocationId, int newLocationId);
 
-    [Export] private LineEdit      _nameInput;
-    [Export] private LineEdit      _typeInput;
-    [Export] private TextEdit      _descInput;
-    [Export] private TextEdit      _notesInput;
-    [Export] private RichTextLabel _notesRenderer;
-    [Export] private Button        _deleteButton;
-    [Export] private VBoxContainer _factionRowsContainer;
-    [Export] private OptionButton  _factionSelect;
-    [Export] private OptionButton  _roleSelect;
-    [Export] private Button        _addFactionButton;
-    [Export] private Button        _addSubLocationButton;
-    [Export] private VBoxContainer _subLocationsContainer;
+    [Export] private LineEdit         _nameInput;
+    [Export] private LineEdit         _typeInput;
+    [Export] private TextEdit         _descInput;
+    [Export] private TextEdit         _notesInput;
+    [Export] private RichTextLabel    _notesRenderer;
+    [Export] private Button           _deleteButton;
+    [Export] private VBoxContainer    _factionRowsContainer;
+    [Export] private OptionButton     _factionSelect;
+    [Export] private TypeOptionButton _roleSelect;
+    [Export] private Button           _addFactionButton;
+    [Export] private Button           _addSubLocationButton;
+    [Export] private VBoxContainer    _subLocationsContainer;
 
     public override void _Ready()
     {
@@ -46,8 +45,7 @@ public partial class LocationDetailPane : ScrollContainer
         {
             if (_location == null || _factionSelect.GetSelectedId() == -1) return;
             int  factionId = _factionSelect.GetSelectedId();
-            int  rawRoleId = _roleSelect.GetSelectedId();
-            int? roleId    = rawRoleId == -1 ? null : rawRoleId;
+            int? roleId    = _roleSelect.SelectedId;
 
             _db.Locations.AddFaction(_location.Id, factionId, roleId);
             _location.Factions.Add(new LocationFaction { LocationId = _location.Id, FactionId = factionId, RoleId = roleId });
@@ -103,7 +101,7 @@ public partial class LocationDetailPane : ScrollContainer
             };
 
             var btnRect = _addSubLocationButton.GetGlobalRect();
-            int x = (int)btnRect.Position.X;
+            int x      = (int)btnRect.Position.X;
             int offset = Mathf.Min((int)btnRect.Size.Y * popup.ItemCount, 120);
             int y      = Mathf.Max(0, (int)btnRect.Position.Y - offset);
             popup.Popup(new Rect2I(x, y, (int)btnRect.Size.X, 120));
@@ -113,7 +111,13 @@ public partial class LocationDetailPane : ScrollContainer
     public void Load(Location location)
     {
         _location = location;
-        _roles    = _db.LocationFactionRoles.GetAll(location.CampaignId);
+
+        _roleSelect.NoneText = "No role";
+        _roleSelect.Setup(
+            () => _db.LocationFactionRoles.GetAll(location.CampaignId).ConvertAll(r => (r.Id, r.Name)),
+            name => { _db.LocationFactionRoles.Add(new LocationFactionRole { CampaignId = location.CampaignId, Name = name, Description = "" }); },
+            id   => _db.LocationFactionRoles.Delete(id));
+        _roleSelect.SelectById(null);
 
         _nameInput.Text  = string.IsNullOrEmpty(location.Name) ? "New Location" : location.Name;
         _typeInput.Text  = location.Type;
@@ -162,8 +166,8 @@ public partial class LocationDetailPane : ScrollContainer
 
     private void PopulateFactionDropdowns()
     {
-        var assignedIds  = new HashSet<int>(_location.Factions.Select(f => f.FactionId));
-        var available    = _db.Factions.GetAll(_location.CampaignId)
+        var assignedIds   = new HashSet<int>(_location.Factions.Select(f => f.FactionId));
+        var available     = _db.Factions.GetAll(_location.CampaignId)
                              .Where(f => !assignedIds.Contains(f.Id))
                              .ToList();
         bool hasAvailable = available.Count > 0;
@@ -173,12 +177,8 @@ public partial class LocationDetailPane : ScrollContainer
         foreach (var f in available) _factionSelect.AddItem(f.Name, f.Id);
         _factionSelect.Disabled = !hasAvailable;
 
-        _roleSelect.Clear();
-        _roleSelect.AddItem("No role", -1);
-        foreach (var r in _roles) _roleSelect.AddItem(r.Name, r.Id);
-        _roleSelect.Disabled = !hasAvailable;
-
-        _addFactionButton.Disabled = true; // enabled only when a real faction is selected
+        _roleSelect.Disabled      = !hasAvailable;
+        _addFactionButton.Disabled = true;
     }
 
     private void LoadFactionRows()
@@ -190,8 +190,9 @@ public partial class LocationDetailPane : ScrollContainer
         var factionNames = new Dictionary<int, string>();
         foreach (var f in allFactions) factionNames[f.Id] = f.Name;
 
+        var roles     = _db.LocationFactionRoles.GetAll(_location.CampaignId);
         var roleNames = new Dictionary<int, string>();
-        foreach (var r in _roles) roleNames[r.Id] = r.Name;
+        foreach (var r in roles) roleNames[r.Id] = r.Name;
 
         foreach (var lf in _location.Factions)
         {

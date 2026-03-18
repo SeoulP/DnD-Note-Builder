@@ -14,6 +14,7 @@ public partial class DatabaseService : Node
     public LocationRepository             Locations             { get; private set; }
     public NpcRelationshipTypeRepository  NpcRelationshipTypes  { get; private set; }
     public NpcStatusRepository            NpcStatuses           { get; private set; }
+    public NpcFactionRoleRepository       NpcFactionRoles       { get; private set; }
     public NpcRepository                  Npcs                  { get; private set; }
     public ItemTypeRepository             ItemTypes             { get; private set; }
     public ItemRepository                 Items                 { get; private set; }
@@ -32,6 +33,7 @@ public partial class DatabaseService : Node
         Locations            = new LocationRepository(_conn);
         NpcRelationshipTypes = new NpcRelationshipTypeRepository(_conn);
         NpcStatuses          = new NpcStatusRepository(_conn);
+        NpcFactionRoles      = new NpcFactionRoleRepository(_conn);
         Npcs                 = new NpcRepository(_conn);
         ItemTypes            = new ItemTypeRepository(_conn);
         Items                = new ItemRepository(_conn);
@@ -50,9 +52,26 @@ public partial class DatabaseService : Node
         Locations           .Migrate();  // references campaigns, factions, location_faction_roles
         NpcRelationshipTypes.Migrate();  // references campaigns; must precede Npcs
         NpcStatuses         .Migrate();  // references campaigns; must precede Npcs
-        Npcs                .Migrate();  // references campaigns, species, locations, factions, npc_relationship_types, npc_statuses
+        NpcFactionRoles     .Migrate();  // references campaigns; must precede Npcs (character_factions FK)
+        Npcs                .Migrate();  // references campaigns, species, locations, factions, npc_relationship_types, npc_statuses, npc_faction_roles
         ItemTypes           .Migrate();  // references campaigns; must precede Items
         Items               .Migrate();  // references campaigns, item_types, characters, locations
+
+        // Ensure every campaign has all current seed defaults (idempotent — skips names that already exist)
+        SeedAllCampaigns();
+    }
+
+    private void SeedAllCampaigns()
+    {
+        foreach (var campaign in Campaigns.GetAll())
+        {
+            Species             .SeedDefaults(campaign.Id);
+            LocationFactionRoles.SeedDefaults(campaign.Id);
+            NpcRelationshipTypes.SeedDefaults(campaign.Id);
+            NpcStatuses         .SeedDefaults(campaign.Id);
+            NpcFactionRoles     .SeedDefaults(campaign.Id);
+            ItemTypes           .SeedDefaults(campaign.Id);
+        }
     }
 
     public override void _ExitTree()
