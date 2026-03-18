@@ -24,7 +24,7 @@ public partial class TypeOptionButton : Button
     private int                _pendingDeleteId;
     private string             _pendingDeleteName;
 
-    public string NoneText        { get; set; } = "— None —";
+    public string NoneText        { get; set; } = "None";
     public bool   AutoSelectOnAdd { get; set; } = false;
 
     public int? SelectedId => _selectedId;

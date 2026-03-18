@@ -69,6 +69,7 @@ theme_override_constants/separation = 12
 [node name="TypeLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
+theme_override_font_sizes/font_size = 17
 text = "Type"
 
 [node name="TypeInput" type="LineEdit" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
@@ -78,6 +79,7 @@ placeholder_text = "e.g. Town, Dungeon, Inn..."
 
 [node name="DescriptionLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Description"
 
 [node name="DescriptionInput" type="TextEdit" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
@@ -89,6 +91,7 @@ wrap_mode = 1
 
 [node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Notes"
 
 [node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("5_wikinotes")]
@@ -104,6 +107,7 @@ theme_override_constants/separation = 4
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 vertical_alignment = 1
+theme_override_font_sizes/font_size = 17
 text = "Factions"
 
 [node name="FactionsVBox" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel"]
@@ -141,6 +145,7 @@ theme_override_constants/separation = 4
 [node name="SubLocationsLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Sub-locations"
 vertical_alignment = 1
 

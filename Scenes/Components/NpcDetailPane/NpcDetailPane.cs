@@ -9,6 +9,7 @@ public partial class NpcDetailPane : ScrollContainer
     private DatabaseService    _db;
     private Npc                _npc;
     private ConfirmationDialog _confirmDialog;
+    private bool               _loaded;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
@@ -29,12 +30,24 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private TextEdit          _descInput;
     [Export] private WikiNotes _notes;
     [Export] private ImageCarousel     _imageCarousel;
+    [Export] private Button            _relNpcSelfLabel;
+    [Export] private TypeOptionButton  _relTypeSelect;
+    [Export] private TypeOptionButton  _relNpcSelect;
+    [Export] private Button            _addRelButton;
+    [Export] private VBoxContainer     _relRowsContainer;
 
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
 
-        _nameInput.TextChanged          += name => { Save(); EmitSignal(SignalName.NameChanged, "npc", _npc?.Id ?? 0, string.IsNullOrEmpty(name) ? "New NPC" : name); };
+        _nameInput.TextChanged          += name =>
+        {
+            Save();
+            EmitSignal(SignalName.NameChanged, "npc", _npc?.Id ?? 0, string.IsNullOrEmpty(name) ? "New NPC" : name);
+            if (!_loaded) return;
+            _relNpcSelfLabel.Text = string.IsNullOrEmpty(name) ? "New NPC" : name;
+            LoadRelRows();
+        };
         _nameInput.FocusExited          += () => { if (_nameInput.Text == "") _nameInput.Text = "New NPC"; };
         _occupationInput.TextChanged    += _ => Save();
         _genderInput.TextChanged        += _ => Save();
@@ -56,6 +69,10 @@ public partial class NpcDetailPane : ScrollContainer
         _factionSelect.TypeSelected += id => _addFactionButton.Disabled = (id == -1);
         _roleSelect.TypeSelected    += _ => { };  // no-op; role is read at add-time
         _addFactionButton.Pressed   += OnAddFactionPressed;
+
+        _relNpcSelect.TypeSelected  += id => _addRelButton.Disabled = (id == -1);
+        _relTypeSelect.TypeSelected += _ => { };
+        _addRelButton.Pressed       += OnAddRelPressed;
     }
 
     public void Load(Npc npc)
@@ -109,9 +126,39 @@ public partial class NpcDetailPane : ScrollContainer
         PopulateFactionDropdown();
         LoadFactionRows();
 
+        _npc.Relationships = _db.Npcs.GetRelationships(npc.Id);
+
+        _relNpcSelfLabel.Text = string.IsNullOrEmpty(npc.Name) ? "New NPC" : npc.Name;
+
+        _relTypeSelect.NoneText = "Relationship";
+        _relTypeSelect.Setup(
+            () => _db.CharacterRelationshipTypes.GetAll(npc.CampaignId).ConvertAll(t => (t.Id, t.Name)),
+            name => { _db.CharacterRelationshipTypes.Add(new DndBuilder.Core.Models.CharacterRelationshipType { CampaignId = _npc.CampaignId, Name = name, Description = "" }); },
+            id   => _db.CharacterRelationshipTypes.Delete(id));
+        _relTypeSelect.SelectById(null);
+
+        _relNpcSelect.NoneText        = "Pick an NPC";
+        _relNpcSelect.AutoSelectOnAdd = true;
+        _relNpcSelect.Setup(
+            () => _db.Npcs.GetAll(npc.CampaignId)
+                      .Where(n => n.Id != _npc.Id && !_npc.Relationships.Any(r => r.CharacterId == n.Id || r.RelatedCharacterId == n.Id))
+                      .Select(n => (n.Id, n.Name))
+                      .ToList(),
+            name =>
+            {
+                var newNpc = new Npc { CampaignId = _npc.CampaignId, Name = name };
+                _db.Npcs.Add(newNpc);
+            },
+            id => _db.Npcs.Delete(id));
+        _relNpcSelect.TypeCreated += id => EmitSignal(SignalName.EntityCreated, "npc", id);
+        _relNpcSelect.SelectById(null);
+
+        LoadRelRows();
+
         _descInput.Text  = npc.Description;
         _notes.Setup(npc.CampaignId, _db);
         _notes.Text = npc.Notes;
+        _loaded = true;
     }
 
     private void PopulateFactionDropdown()
@@ -140,7 +187,7 @@ public partial class NpcDetailPane : ScrollContainer
             string factionName       = factionNames.TryGetValue(nf.FactionId, out var fn) ? fn : "Unknown";
             string roleName          = nf.RoleId.HasValue && roleNames.TryGetValue(nf.RoleId.Value, out var rn) ? rn : "No role";
 
-            var row = new EntityRow { Text = $"{factionName} — {roleName}" };
+            var row = new EntityRow { Text = $"{factionName}, {roleName}" };
             row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
             row.DeletePressed   += () =>
             {
@@ -165,6 +212,59 @@ public partial class NpcDetailPane : ScrollContainer
         _npc.FactionIds.Add(factionId);
         PopulateFactionDropdown();
         LoadFactionRows();
+    }
+
+    private void PopulateRelDropdown()
+    {
+        _relNpcSelect.SelectById(null);
+        _relTypeSelect.SelectById(null);
+        _addRelButton.Disabled = true;
+    }
+
+    private void LoadRelRows()
+    {
+        foreach (Node child in _relRowsContainer.GetChildren())
+            child.QueueFree();
+
+        var typeNames = new Dictionary<int, string>();
+        foreach (var t in _db.CharacterRelationshipTypes.GetAll(_npc.CampaignId))
+            typeNames[t.Id] = t.Name;
+
+        var allNpcs  = _db.Npcs.GetAll(_npc.CampaignId);
+        var npcNames = new Dictionary<int, string>();
+        foreach (var n in allNpcs) npcNames[n.Id] = n.Name;
+
+        foreach (var rel in _npc.Relationships)
+        {
+            int    capturedA    = rel.CharacterId;
+            int    capturedB    = rel.RelatedCharacterId;
+            int    capturedOther = rel.CharacterId == _npc.Id ? rel.RelatedCharacterId : rel.CharacterId;
+            string nameA    = npcNames.TryGetValue(rel.CharacterId,         out var na) ? na : "Unknown";
+            string nameB    = npcNames.TryGetValue(rel.RelatedCharacterId,  out var nb) ? nb : "Unknown";
+            string typeName = rel.RelationshipTypeId.HasValue && typeNames.TryGetValue(rel.RelationshipTypeId.Value, out var tn) ? tn : "";
+
+            var row = new EntityRow { Text = string.IsNullOrEmpty(typeName) ? $"{nameA}, {nameB}" : $"{nameA}, {typeName} {nameB}" };
+            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "npc", capturedOther);
+            row.DeletePressed   += () =>
+            {
+                _db.Npcs.RemoveRelationship(capturedA, capturedB);
+                _npc.Relationships = _db.Npcs.GetRelationships(_npc.Id);
+                LoadRelRows();
+            };
+            _relRowsContainer.AddChild(row);
+        }
+
+        PopulateRelDropdown();
+    }
+
+    private void OnAddRelPressed()
+    {
+        if (!_relNpcSelect.SelectedId.HasValue) return;
+        int  relatedId = _relNpcSelect.SelectedId.Value;
+        int? typeId    = _relTypeSelect.SelectedId;
+        _db.Npcs.AddRelationship(_npc.Id, relatedId, typeId);
+        _npc.Relationships = _db.Npcs.GetRelationships(_npc.Id);
+        LoadRelRows();
     }
 
     private void Save()

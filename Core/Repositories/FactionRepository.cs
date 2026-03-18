@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
 using DndBuilder.Core.Models;
@@ -27,6 +28,16 @@ namespace DndBuilder.Core.Repositories
                 reputation   INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
+
+            // faction_relationships join table
+            cmd = _conn.CreateCommand();
+            cmd.CommandText = @"CREATE TABLE IF NOT EXISTS faction_relationships (
+                faction_id           INTEGER NOT NULL REFERENCES factions(id) ON DELETE CASCADE,
+                related_faction_id   INTEGER NOT NULL REFERENCES factions(id) ON DELETE CASCADE,
+                relationship_type_id INTEGER REFERENCES faction_relationship_types(id) ON DELETE SET NULL,
+                PRIMARY KEY (faction_id, related_faction_id)
+            )";
+            cmd.ExecuteNonQuery();
         }
 
         public List<Faction> GetAll(int campaignId)
@@ -48,7 +59,11 @@ namespace DndBuilder.Core.Repositories
                                 FROM factions WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", id);
             using var reader = cmd.ExecuteReader();
-            return reader.Read() ? Map(reader) : null;
+            if (!reader.Read()) return null;
+            var faction = Map(reader);
+            reader.Close();
+            faction.RelatedFactions = GetRelationships(id);
+            return faction;
         }
 
         public int Add(Faction faction)
@@ -89,6 +104,44 @@ namespace DndBuilder.Core.Repositories
             var cmd = _conn.CreateCommand();
             cmd.CommandText = "DELETE FROM factions WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", id);
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<FactionRelationship> GetRelationships(int factionId)
+        {
+            var list = new List<FactionRelationship>();
+            var cmd  = _conn.CreateCommand();
+            cmd.CommandText = "SELECT faction_id, related_faction_id, relationship_type_id FROM faction_relationships WHERE faction_id = @fid OR related_faction_id = @fid";
+            cmd.Parameters.AddWithValue("@fid", factionId);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+                list.Add(new FactionRelationship
+                {
+                    FactionId          = reader.GetInt32(0),
+                    RelatedFactionId   = reader.GetInt32(1),
+                    RelationshipTypeId = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                });
+            return list;
+        }
+
+        public void AddRelationship(int factionId, int relatedFactionId, int? typeId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "INSERT OR IGNORE INTO faction_relationships (faction_id, related_faction_id, relationship_type_id) VALUES (@fid, @rfid, @tid)";
+            cmd.Parameters.AddWithValue("@fid",  factionId);
+            cmd.Parameters.AddWithValue("@rfid", relatedFactionId);
+            cmd.Parameters.AddWithValue("@tid",  typeId.HasValue ? typeId.Value : DBNull.Value);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void RemoveRelationship(int factionAId, int factionBId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"DELETE FROM faction_relationships
+                                WHERE (faction_id = @a AND related_faction_id = @b)
+                                   OR (faction_id = @b AND related_faction_id = @a)";
+            cmd.Parameters.AddWithValue("@a", factionAId);
+            cmd.Parameters.AddWithValue("@b", factionBId);
             cmd.ExecuteNonQuery();
         }
 

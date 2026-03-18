@@ -186,7 +186,7 @@ public partial class LocationDetailPane : ScrollContainer
             string factionName       = factionNames.TryGetValue(lf.FactionId, out var fn) ? fn : "Unknown";
             string roleName          = lf.RoleId.HasValue && roleNames.TryGetValue(lf.RoleId.Value, out var rn) ? rn : "No role";
 
-            var row = new EntityRow { Text = $"{factionName} — {roleName}" };
+            var row = new EntityRow { Text = $"{factionName}, {roleName}" };
             row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
             row.DeletePressed   += () =>
             {

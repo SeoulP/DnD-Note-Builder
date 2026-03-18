@@ -15,7 +15,9 @@ public partial class DatabaseService : Node
     public LocationRepository             Locations             { get; private set; }
     public NpcRelationshipTypeRepository  NpcRelationshipTypes  { get; private set; }
     public NpcStatusRepository            NpcStatuses           { get; private set; }
-    public NpcFactionRoleRepository       NpcFactionRoles       { get; private set; }
+    public NpcFactionRoleRepository            NpcFactionRoles            { get; private set; }
+    public FactionRelationshipTypeRepository  FactionRelationshipTypes   { get; private set; }
+    public CharacterRelationshipTypeRepository CharacterRelationshipTypes { get; private set; }
     public NpcRepository                  Npcs                  { get; private set; }
     public ItemTypeRepository             ItemTypes             { get; private set; }
     public ItemRepository                 Items                 { get; private set; }
@@ -35,8 +37,10 @@ public partial class DatabaseService : Node
         Locations            = new LocationRepository(_conn);
         NpcRelationshipTypes = new NpcRelationshipTypeRepository(_conn);
         NpcStatuses          = new NpcStatusRepository(_conn);
-        NpcFactionRoles      = new NpcFactionRoleRepository(_conn);
-        Npcs                 = new NpcRepository(_conn);
+        NpcFactionRoles            = new NpcFactionRoleRepository(_conn);
+        FactionRelationshipTypes   = new FactionRelationshipTypeRepository(_conn);
+        CharacterRelationshipTypes = new CharacterRelationshipTypeRepository(_conn);
+        Npcs                       = new NpcRepository(_conn);
         ItemTypes            = new ItemTypeRepository(_conn);
         Items                = new ItemRepository(_conn);
         EntityImages         = new EntityImageRepository(_conn);
@@ -50,13 +54,15 @@ public partial class DatabaseService : Node
         Campaigns           .Migrate();  // top-level container
         Sessions            .Migrate();  // references campaigns
         Factions            .Migrate();  // references campaigns
+        FactionRelationshipTypes.Migrate();  // references campaigns; must precede faction_relationships
         Species             .Migrate();  // references campaigns
         LocationFactionRoles.Migrate();  // references campaigns; must precede Locations (location_factions FK)
         Locations           .Migrate();  // references campaigns, factions, location_faction_roles
         NpcRelationshipTypes.Migrate();  // references campaigns; must precede Npcs
         NpcStatuses         .Migrate();  // references campaigns; must precede Npcs
         NpcFactionRoles     .Migrate();  // references campaigns; must precede Npcs (character_factions FK)
-        Npcs                .Migrate();  // references campaigns, species, locations, factions, npc_relationship_types, npc_statuses, npc_faction_roles
+        CharacterRelationshipTypes.Migrate(); // references campaigns; must precede character_relationships
+        Npcs                .Migrate();  // references campaigns, species, locations, factions, npc_relationship_types, npc_statuses, npc_faction_roles, character_relationship_types
         ItemTypes           .Migrate();  // references campaigns; must precede Items
         Items               .Migrate();  // references campaigns, item_types, characters, locations
         EntityImages        .Migrate();  // polymorphic; no FK constraints — references any entity by type+id
@@ -75,8 +81,10 @@ public partial class DatabaseService : Node
             LocationFactionRoles.SeedDefaults(campaign.Id);
             NpcRelationshipTypes.SeedDefaults(campaign.Id);
             NpcStatuses         .SeedDefaults(campaign.Id);
-            NpcFactionRoles     .SeedDefaults(campaign.Id);
-            ItemTypes           .SeedDefaults(campaign.Id);
+            NpcFactionRoles           .SeedDefaults(campaign.Id);
+            FactionRelationshipTypes  .SeedDefaults(campaign.Id);
+            CharacterRelationshipTypes.SeedDefaults(campaign.Id);
+            ItemTypes                 .SeedDefaults(campaign.Id);
         }
     }
 

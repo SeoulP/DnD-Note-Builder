@@ -33,7 +33,7 @@ theme_override_constants/separation = 8
 [node name="NumberLabel" type="Label" parent="Margin/VBoxContainer"]
 layout_mode = 2
 text = "Session #001"
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 17
 
 [node name="TitleRow" type="HBoxContainer" parent="Margin/VBoxContainer"]
 layout_mode = 2
@@ -66,6 +66,7 @@ theme_override_constants/separation = 12
 [node name="PlayedOnLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
+theme_override_font_sizes/font_size = 17
 text = "Played On"
 
 [node name="PlayedOnInput" type="LineEdit" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow"]
@@ -75,6 +76,7 @@ placeholder_text = "yyyy-mm-dd"
 
 [node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Notes"
 
 [node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("4_wikinotes")]

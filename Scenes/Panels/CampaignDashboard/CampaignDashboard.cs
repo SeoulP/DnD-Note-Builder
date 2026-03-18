@@ -265,7 +265,7 @@ public partial class CampaignDashboard : Control
                 npcPane.NavigateTo     += ShowDetailPane;
                 npcPane.NameChanged    += OnNameChanged;
                 npcPane.Deleted        += OnEntityDeleted;
-                npcPane.EntityCreated  += (type, _) => { if (type == "faction") LoadFactions(); };
+                npcPane.EntityCreated  += (type, _) => { if (type == "faction") LoadFactions(); if (type == "npc") LoadNpcs(); };
                 npcPane.Load(npc);
                 break;
 
@@ -274,9 +274,10 @@ public partial class CampaignDashboard : Control
                 if (faction == null) return;
                 var facPane = _factionDetailPaneScene.Instantiate<FactionDetailPane>();
                 AddDetailPane(facPane);
-                facPane.NavigateTo  += ShowDetailPane;
-                facPane.NameChanged += OnNameChanged;
-                facPane.Deleted     += OnEntityDeleted;
+                facPane.NavigateTo    += ShowDetailPane;
+                facPane.NameChanged  += OnNameChanged;
+                facPane.Deleted      += OnEntityDeleted;
+                facPane.EntityCreated += (type, _) => { if (type == "npc") LoadNpcs(); if (type == "faction") LoadFactions(); };
                 facPane.Load(faction);
                 break;
 

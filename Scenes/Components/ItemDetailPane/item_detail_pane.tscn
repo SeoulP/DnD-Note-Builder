@@ -63,6 +63,7 @@ theme_override_constants/separation = 12
 [node name="TypeLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Type"
 
 [node name="TypeInput" type="Button" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
@@ -77,6 +78,7 @@ theme_override_constants/separation = 12
 [node name="IsUniqueLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Unique Item"
 
 [node name="IsUniqueInput" type="CheckBox" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow"]
@@ -85,6 +87,7 @@ text = "Named / one-of-a-kind"
 
 [node name="DescriptionLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Description"
 
 [node name="DescriptionInput" type="TextEdit" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
@@ -96,6 +99,7 @@ wrap_mode = 1
 
 [node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "Notes"
 
 [node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("5_wikinotes")]

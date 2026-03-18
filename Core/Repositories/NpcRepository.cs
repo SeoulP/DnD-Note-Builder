@@ -60,6 +60,16 @@ namespace DndBuilder.Core.Repositories
             )";
             cmd.ExecuteNonQuery();
 
+            // character_relationships join table
+            cmd = _conn.CreateCommand();
+            cmd.CommandText = @"CREATE TABLE IF NOT EXISTS character_relationships (
+                character_id         INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+                related_character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+                relationship_type_id INTEGER REFERENCES character_relationship_types(id) ON DELETE SET NULL,
+                PRIMARY KEY (character_id, related_character_id)
+            )";
+            cmd.ExecuteNonQuery();
+
             // Migration: add role_id to existing character_factions tables
             var hasRoleId = _conn.CreateCommand();
             hasRoleId.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_factions') WHERE name = 'role_id'";
@@ -108,8 +118,9 @@ namespace DndBuilder.Core.Repositories
             if (!reader.Read()) return null;
             var npc = Map(reader);
             reader.Close();
-            npc.Factions   = GetFactions(id);
-            npc.FactionIds = npc.Factions.ConvertAll(f => f.FactionId);
+            npc.Factions       = GetFactions(id);
+            npc.FactionIds     = npc.Factions.ConvertAll(f => f.FactionId);
+            npc.Relationships  = GetRelationships(id);
             return npc;
         }
 
@@ -206,6 +217,44 @@ namespace DndBuilder.Core.Repositories
             cmd.CommandText = "DELETE FROM character_factions WHERE character_id = @cid AND faction_id = @fid";
             cmd.Parameters.AddWithValue("@cid", characterId);
             cmd.Parameters.AddWithValue("@fid", factionId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<CharacterRelationship> GetRelationships(int characterId)
+        {
+            var list = new List<CharacterRelationship>();
+            var cmd  = _conn.CreateCommand();
+            cmd.CommandText = "SELECT character_id, related_character_id, relationship_type_id FROM character_relationships WHERE character_id = @cid OR related_character_id = @cid";
+            cmd.Parameters.AddWithValue("@cid", characterId);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+                list.Add(new CharacterRelationship
+                {
+                    CharacterId        = reader.GetInt32(0),
+                    RelatedCharacterId = reader.GetInt32(1),
+                    RelationshipTypeId = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                });
+            return list;
+        }
+
+        public void AddRelationship(int characterId, int relatedCharacterId, int? typeId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "INSERT OR IGNORE INTO character_relationships (character_id, related_character_id, relationship_type_id) VALUES (@cid, @rcid, @tid)";
+            cmd.Parameters.AddWithValue("@cid",  characterId);
+            cmd.Parameters.AddWithValue("@rcid", relatedCharacterId);
+            cmd.Parameters.AddWithValue("@tid",  typeId.HasValue ? typeId.Value : DBNull.Value);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void RemoveRelationship(int charAId, int charBId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"DELETE FROM character_relationships
+                                WHERE (character_id = @a AND related_character_id = @b)
+                                   OR (character_id = @b AND related_character_id = @a)";
+            cmd.Parameters.AddWithValue("@a", charAId);
+            cmd.Parameters.AddWithValue("@b", charBId);
             cmd.ExecuteNonQuery();
         }
 

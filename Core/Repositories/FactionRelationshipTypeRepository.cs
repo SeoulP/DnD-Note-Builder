@@ -4,20 +4,23 @@ using DndBuilder.Core.Models;
 
 namespace DndBuilder.Core.Repositories
 {
-    public class LocationFactionRoleRepository
+    public class FactionRelationshipTypeRepository
     {
         private readonly SqliteConnection _conn;
 
         private static readonly (string Name, string Description)[] Defaults =
         {
-            ("Present At",      "Generally associated with or operating out of this location"),
-            ("Controls",        "Owns or runs this location"),
-            ("Occupies",        "Militarily or forcibly holding this location"),
-            ("Opposes",         "Actively working against this location or its inhabitants"),
-            ("Hidden Inside",   "Secret or covert presence — not publicly known"),
+            ("Allied with",          "Actively cooperates and shares goals"),
+            ("Enemy of",             "Openly hostile or in direct conflict"),
+            ("Rival of",             "Competes for the same resources or influence"),
+            ("Neutral toward",       "Neither allied nor hostile; indifferent"),
+            ("Vassal of",            "Subordinate to or controlled by the other faction"),
+            ("Trade Partner of",     "Maintains a commercial or economic relationship"),
+            ("Contested by",         "Relations are disputed or actively shifting"),
+            ("Former Ally of",       "Once allied; now estranged or broken"),
         };
 
-        public LocationFactionRoleRepository(SqliteConnection conn)
+        public FactionRelationshipTypeRepository(SqliteConnection conn)
         {
             _conn = conn;
         }
@@ -25,7 +28,7 @@ namespace DndBuilder.Core.Repositories
         public void Migrate()
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = @"CREATE TABLE IF NOT EXISTS location_faction_roles (
+            cmd.CommandText = @"CREATE TABLE IF NOT EXISTS faction_relationship_types (
                 id          INTEGER PRIMARY KEY,
                 campaign_id INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
                 name        TEXT    NOT NULL DEFAULT '',
@@ -35,11 +38,11 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
 
             var hasInactive = _conn.CreateCommand();
-            hasInactive.CommandText = "SELECT COUNT(*) FROM pragma_table_info('location_faction_roles') WHERE name = 'inactive'";
+            hasInactive.CommandText = "SELECT COUNT(*) FROM pragma_table_info('faction_relationship_types') WHERE name = 'inactive'";
             if ((long)hasInactive.ExecuteScalar() == 0)
             {
                 var alter = _conn.CreateCommand();
-                alter.CommandText = "ALTER TABLE location_faction_roles ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
+                alter.CommandText = "ALTER TABLE faction_relationship_types ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
             }
         }
@@ -49,9 +52,9 @@ namespace DndBuilder.Core.Repositories
             foreach (var (name, desc) in Defaults)
             {
                 var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO location_faction_roles (campaign_id, name, description)
+                cmd.CommandText = @"INSERT INTO faction_relationship_types (campaign_id, name, description)
                     SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM location_faction_roles WHERE campaign_id = @cid AND name = @name)";
+                        (SELECT 1 FROM faction_relationship_types WHERE campaign_id = @cid AND name = @name)";
                 cmd.Parameters.AddWithValue("@cid",  campaignId);
                 cmd.Parameters.AddWithValue("@name", name);
                 cmd.Parameters.AddWithValue("@desc", desc);
@@ -59,15 +62,15 @@ namespace DndBuilder.Core.Repositories
             }
         }
 
-        public List<LocationFactionRole> GetAll(int campaignId)
+        public List<FactionRelationshipType> GetAll(int campaignId)
         {
-            var list = new List<LocationFactionRole>();
+            var list = new List<FactionRelationshipType>();
             var cmd  = _conn.CreateCommand();
-            cmd.CommandText = "SELECT id, campaign_id, name, description FROM location_faction_roles WHERE campaign_id = @cid AND inactive = 0 ORDER BY name ASC";
+            cmd.CommandText = "SELECT id, campaign_id, name, description FROM faction_relationship_types WHERE campaign_id = @cid AND inactive = 0 ORDER BY name ASC";
             cmd.Parameters.AddWithValue("@cid", campaignId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
-                list.Add(new LocationFactionRole
+                list.Add(new FactionRelationshipType
                 {
                     Id          = reader.GetInt32(0),
                     CampaignId  = reader.GetInt32(1),
@@ -77,20 +80,20 @@ namespace DndBuilder.Core.Repositories
             return list;
         }
 
-        public int Add(LocationFactionRole role)
+        public int Add(FactionRelationshipType t)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = "INSERT INTO location_faction_roles (campaign_id, name, description) VALUES (@cid, @name, @desc); SELECT last_insert_rowid();";
-            cmd.Parameters.AddWithValue("@cid",  role.CampaignId);
-            cmd.Parameters.AddWithValue("@name", role.Name);
-            cmd.Parameters.AddWithValue("@desc", role.Description);
+            cmd.CommandText = "INSERT INTO faction_relationship_types (campaign_id, name, description) VALUES (@cid, @name, @desc); SELECT last_insert_rowid();";
+            cmd.Parameters.AddWithValue("@cid",  t.CampaignId);
+            cmd.Parameters.AddWithValue("@name", t.Name);
+            cmd.Parameters.AddWithValue("@desc", t.Description);
             return (int)(long)cmd.ExecuteScalar();
         }
 
         public void Delete(int id)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = "UPDATE location_faction_roles SET inactive = 1 WHERE id = @id";
+            cmd.CommandText = "UPDATE faction_relationship_types SET inactive = 1 WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", id);
             cmd.ExecuteNonQuery();
         }

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace DndBuilder.Core.Models
 {
     public class Faction
@@ -10,5 +12,6 @@ namespace DndBuilder.Core.Models
         public string Notes        { get; set; } = "";   // DM secrets
         public string Goals        { get; set; } = "";
         public int    Reputation   { get; set; } = 0;   // Negative = hostile, positive = allied
+        public List<FactionRelationship> RelatedFactions { get; set; } = new();
     }
 }
