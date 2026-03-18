@@ -80,8 +80,12 @@ public partial class EntityRow : PanelContainer
         delBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; AddThemeStyleboxOverride("panel", DeleteHoverBox); };
         delBtn.MouseExited  += () => RemoveThemeStyleboxOverride("panel");
 
+        var confirmDialog = DialogHelper.Make(text: "Remove this entry? This cannot be undone.");
+        confirmDialog.Confirmed += () => EmitSignal(SignalName.DeletePressed);
+        AddChild(confirmDialog);
+
         navBtn.Pressed += () => EmitSignal(SignalName.NavigatePressed);
-        delBtn.Pressed += () => EmitSignal(SignalName.DeletePressed);
+        delBtn.Pressed += () => DialogHelper.Show(confirmDialog);
 
         hbox.AddChild(clip);
         hbox.AddChild(delBtn);

@@ -26,9 +26,28 @@ public partial class CampaignDashboard : Control
     [Export] private PackedScene _sessionDetailPaneScene;
     [Export] private PackedScene _itemDetailPaneScene;
 
+    private const float SidebarMaxWidth = 250f;
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationResized)
+            ApplySidebarWidth();
+    }
+
+    private const float DetailPadding = 8f;
+
+    private void ApplySidebarWidth()
+    {
+        float width = Mathf.Min(Size.X * 0.25f, SidebarMaxWidth);
+        GetNode<Control>("ScrollContainer").OffsetRight = width;
+        _detailPanel.OffsetLeft  =  width + DetailPadding;
+        _detailPanel.OffsetRight = -DetailPadding;
+    }
+
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
+        ApplySidebarWidth();
 
         _addNpcsButton.Pressed += () =>
         {

@@ -3,8 +3,9 @@
 [ext_resource type="Script" path="res://Scenes/Components/ItemDetailPane/ItemDetailPane.cs" id="1_itemdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="3_typeopt"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 
-[node name="ItemDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_isUniqueInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton")]
+[node name="ItemDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_isUniqueInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -12,12 +13,13 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_itemdet")
 _nameInput     = NodePath("VBoxContainer/NameRow/NameInput")
-_typeInput     = NodePath("VBoxContainer/TypeRow/TypeInput")
-_isUniqueInput = NodePath("VBoxContainer/IsUniqueRow/IsUniqueInput")
+_typeInput     = NodePath("VBoxContainer/ContentHBox/FieldsLeft/TypeRow/TypeInput")
+_isUniqueInput = NodePath("VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow/IsUniqueInput")
 _deleteButton  = NodePath("VBoxContainer/NameRow/DeleteButton")
-_descInput     = NodePath("VBoxContainer/DescriptionInput")
-_notesInput    = NodePath("VBoxContainer/NotesInput")
-_notesRenderer = NodePath("VBoxContainer/NotesRenderer")
+_descInput     = NodePath("VBoxContainer/ContentHBox/FieldsLeft/DescriptionInput")
+_notesInput    = NodePath("VBoxContainer/ContentHBox/FieldsLeft/NotesInput")
+_notesRenderer = NodePath("VBoxContainer/ContentHBox/FieldsLeft/NotesRenderer")
+_imageCarousel = NodePath("VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -38,58 +40,78 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="TypeRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ContentHBox" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="FieldsLeft" type="VBoxContainer" parent="VBoxContainer/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TypeRow" type="HBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TypeLabel" type="Label" parent="VBoxContainer/TypeRow"]
+[node name="TypeLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "Type"
 
-[node name="TypeInput" type="Button" parent="VBoxContainer/TypeRow"]
+[node name="TypeInput" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_typeopt")
 
-[node name="IsUniqueRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="IsUniqueRow" type="HBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="IsUniqueLabel" type="Label" parent="VBoxContainer/IsUniqueRow"]
+[node name="IsUniqueLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "Unique Item"
 
-[node name="IsUniqueInput" type="CheckBox" parent="VBoxContainer/IsUniqueRow"]
+[node name="IsUniqueInput" type="CheckBox" parent="VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow"]
 layout_mode = 2
 text = "Named / one-of-a-kind"
 
-[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 text = "Description"
 
-[node name="DescriptionInput" type="TextEdit" parent="VBoxContainer"]
+[node name="DescriptionInput" type="TextEdit" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Describe this item..."
 wrap_mode = 1
 
-[node name="NotesLabel" type="Label" parent="VBoxContainer"]
+[node name="NotesLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 text = "Notes"
 
-[node name="NotesInput" type="TextEdit" parent="VBoxContainer"]
+[node name="NotesInput" type="TextEdit" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "DM notes... use [[Name]] to link"
 wrap_mode = 1
 
-[node name="NotesRenderer" type="RichTextLabel" parent="VBoxContainer"]
+[node name="NotesRenderer" type="RichTextLabel" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
+
+[node name="CarouselColumn" type="VBoxContainer" parent="VBoxContainer/ContentHBox"]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="VBoxContainer/ContentHBox/CarouselColumn" instance=ExtResource("4_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="VBoxContainer/ContentHBox/CarouselColumn"]
+layout_mode = 2
+size_flags_vertical = 3

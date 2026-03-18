@@ -3,6 +3,7 @@ using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
+
 public partial class NpcDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
@@ -28,6 +29,7 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private TextEdit          _descInput;
     [Export] private TextEdit          _notesInput;
     [Export] private RichTextLabel     _notesRenderer;
+    [Export] private ImageCarousel     _imageCarousel;
 
     public override void _Ready()
     {
@@ -45,13 +47,12 @@ public partial class NpcDetailPane : ScrollContainer
 
         _notesRenderer.MetaClicked += OnMetaClicked;
 
-        _confirmDialog = new ConfirmationDialog { Title = "Delete NPC" };
+        _confirmDialog = DialogHelper.Make("Delete NPC");
         AddChild(_confirmDialog);
         _confirmDialog.Confirmed += () => EmitSignal(SignalName.Deleted, "npc", _npc?.Id ?? 0);
         _deleteButton.Pressed += () =>
         {
-            _confirmDialog.DialogText = $"Delete \"{_npc?.Name}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_npc?.Name}\"? This cannot be undone.");
         };
 
         _factionSelect.TypeSelected += id => _addFactionButton.Disabled = (id == -1);
@@ -100,6 +101,8 @@ public partial class NpcDetailPane : ScrollContainer
             name => { _db.NpcFactionRoles.Add(new DndBuilder.Core.Models.NpcFactionRole { CampaignId = npc.CampaignId, Name = name, Description = "" }); },
             id   => _db.NpcFactionRoles.Delete(id));
         _roleSelect.SelectById(null);
+
+        _imageCarousel?.Setup(EntityType.Npc, npc.Id, _db);
 
         _nameInput.Text       = string.IsNullOrEmpty(npc.Name) ? "New NPC" : npc.Name;
         _occupationInput.Text = npc.Occupation;
@@ -185,8 +188,7 @@ public partial class NpcDetailPane : ScrollContainer
         if (_npc == null) return;
         if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
         {
-            _confirmDialog.DialogText = $"Delete \"{_npc.Name}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_npc.Name}\"? This cannot be undone.");
             AcceptEvent();
         }
     }

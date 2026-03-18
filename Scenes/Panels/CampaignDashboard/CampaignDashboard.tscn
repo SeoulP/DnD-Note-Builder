@@ -34,8 +34,8 @@ _itemDetailPaneScene = ExtResource("5_itemdet")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=620386472]
 layout_mode = 1
-anchor_right = 0.25
 anchor_bottom = 1.0
+offset_right = 250.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -110,8 +110,8 @@ text = "New +"
 
 [node name="DetailPanel" type="Control" parent="." unique_id=712217800]
 layout_mode = 1
-anchor_left = 0.25
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 250.0
 grow_horizontal = 2
 grow_vertical = 2

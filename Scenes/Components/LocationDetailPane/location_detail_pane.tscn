@@ -3,8 +3,9 @@
 [ext_resource type="Script" path="res://Scenes/Components/LocationDetailPane/LocationDetailPane.cs" id="1_locdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="3_typeopt"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 
-[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_addSubLocationButton", "_subLocationsContainer")]
+[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notesInput", "_notesRenderer", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -13,16 +14,17 @@ grow_vertical = 2
 script = ExtResource("1_locdet")
 _nameInput             = NodePath("VBoxContainer/NameRow/NameInput")
 _deleteButton          = NodePath("VBoxContainer/NameRow/DeleteButton")
-_typeInput             = NodePath("VBoxContainer/TypeRow/TypeInput")
-_descInput             = NodePath("VBoxContainer/DescriptionInput")
-_notesInput            = NodePath("VBoxContainer/NotesInput")
-_notesRenderer         = NodePath("VBoxContainer/NotesRenderer")
-_factionRowsContainer  = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/FactionRowsContainer")
-_factionSelect         = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow/FactionSelect")
-_roleSelect            = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow/RoleSelect")
-_addFactionButton      = NodePath("VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow/AddFactionButton")
-_addSubLocationButton  = NodePath("VBoxContainer/SubLocationsRow/AddSubLocationButton")
-_subLocationsContainer = NodePath("VBoxContainer/SubLocationsContainer")
+_typeInput             = NodePath("VBoxContainer/ContentHBox/FieldsLeft/TypeRow/TypeInput")
+_descInput             = NodePath("VBoxContainer/ContentHBox/FieldsLeft/DescriptionInput")
+_notesInput            = NodePath("VBoxContainer/ContentHBox/FieldsLeft/NotesInput")
+_notesRenderer         = NodePath("VBoxContainer/ContentHBox/FieldsLeft/NotesRenderer")
+_factionRowsContainer  = NodePath("VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/FactionRowsContainer")
+_factionSelect         = NodePath("VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/FactionSelect")
+_roleSelect            = NodePath("VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/RoleSelect")
+_addFactionButton      = NodePath("VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/AddFactionButton")
+_addSubLocationButton  = NodePath("VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow/AddSubLocationButton")
+_subLocationsContainer = NodePath("VBoxContainer/ContentHBox/FieldsLeft/SubLocationsContainer")
+_imageCarousel         = NodePath("VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -43,100 +45,120 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="TypeRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ContentHBox" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="FieldsLeft" type="VBoxContainer" parent="VBoxContainer/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TypeRow" type="HBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TypeLabel" type="Label" parent="VBoxContainer/TypeRow"]
+[node name="TypeLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
 text = "Type"
 
-[node name="TypeInput" type="LineEdit" parent="VBoxContainer/TypeRow"]
+[node name="TypeInput" type="LineEdit" parent="VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "e.g. Town, Dungeon, Inn..."
 
-[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 text = "Description"
 
-[node name="DescriptionInput" type="TextEdit" parent="VBoxContainer"]
+[node name="DescriptionInput" type="TextEdit" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Describe this location..."
 wrap_mode = 1
 
-[node name="NotesLabel" type="Label" parent="VBoxContainer"]
+[node name="NotesLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 text = "Notes"
 
-[node name="NotesInput" type="TextEdit" parent="VBoxContainer"]
+[node name="NotesInput" type="TextEdit" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "DM notes... use [[Name]] to link"
 wrap_mode = 1
 
-[node name="NotesRenderer" type="RichTextLabel" parent="VBoxContainer"]
+[node name="NotesRenderer" type="RichTextLabel" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
 
-[node name="FactionsLabel" type="VBoxContainer" parent="VBoxContainer"]
+[node name="FactionsLabel" type="VBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="Label" type="Label" parent="VBoxContainer/FactionsLabel"]
+[node name="Label" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 vertical_alignment = 1
 text = "Factions"
 
-[node name="FactionsVBox" type="VBoxContainer" parent="VBoxContainer/FactionsLabel"]
+[node name="FactionsVBox" type="VBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="AddFactionRow" type="HBoxContainer" parent="VBoxContainer/FactionsLabel/FactionsVBox"]
+[node name="AddFactionRow" type="HBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="FactionSelect" type="OptionButton" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
+[node name="FactionSelect" type="OptionButton" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 clip_text = true
 
-[node name="RoleSelect" type="Button" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
+[node name="RoleSelect" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_typeopt")
 
-[node name="AddFactionButton" type="Button" parent="VBoxContainer/FactionsLabel/FactionsVBox/AddFactionRow"]
+[node name="AddFactionButton" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
 text = "+ Add"
 
-[node name="FactionRowsContainer" type="VBoxContainer" parent="VBoxContainer/FactionsLabel/FactionsVBox"]
+[node name="FactionRowsContainer" type="VBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="SubLocationsRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="SubLocationsRow" type="HBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 
-[node name="SubLocationsLabel" type="Label" parent="VBoxContainer/SubLocationsRow"]
+[node name="SubLocationsLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Sub-locations"
 
-[node name="AddSubLocationButton" type="Button" parent="VBoxContainer/SubLocationsRow"]
+[node name="AddSubLocationButton" type="Button" parent="VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow"]
 layout_mode = 2
 text = "+ Add"
 
-[node name="SubLocationsContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="SubLocationsContainer" type="VBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="CarouselColumn" type="VBoxContainer" parent="VBoxContainer/ContentHBox"]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="VBoxContainer/ContentHBox/CarouselColumn" instance=ExtResource("4_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="VBoxContainer/ContentHBox/CarouselColumn"]
+layout_mode = 2
+size_flags_vertical = 3

@@ -1,6 +1,7 @@
 using DndBuilder.Core.Models;
 using Godot;
 
+
 public partial class FactionDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
@@ -18,6 +19,7 @@ public partial class FactionDetailPane : ScrollContainer
     [Export] private TextEdit      _notesInput;
     [Export] private RichTextLabel _notesRenderer;
     [Export] private Button        _deleteButton;
+    [Export] private ImageCarousel _imageCarousel;
 
     public override void _Ready()
     {
@@ -32,19 +34,21 @@ public partial class FactionDetailPane : ScrollContainer
 
         _notesRenderer.MetaClicked += OnMetaClicked;
 
-        _confirmDialog = new ConfirmationDialog { Title = "Delete Faction" };
+        _confirmDialog = DialogHelper.Make("Delete Faction");
         AddChild(_confirmDialog);
         _confirmDialog.Confirmed += () => EmitSignal(SignalName.Deleted, "faction", _faction?.Id ?? 0);
         _deleteButton.Pressed += () =>
         {
-            _confirmDialog.DialogText = $"Delete \"{_faction?.Name}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_faction?.Name}\"? This cannot be undone.");
         };
     }
 
     public void Load(Faction faction)
     {
         _faction = faction;
+
+        _imageCarousel?.Setup(EntityType.Faction, faction.Id, _db);
+
         _nameInput.Text = string.IsNullOrEmpty(faction.Name) ? "New Faction" : faction.Name;
         _typeInput.Text = faction.Type;
         _descInput.Text = faction.Description;
@@ -58,8 +62,7 @@ public partial class FactionDetailPane : ScrollContainer
         if (_faction == null) return;
         if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
         {
-            _confirmDialog.DialogText = $"Delete \"{_faction.Name}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_faction.Name}\"? This cannot be undone.");
             AcceptEvent();
         }
     }

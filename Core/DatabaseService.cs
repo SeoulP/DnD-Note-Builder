@@ -1,5 +1,6 @@
 using Godot;
 using Microsoft.Data.Sqlite;
+using DndBuilder.Core.Models;
 using DndBuilder.Core.Repositories;
 
 public partial class DatabaseService : Node
@@ -18,6 +19,7 @@ public partial class DatabaseService : Node
     public NpcRepository                  Npcs                  { get; private set; }
     public ItemTypeRepository             ItemTypes             { get; private set; }
     public ItemRepository                 Items                 { get; private set; }
+    public EntityImageRepository          EntityImages          { get; private set; }
 
     public override void _Ready()
     {
@@ -37,6 +39,7 @@ public partial class DatabaseService : Node
         Npcs                 = new NpcRepository(_conn);
         ItemTypes            = new ItemTypeRepository(_conn);
         Items                = new ItemRepository(_conn);
+        EntityImages         = new EntityImageRepository(_conn);
 
         RunMigrations();
     }
@@ -56,6 +59,9 @@ public partial class DatabaseService : Node
         Npcs                .Migrate();  // references campaigns, species, locations, factions, npc_relationship_types, npc_statuses, npc_faction_roles
         ItemTypes           .Migrate();  // references campaigns; must precede Items
         Items               .Migrate();  // references campaigns, item_types, characters, locations
+        EntityImages        .Migrate();  // polymorphic; no FK constraints — references any entity by type+id
+
+        MigrateLegacyPortraits();
 
         // Ensure every campaign has all current seed defaults (idempotent — skips names that already exist)
         SeedAllCampaigns();
@@ -72,6 +78,23 @@ public partial class DatabaseService : Node
             NpcFactionRoles     .SeedDefaults(campaign.Id);
             ItemTypes           .SeedDefaults(campaign.Id);
         }
+    }
+
+    // One-time migration: move any legacy portrait_path strings from the characters table
+    // into entity_images rows. Safe to run every startup — MigrateLegacyPortrait no-ops if
+    // a row already exists for that NPC.
+    private void MigrateLegacyPortraits()
+    {
+        var cmd = _conn.CreateCommand();
+        cmd.CommandText = "SELECT id, portrait_path FROM characters WHERE portrait_path != ''";
+        using var reader = cmd.ExecuteReader();
+        var rows = new System.Collections.Generic.List<(int id, string path)>();
+        while (reader.Read())
+            rows.Add((reader.GetInt32(0), reader.GetString(1)));
+        reader.Close();
+
+        foreach (var (id, path) in rows)
+            EntityImages.MigrateLegacyPortrait(EntityType.Npc, id, path);
     }
 
     public override void _ExitTree()

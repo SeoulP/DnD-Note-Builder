@@ -3,6 +3,7 @@ using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
+
 public partial class LocationDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
@@ -26,6 +27,7 @@ public partial class LocationDetailPane : ScrollContainer
     [Export] private Button           _addFactionButton;
     [Export] private Button           _addSubLocationButton;
     [Export] private VBoxContainer    _subLocationsContainer;
+    [Export] private ImageCarousel    _imageCarousel;
 
     public override void _Ready()
     {
@@ -54,13 +56,12 @@ public partial class LocationDetailPane : ScrollContainer
             LoadFactionRows();
         };
 
-        _confirmDialog = new ConfirmationDialog { Title = "Delete Location" };
+        _confirmDialog = DialogHelper.Make("Delete Location");
         AddChild(_confirmDialog);
         _confirmDialog.Confirmed += () => EmitSignal(SignalName.Deleted, "location", _location?.Id ?? 0);
         _deleteButton.Pressed += () =>
         {
-            _confirmDialog.DialogText = $"Delete \"{_location?.Name}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_location?.Name}\"? This cannot be undone.");
         };
 
         _addSubLocationButton.Pressed += () =>
@@ -118,6 +119,8 @@ public partial class LocationDetailPane : ScrollContainer
             name => { _db.LocationFactionRoles.Add(new LocationFactionRole { CampaignId = location.CampaignId, Name = name, Description = "" }); },
             id   => _db.LocationFactionRoles.Delete(id));
         _roleSelect.SelectById(null);
+
+        _imageCarousel?.Setup(EntityType.Location, location.Id, _db);
 
         _nameInput.Text  = string.IsNullOrEmpty(location.Name) ? "New Location" : location.Name;
         _typeInput.Text  = location.Type;
@@ -208,8 +211,7 @@ public partial class LocationDetailPane : ScrollContainer
         if (_location == null) return;
         if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
         {
-            _confirmDialog.DialogText = $"Delete \"{_location.Name}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_location.Name}\"? This cannot be undone.");
             AcceptEvent();
         }
     }

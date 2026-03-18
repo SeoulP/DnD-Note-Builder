@@ -38,7 +38,7 @@ public partial class TypeOptionButton : Button
         Icon          = GetThemeIcon("arrow", "OptionButton");
         Pressed      += ShowPopup;
 
-        _deleteDialog = new ConfirmationDialog { Title = "Delete Type" };
+        _deleteDialog = DialogHelper.Make("Delete Type");
         AddChild(_deleteDialog);
         _deleteDialog.Confirmed += () =>
         {
@@ -210,8 +210,7 @@ public partial class TypeOptionButton : Button
                 _pendingDeleteId   = cId;
                 _pendingDeleteName = cName;
                 popup.Hide();
-                _deleteDialog.DialogText = $"Delete \"{cName}\"?\n\nThis will remove it from all records currently using this type.";
-                _deleteDialog.PopupCentered();
+                DialogHelper.Show(_deleteDialog, $"Delete \"{cName}\"?\n\nThis will remove it from all records currently using this type.");
             };
 
             nameBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", RowHoverBox); };

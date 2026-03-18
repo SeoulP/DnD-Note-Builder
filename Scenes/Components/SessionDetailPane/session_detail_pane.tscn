@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" path="res://Scenes/Components/SessionDetailPane/SessionDetailPane.cs" id="1_sesdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
 
-[node name="SessionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_numberLabel", "_titleInput", "_playedOnInput", "_notesInput", "_notesRenderer", "_deleteButton")]
+[node name="SessionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_numberLabel", "_titleInput", "_playedOnInput", "_notesInput", "_notesRenderer", "_deleteButton", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -13,9 +14,10 @@ script = ExtResource("1_sesdet")
 _numberLabel   = NodePath("VBoxContainer/NumberLabel")
 _titleInput    = NodePath("VBoxContainer/TitleRow/TitleInput")
 _deleteButton  = NodePath("VBoxContainer/TitleRow/DeleteButton")
-_playedOnInput = NodePath("VBoxContainer/PlayedOnRow/PlayedOnInput")
-_notesInput    = NodePath("VBoxContainer/NotesInput")
-_notesRenderer = NodePath("VBoxContainer/NotesRenderer")
+_playedOnInput = NodePath("VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow/PlayedOnInput")
+_notesInput    = NodePath("VBoxContainer/ContentHBox/FieldsLeft/NotesInput")
+_notesRenderer = NodePath("VBoxContainer/ContentHBox/FieldsLeft/NotesRenderer")
+_imageCarousel = NodePath("VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -41,34 +43,54 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="PlayedOnRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ContentHBox" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="FieldsLeft" type="VBoxContainer" parent="VBoxContainer/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="PlayedOnRow" type="HBoxContainer" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="PlayedOnLabel" type="Label" parent="VBoxContainer/PlayedOnRow"]
+[node name="PlayedOnLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
 text = "Played On"
 
-[node name="PlayedOnInput" type="LineEdit" parent="VBoxContainer/PlayedOnRow"]
+[node name="PlayedOnInput" type="LineEdit" parent="VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "yyyy-mm-dd"
 
-[node name="NotesLabel" type="Label" parent="VBoxContainer"]
+[node name="NotesLabel" type="Label" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 text = "Notes"
 
-[node name="NotesInput" type="TextEdit" parent="VBoxContainer"]
+[node name="NotesInput" type="TextEdit" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Session recap... use [[Name]] to link"
 wrap_mode = 1
 
-[node name="NotesRenderer" type="RichTextLabel" parent="VBoxContainer"]
+[node name="NotesRenderer" type="RichTextLabel" parent="VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
 size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
+
+[node name="CarouselColumn" type="VBoxContainer" parent="VBoxContainer/ContentHBox"]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="VBoxContainer/ContentHBox/CarouselColumn" instance=ExtResource("3_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="VBoxContainer/ContentHBox/CarouselColumn"]
+layout_mode = 2
+size_flags_vertical = 3

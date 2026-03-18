@@ -13,14 +13,15 @@ This document captures all UI work required following the model refactor in `Mod
 
 ## Task Summary
 
-| # | Task | Type | Scope |
-|---|------|------|-------|
-| 1 | Fix `FactionDetailPane` — remove Headquarters | Compile fix | `FactionDetailPane.cs` + `.tscn` |
-| 2 | Fix `LocationDetailPane` — `FactionIds` → `Factions` | Compile fix | `LocationDetailPane.cs` |
-| 3 | Fix `NpcDetailPane` — replace enum dropdowns with DB-loaded dropdowns | Compile fix + enhancement | `NpcDetailPane.cs` |
-| ★ 4 | NPC detail pane — full field audit post-refactor | Enhancement | `NpcDetailPane.cs` + `.tscn` |
-| ★ 5 | Campaign Settings screen — manage seeded types | New screen | New scene(s) |
-| ★ 6 | Item list + detail pane | New screen | New scenes |
+| # | Task | Type | Scope | Status |
+|---|------|------|-------|--------|
+| 1 | Fix `FactionDetailPane` — remove Headquarters | Compile fix | `FactionDetailPane.cs` + `.tscn` | ✅ Done |
+| 2 | Fix `LocationDetailPane` — `FactionIds` → `Factions` | Compile fix | `LocationDetailPane.cs` | ✅ Done |
+| 3 | Fix `NpcDetailPane` — replace enum dropdowns with DB-loaded dropdowns | Compile fix + enhancement | `NpcDetailPane.cs` | ✅ Done |
+| ★ 4 | NPC detail pane — full field audit post-refactor | Enhancement | `NpcDetailPane.cs` + `.tscn` | 🔶 Partial — Status/Relationship done; Personality, HomeLocationId, FirstSeenSession still missing |
+| ★ 5 | Campaign Settings screen — manage seeded types | New screen | New scene(s) | ⬜ Todo |
+| ★ 6 | Item list + detail pane | New screen | New scenes | ✅ Done |
+| ★ 7 | Entity image carousel system — multi-image, all panes | New components + data layer + enhancement | All 5 detail panes | ⬜ Todo |
 
 *★ = new work beyond compile fixes*
 
@@ -223,6 +224,174 @@ The Item model and `ItemRepository` are complete. Users need a way to see, add, 
 ### Sidebar Integration
 
 Items will need a sidebar section. Follow the same pattern as the Locations or NPCs section. Default sort position: after Factions.
+
+---
+
+## Task 7 — Entity Image Carousel System
+
+### What & Why
+
+All entities (NPC, Location, Item, Faction, Session) should support **multiple images** — character portraits, faction banners, location art, session screenshots, etc. A single `PortraitPath` string is insufficient. The UI should be a self-contained carousel: left/right arrows to cycle through images, a `+` button to add more, and click-to-open lightbox for pan/zoom.
+
+> **Note:** `Character.PortraitPath` already exists on the model and in the DB as a single string. It will be **migrated** into the new `entity_images` table on first load and the column left in place (ignored going forward) to avoid destructive schema changes.
+
+---
+
+### Data Layer
+
+#### New enum: `EntityType`
+
+```csharp
+// Core/Models/EntityType.cs
+namespace DndBuilder.Core.Models
+{
+    public enum EntityType { Npc, Location, Item, Faction, Session }
+}
+```
+
+Stored in the DB as its integer value (`(int)EntityType.Npc`, etc.).
+
+#### New model: `EntityImage`
+
+```csharp
+// Core/Models/EntityImage.cs
+namespace DndBuilder.Core.Models
+{
+    public class EntityImage
+    {
+        public int        Id         { get; set; }
+        public EntityType EntityType { get; set; }
+        public int        EntityId   { get; set; }
+        public string     Path       { get; set; } = "";
+        public int        SortOrder  { get; set; } = 0;
+    }
+}
+```
+
+#### New repository: `EntityImageRepository`
+
+```csharp
+// Core/Repositories/EntityImageRepository.cs
+```
+
+Table DDL (inside `Migrate()`):
+
+```sql
+CREATE TABLE IF NOT EXISTS entity_images (
+    id          INTEGER PRIMARY KEY,
+    entity_type TEXT    NOT NULL,
+    entity_id   INTEGER NOT NULL,
+    path        TEXT    NOT NULL DEFAULT '',
+    sort_order  INTEGER NOT NULL DEFAULT 0
+)
+```
+
+Methods needed:
+- `List<EntityImage> GetAll(EntityType entityType, int entityId)` — ordered by `sort_order ASC`
+- `int Add(EntityImage img)` — inserts, returns new id
+- `void Delete(int id)`
+- `void Reorder(int id, int newSortOrder)` — for drag-to-reorder (deferred; nav arrows are enough for now)
+
+Register in `DatabaseService.cs`:
+- Add `public EntityImageRepository EntityImages { get; private set; }`
+- Instantiate and call `.Migrate()` alongside other repos
+
+#### Migration of existing `Character.PortraitPath`
+
+In `NpcRepository` (or `DatabaseService` startup), after `entity_images` is migrated: for any NPC whose `portrait_path` is non-empty and has no rows in `entity_images`, insert one row with `sort_order = 0`. Do not alter or drop the `portrait_path` column.
+
+---
+
+### Scenes / Components Required
+
+| Scene | Purpose |
+|-------|---------|
+| `Scenes/Components/ImageCarousel/ImageCarousel.cs` + `.tscn` | Self-contained carousel component. Shows one image at a time; prev/next arrows; `+` button to add via file dialog or drag-and-drop; emits `ImagesChanged`. |
+| `Scenes/Components/ImageLightbox/ImageLightbox.cs` + `.tscn` | Full-screen overlay for pan + zoom. Instantiated by `ImageCarousel` on image click; freed on close. |
+
+---
+
+### ImageCarousel Layout
+
+```
+ImageCarousel (PanelContainer, fixed size e.g. 220×220, rounded corners)
+  ├── TextureRect (_image)          — fills area; stretch = KeepAspectCovered; click → open lightbox
+  ├── Label (_emptyHint)            — "Drop image here" centered; visible only when image list is empty
+  ├── Button (_prevButton)          — "‹" left-center; hidden when ≤ 1 image
+  ├── Button (_nextButton)          — "›" right-center; hidden when ≤ 1 image
+  ├── Button (_addButton)           — "+" bottom-center; always visible
+  └── Label (_counter)              — "2 / 5" bottom-right; hidden when ≤ 1 image
+```
+
+Visual matches sketch: rounded border, arrows on left/right vertical midpoints, `+` at bottom center.
+
+**Behaviour:**
+- `_prevButton` / `_nextButton`: cycle `_currentIndex` and call `ShowCurrent()`
+- `_addButton`: opens `FileDialog` filtered to `.png .jpg .jpeg .webp`; on confirm inserts a new `EntityImage` row via repo, appends to internal list, advances to last index
+- **Drag-and-drop:** override `_CanDropData` / `_DropData`; accept file paths with matching extensions
+- **Missing file:** if `Path` is set but `File.Exists(path)` is false, show a broken-image placeholder icon instead of crashing
+- **File loading:** `Image.LoadFromFile(path)` → `ImageTexture.CreateFromImage(img)`
+
+**Public API:**
+
+```csharp
+// Called by the parent detail pane during Load()
+public void Setup(EntityType entityType, int entityId, DatabaseService db)
+
+// Reloads from DB and refreshes display — call after external changes if needed
+public void Refresh()
+```
+
+No `PathChanged` signal needed — the carousel writes directly to the repo on add/delete.
+
+---
+
+### ImageLightbox Layout
+
+```
+ImageLightbox (CanvasLayer, full-screen)
+  ├── ColorRect (_backdrop)         — semi-transparent black (alpha ~0.75); click closes
+  ├── TextureRect (_imageDisplay)   — centered; pan with left-drag; scroll wheel zooms (min 0.25×, max 4×)
+  └── Button (_closeButton)         — "×" top-right corner
+```
+
+- **Pan:** left-mouse drag → delta applied to `_imageDisplay.Position`
+- **Zoom:** scroll wheel; scale pivot at mouse position; clamp 0.25×–4×
+- **Close:** click backdrop, click ×, or press Escape
+- **Instantiation:** `ImageCarousel` instantiates it via `GD.Load<PackedScene>(...)`, passes the current `ImageTexture`, and adds it to the scene tree; lightbox frees itself on close
+
+---
+
+### Integration Points
+
+| Detail Pane | Entity Type String | Placement |
+|-------------|-------------------|-----------|
+| `NpcDetailPane` | `"npc"` | Top-right of form, beside Species/Gender/Occupation block |
+| `LocationDetailPane` | `"location"` | Top-right of form |
+| `ItemDetailPane` | `"item"` | Top-right of form |
+| `FactionDetailPane` | `"faction"` | Top-right of form |
+| `SessionDetailPane` | `"session"` | Top-right of form |
+
+Each pane:
+1. Adds `[Export] private ImageCarousel _imageCarousel;`
+2. In `Load()`: calls `_imageCarousel.Setup("entitytype", entity.Id, _db)`
+3. No signal wiring needed — carousel is self-contained
+
+---
+
+### Implementation Checklist
+
+- [x] `Core/Models/EntityType.cs` — new enum
+- [x] `Core/Models/EntityImage.cs` — new model
+- [x] `Core/Repositories/EntityImageRepository.cs` — new repo with Migrate / GetAll / Add / Delete / MigrateLegacyPortrait
+- [x] `DatabaseService.cs` — register `EntityImages` repo, call Migrate, call MigrateLegacyPortraits
+- [x] `Scenes/Components/ImageCarousel/ImageCarousel.cs` + `.tscn`
+- [x] `Scenes/Components/ImageLightbox/ImageLightbox.cs` + `.tscn`
+- [x] Wire `ImageCarousel` into `NpcDetailPane` (.cs) — **`.tscn` still needs carousel node added**
+- [x] Wire `ImageCarousel` into `LocationDetailPane` (.cs) — **`.tscn` still needs carousel node added**
+- [x] Wire `ImageCarousel` into `ItemDetailPane` (.cs) — **`.tscn` still needs carousel node added**
+- [x] Wire `ImageCarousel` into `FactionDetailPane` (.cs) — **`.tscn` still needs carousel node added**
+- [x] Wire `ImageCarousel` into `SessionDetailPane` (.cs) — **`.tscn` still needs carousel node added**
 
 ---
 

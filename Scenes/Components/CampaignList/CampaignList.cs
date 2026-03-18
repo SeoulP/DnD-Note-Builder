@@ -53,8 +53,7 @@ public partial class CampaignList : VBoxContainer
 	private void OnDeletePressed(int campaignId)
 	{
 		// Show confirmation dialog
-		var dialog = new ConfirmationDialog();
-		dialog.DialogText = "Are you sure you want to delete this campaign? This cannot be undone.";
+		var dialog = DialogHelper.Make(text: "Are you sure you want to delete this campaign? This cannot be undone.");
 		dialog.Confirmed += () =>
 		{
 			var db = GetNode<DatabaseService>("/root/DatabaseService");
@@ -62,6 +61,6 @@ public partial class CampaignList : VBoxContainer
 			LoadCampaigns();
 		};
 		AddChild(dialog);
-		dialog.PopupCentered();
+		DialogHelper.Show(dialog);
 	}
 }

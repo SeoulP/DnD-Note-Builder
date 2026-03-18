@@ -1,6 +1,7 @@
 using DndBuilder.Core.Models;
 using Godot;
 
+
 public partial class SessionDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
@@ -17,6 +18,7 @@ public partial class SessionDetailPane : ScrollContainer
     [Export] private TextEdit      _notesInput;
     [Export] private RichTextLabel _notesRenderer;
     [Export] private Button        _deleteButton;
+    [Export] private ImageCarousel _imageCarousel;
 
     public override void _Ready()
     {
@@ -29,19 +31,21 @@ public partial class SessionDetailPane : ScrollContainer
 
         _notesRenderer.MetaClicked += OnMetaClicked;
 
-        _confirmDialog = new ConfirmationDialog { Title = "Delete Session" };
+        _confirmDialog = DialogHelper.Make("Delete Session");
         AddChild(_confirmDialog);
         _confirmDialog.Confirmed += () => EmitSignal(SignalName.Deleted, "session", _session?.Id ?? 0);
         _deleteButton.Pressed += () =>
         {
-            _confirmDialog.DialogText = $"Delete \"{_session?.Title}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_session?.Title}\"? This cannot be undone.");
         };
     }
 
     public void Load(Session session)
     {
         _session = session;
+
+        _imageCarousel?.Setup(EntityType.Session, session.Id, _db);
+
         _numberLabel.Text   = $"Session #{session.Number:D3}";
         _titleInput.Text    = string.IsNullOrEmpty(session.Title) ? "New Session" : session.Title;
         _playedOnInput.Text = session.PlayedOn;
@@ -54,8 +58,7 @@ public partial class SessionDetailPane : ScrollContainer
         if (_session == null) return;
         if (e is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Delete)
         {
-            _confirmDialog.DialogText = $"Delete \"{_session.Title}\"? This cannot be undone.";
-            _confirmDialog.PopupCentered();
+            DialogHelper.Show(_confirmDialog, $"Delete \"{_session.Title}\"? This cannot be undone.");
             AcceptEvent();
         }
     }
