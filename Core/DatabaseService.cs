@@ -23,10 +23,23 @@ public partial class DatabaseService : Node
     public ItemRepository                 Items                 { get; private set; }
     public EntityImageRepository          EntityImages          { get; private set; }
 
+    public string DbPath { get; private set; }
+
     public override void _Ready()
     {
-        var path = OS.GetUserDataDir() + "/campaign.db";
-        _conn = new SqliteConnection($"Data Source={path}");
+        DbPath = OS.GetUserDataDir() + "/campaign.db";
+        InitConnection();
+    }
+
+    public void Reconnect()
+    {
+        _conn?.Close();
+        InitConnection();
+    }
+
+    private void InitConnection()
+    {
+        _conn = new SqliteConnection($"Data Source={DbPath}");
         _conn.Open();
 
         Campaigns            = new CampaignRepository(_conn);

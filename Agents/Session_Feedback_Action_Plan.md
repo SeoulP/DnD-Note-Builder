@@ -19,12 +19,12 @@ This document captures all feedback, bugs, and design decisions arising from the
 | 2 | Drag-and-drop image upload not working | Bug | High | ⬜ Todo | `project.godot` |
 | 3 | Session sidebar — show title only, no index prefix | UX | High | ✅ Done | `CampaignDashboard.cs`, `SessionDetailPane.cs` |
 | 4 | Wasted space left/right of app | UX | High | ✅ Done | `App.cs` |
-| 5 | Import / Export database | Feature | High | ⬜ Todo | `NavBar.cs` (new) |
+| 5 | Import / Export database | Feature | High | ✅ Done | `NavBar.cs`, `ImportExportModal.cs`, `ImportExportService.cs`, `ExportPackage.cs` |
 | 6 | All text areas auto-expand in edit mode | UX | Medium | ✅ Done | `WikiNotes.cs` |
-| 7 | Entity name fields select-all on focus | UX | Medium | ⬜ Todo | All detail panes |
+| 7 | Entity name fields select-all on focus | UX | Medium | ✅ Done | All detail panes |
 | 8 | Lightbox cursor shows magnifier on hover | UX | Medium | ✅ Done | `ImageLightbox.cs` |
 | 9 | Image picker — OS-native file dialog | UX | Medium | ⬜ Todo | `ImageCarousel.cs` |
-| 10 | Navbar — define purpose and build out | UX | Medium | ⬜ Todo | `NavBar.cs` |
+| 10 | Navbar — define purpose and build out | UX | Medium | ✅ Done | `NavBar.cs` |
 | 11 | Add "Acquainted with" NPC relationship seed | Schema | Medium | ✅ Done | `CharacterRelationshipTypeRepository.cs` |
 | 12 | Background colour — investigate Godot Themes | UX | Low | ⬜ Todo | Global (`.tres`) |
 | 13 | Nested locations in sidebar | Design | Low | ⬜ Todo | `CampaignDashboard.cs` |
@@ -40,6 +40,8 @@ This document captures all feedback, bugs, and design decisions arising from the
 | 23 | Tab system for the detail pane | Design | Planned | ⬜ Todo | `CampaignDashboard.cs` (new `TabBar` component) |
 | 24 | Notes consistency — Notes last in all detail panes | UX | High | ✅ Done | `location_detail_pane.tscn` |
 | 25 | Detail pane footer — breathing room at window bottom | UX | High | ✅ Done | `CampaignDashboard.cs` |
+| 26 | New sessions always append to end of sidebar list | Bug | High | ✅ Done | `CampaignDashboard.cs`, `ImportExportService.cs` |
+| 27 | Settings menu tooltips | UX | Medium | ✅ Done | `NavBar.cs` |
 
 ---
 
@@ -182,23 +184,23 @@ Investigate Godot `.tres` theme resources before doing any visual overhaul. A si
 
 ## New Features
 
-### Task 5 — Import / Export database
+### Task 5 — Import / Export ✅ Done
 
-High priority. The `.db` file is the entire save, making import/export trivially simple to implement. It is the primary backup and recovery path.
+**Settings menu (NavBar `⚙ Settings`)** has four items:
 
-**Export**
+| Item | What it does |
+|------|-------------|
+| Backup Database | `File.Copy` entire `.db` → chosen path. Backs up all campaigns. |
+| Restore Database | `File.Copy` chosen `.db` → app path. Confirms first. Calls `DatabaseService.Reconnect()` then navigates back to campaign list. |
+| Export Campaign Data... | Opens `ImportExportModal` in Export mode. User selects any combination of type tables and individual/all entities → saves `.dndx` JSON file. |
+| Import Campaign Data... | File picker for `.dndx` → opens `ImportExportModal` in Import mode (pre-checked with file contents) → inserts selected data into current campaign → reloads sidebar. |
 
-1. Open a `FileDialog` in save mode filtered to `.db` files.
-2. Use `System.IO.File.Copy(sourcePath, destPath)` to copy the current `.db` to the chosen location.
+**Key files:**
+- `Core/Models/ExportPackage.cs` — JSON-serializable container (8 type tables + 5 entity types)
+- `Core/ImportExportService.cs` — `BuildPackage()` + `ApplyPackage()` with FK remapping by name for types, fresh IDs for entities
+- `Scenes/Modals/ImportExportModal/` — modular selection UI using `FoldableContainer` sections with cascade checkboxes
 
-**Import**
-
-1. Open a `FileDialog` in open mode filtered to `.db` files.
-2. Close the SQLite connection via `DatabaseService`.
-3. Overwrite the current `.db` file with the selected file.
-4. Reconnect and reload the campaign list.
-
-Natural home for these buttons: the navbar (see Task 10). Show a confirmation prompt before import since it overwrites existing data.
+**Import FK resolution:** Types matched by name (insert if not found). Cross-entity FKs (e.g. NPC → Faction) remapped using old→new ID maps; nulled if referenced entity wasn't included in the import. Sessions assigned fresh numbers after the current max to avoid the `UNIQUE(campaign_id, number)` constraint.
 
 ---
 

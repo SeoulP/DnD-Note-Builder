@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
@@ -76,7 +77,8 @@ public partial class CampaignDashboard : Control
         _addSessionsButton.Pressed += () =>
         {
             var existing = _db.Sessions.GetAll(_campaignId);
-            var session = new Session { CampaignId = _campaignId, Number = existing.Count + 1, Title = "New Session" };
+            int nextNumber = existing.Count > 0 ? existing.Max(s => s.Number) + 1 : 1;
+            var session = new Session { CampaignId = _campaignId, Number = nextNumber, Title = "New Session" };
             int id = _db.Sessions.Add(session);
             LoadSessions();
             ShowDetailPane("session", id);
@@ -110,6 +112,8 @@ public partial class CampaignDashboard : Control
     {
         _campaignId = campaignId;
     }
+
+    public void ReloadSidebar() => LoadAll();
 
     private void LoadAll()
     {

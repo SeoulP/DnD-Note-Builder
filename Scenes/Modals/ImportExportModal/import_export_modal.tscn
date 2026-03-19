@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://import_export_modal"]
+
+[ext_resource type="Script" path="res://Scenes/Modals/ImportExportModal/ImportExportModal.cs" id="1_modal"]
+
+[node name="ImportExportModal" type="Window" node_paths=PackedStringArray("_titleLabel", "_sectionsContainer", "_cancelButton", "_actionButton")]
+title = "Import / Export"
+initial_position = 2
+size = Vector2i(560, 680)
+min_size = Vector2i(480, 500)
+script = ExtResource("1_modal")
+_titleLabel        = NodePath("VBox/Header/TitleLabel")
+_sectionsContainer = NodePath("VBox/Scroll/SectionsContainer")
+_cancelButton      = NodePath("VBox/Footer/CancelButton")
+_actionButton      = NodePath("VBox/Footer/ActionButton")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Export Campaign Data"
+
+[node name="HSep" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SectionsContainer" type="VBoxContainer" parent="VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="HSep2" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="Footer" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CancelButton" type="Button" parent="VBox/Footer"]
+layout_mode = 2
+text = "Cancel"
+custom_minimum_size = Vector2(80, 0)
+
+[node name="Spacer" type="Control" parent="VBox/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ActionButton" type="Button" parent="VBox/Footer"]
+layout_mode = 2
+text = "Export"
+custom_minimum_size = Vector2(120, 0)

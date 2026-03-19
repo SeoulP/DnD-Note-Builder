@@ -8,15 +8,21 @@ public partial class App : Control
 	[Export] PackedScene _campaignListPanelScene;
 	[Export] PackedScene _campaignDashboardScene;
 
+	private CampaignDashboard _currentDashboard;
+
 	public override void _Ready()
 	{
-		_navBar.BackPressed += ShowCampaignList;
+		_navBar.BackPressed           += ShowCampaignList;
+		_navBar.DatabaseRestored      += ShowCampaignList;
+		_navBar.CampaignDataImported  += () => _currentDashboard?.ReloadSidebar();
 		ShowCampaignList();
 	}
 
 	private void ShowCampaignList()
 	{
+		_currentDashboard = null;
 		_navBar.ShowBack(false);
+		_navBar.SetCampaign(null);
 		SetMargins(200, 200, 50, 50);
 		ClearPanel();
 		var panel = _campaignListPanelScene.Instantiate<CampaignListPanel>();
@@ -29,13 +35,14 @@ public partial class App : Control
 	private void ShowDashboard(int campaignId)
 	{
 		_navBar.ShowBack(true);
+		_navBar.SetCampaign(campaignId);
 		SetMargins(0, 0, 0, 0);
 		ClearPanel();
-		var dashboard = _campaignDashboardScene.Instantiate<CampaignDashboard>();
-		dashboard.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		dashboard.SizeFlagsVertical = SizeFlags.ExpandFill;
-		dashboard.SetCampaign(campaignId);
-		_appPanel.AddChild(dashboard);
+		_currentDashboard = _campaignDashboardScene.Instantiate<CampaignDashboard>();
+		_currentDashboard.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_currentDashboard.SizeFlagsVertical   = SizeFlags.ExpandFill;
+		_currentDashboard.SetCampaign(campaignId);
+		_appPanel.AddChild(_currentDashboard);
 	}
 
 	private void SetMargins(int left, int right, int top, int bottom)
