@@ -6,8 +6,9 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/LocationDetailPane/location_detail_pane.tscn" id="3_locdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/SessionDetailPane/session_detail_pane.tscn" id="4_sesdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ItemDetailPane/item_detail_pane.tscn" id="5_itemdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/QuestDetailPane/quest_detail_pane.tscn" id="6_questdet"]
 
-[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_detailPanel")]
+[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_addQuestsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_questsContainer", "_detailPanel")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,12 +26,15 @@ _factionsContainer = NodePath("ScrollContainer/VBoxContainer/FactionsPanel/VBoxC
 _locationsContainer = NodePath("ScrollContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer")
 _sessionsContainer = NodePath("ScrollContainer/VBoxContainer/SessionsPanel/VBoxContainer")
 _itemsContainer = NodePath("ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer")
+_addQuestsButton = NodePath("ScrollContainer/VBoxContainer/QuestsPanel/VBoxContainer/AddQuestsButton")
+_questsContainer = NodePath("ScrollContainer/VBoxContainer/QuestsPanel/VBoxContainer")
 _detailPanel = NodePath("DetailPanel")
 _npcDetailPaneScene = ExtResource("1_npcdet")
 _factionDetailPaneScene = ExtResource("2_facdet")
 _locationDetailPaneScene = ExtResource("3_locdet")
 _sessionDetailPaneScene = ExtResource("4_sesdet")
 _itemDetailPaneScene = ExtResource("5_itemdet")
+_questDetailPaneScene = ExtResource("6_questdet")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=620386472]
 layout_mode = 1
@@ -111,6 +115,19 @@ visible = false
 layout_mode = 2
 
 [node name="AddItemsButton" type="Button" parent="ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer" unique_id=111111103]
+layout_mode = 2
+text = "New +"
+
+[node name="QuestsPanel" type="FoldableContainer" parent="ScrollContainer/VBoxContainer" unique_id=111111104]
+layout_mode = 2
+folded = true
+title = "Quests"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/QuestsPanel" unique_id=111111105]
+visible = false
+layout_mode = 2
+
+[node name="AddQuestsButton" type="Button" parent="ScrollContainer/VBoxContainer/QuestsPanel/VBoxContainer" unique_id=111111106]
 layout_mode = 2
 text = "New +"
 

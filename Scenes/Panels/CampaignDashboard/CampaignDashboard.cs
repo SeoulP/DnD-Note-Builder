@@ -13,12 +13,14 @@ public partial class CampaignDashboard : Control
     [Export] private Button _addLocationsButton;
     [Export] private Button _addSessionsButton;
     [Export] private Button _addItemsButton;
+    [Export] private Button _addQuestsButton;
 
     [Export] private VBoxContainer _npcsContainer;
     [Export] private VBoxContainer _factionsContainer;
     [Export] private VBoxContainer _locationsContainer;
     [Export] private VBoxContainer _sessionsContainer;
     [Export] private VBoxContainer _itemsContainer;
+    [Export] private VBoxContainer _questsContainer;
 
     [Export] private Control _detailPanel;
 
@@ -27,6 +29,7 @@ public partial class CampaignDashboard : Control
     [Export] private PackedScene _locationDetailPaneScene;
     [Export] private PackedScene _sessionDetailPaneScene;
     [Export] private PackedScene _itemDetailPaneScene;
+    [Export] private PackedScene _questDetailPaneScene;
 
     private const float SidebarMaxWidth = 250f;
 
@@ -90,18 +93,27 @@ public partial class CampaignDashboard : Control
             LoadItems();
             ShowDetailPane("item", id);
         };
+        _addQuestsButton.Pressed += () =>
+        {
+            var quest = new Quest { CampaignId = _campaignId, Name = "New Quest" };
+            int id = _db.Quests.Add(quest);
+            LoadQuests();
+            ShowDetailPane("quest", id);
+        };
 
         StyleAddButton(_addNpcsButton,      NpcColor);
         StyleAddButton(_addFactionButton,   FactionColor);
         StyleAddButton(_addLocationsButton, LocationColor);
         StyleAddButton(_addSessionsButton,  SessionColor);
         StyleAddButton(_addItemsButton,     ItemColor);
+        StyleAddButton(_addQuestsButton,    QuestColor);
 
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NpcsPanel"),                  NpcColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/FactionsPanel"),              FactionColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), LocationColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              SessionColor);
         StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/ItemsPanel"),                 ItemColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/QuestsPanel"),                QuestColor);
 
         GetNode<LineEdit>("ScrollContainer/VBoxContainer/SearchInput").TextChanged += FilterSidebar;
 
@@ -122,6 +134,7 @@ public partial class CampaignDashboard : Control
         LoadLocations();
         LoadSessions();
         LoadItems();
+        LoadQuests();
     }
 
     private static readonly Color NpcColor      = new Color(0.53f, 0.72f, 0.90f); // pastel blue
@@ -129,6 +142,7 @@ public partial class CampaignDashboard : Control
     private static readonly Color LocationColor = new Color(0.58f, 0.82f, 0.64f); // pastel green
     private static readonly Color SessionColor  = new Color(0.74f, 0.62f, 0.90f); // pastel purple
     private static readonly Color ItemColor     = new Color(0.95f, 0.78f, 0.50f); // pastel amber
+    private static readonly Color QuestColor    = new Color(0.50f, 0.82f, 0.82f); // pastel teal
 
     private void LoadNpcs()
     {
@@ -192,6 +206,19 @@ public partial class CampaignDashboard : Control
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("item", id);
             _itemsContainer.AddChild(btn);
+        }
+    }
+
+    private void LoadQuests()
+    {
+        ClearItems(_questsContainer, _addQuestsButton);
+        foreach (var quest in _db.Quests.GetAll(_campaignId))
+        {
+            int id = quest.Id;
+            var btn = MakeSidebarButton(quest.Name, QuestColor);
+            btn.SetMeta("id", id);
+            btn.Pressed += () => ShowDetailPane("quest", id);
+            _questsContainer.AddChild(btn);
         }
     }
 
@@ -325,6 +352,17 @@ public partial class CampaignDashboard : Control
                 itemPane.Deleted     += OnEntityDeleted;
                 itemPane.Load(item);
                 break;
+
+            case "quest":
+                var quest = _db.Quests.Get(entityId);
+                if (quest == null) return;
+                var questPane = _questDetailPaneScene.Instantiate<QuestDetailPane>();
+                AddDetailPane(questPane);
+                questPane.NavigateTo  += ShowDetailPane;
+                questPane.NameChanged += OnNameChanged;
+                questPane.Deleted     += OnEntityDeleted;
+                questPane.Load(quest);
+                break;
         }
     }
 
@@ -337,6 +375,7 @@ public partial class CampaignDashboard : Control
             case "location": _db.Locations.Delete(entityId); LoadLocations(); break;
             case "session":  _db.Sessions.Delete(entityId);  LoadSessions();  break;
             case "item":     _db.Items.Delete(entityId);     LoadItems();     break;
+            case "quest":    _db.Quests.Delete(entityId);    LoadQuests();    break;
         }
         foreach (Node child in _detailPanel.GetChildren())
             child.QueueFree();
@@ -351,6 +390,7 @@ public partial class CampaignDashboard : Control
             "location" => _locationsContainer,
             "session"  => _sessionsContainer,
             "item"     => _itemsContainer,
+            "quest"    => _questsContainer,
             _          => null
         };
         if (container == null) return;
@@ -390,6 +430,7 @@ public partial class CampaignDashboard : Control
             (GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), _locationsContainer),
             (GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              _sessionsContainer),
             (GetNode<Control>("ScrollContainer/VBoxContainer/ItemsPanel"),                 _itemsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/QuestsPanel"),                _questsContainer),
         };
 
         foreach (var (panel, items) in sections)

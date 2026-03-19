@@ -28,13 +28,13 @@ This document captures all feedback, bugs, and design decisions arising from the
 | 11 | Add "Acquainted with" NPC relationship seed | Schema | Medium | ✅ Done | `CharacterRelationshipTypeRepository.cs` |
 | 12 | Background colour — investigate Godot Themes | UX | Low | ⬜ Todo | Global (`.tres`) |
 | 13 | Nested locations in sidebar | Design | Low | ⬜ Todo | `CampaignDashboard.cs` |
-| 14 | Three-column layout — sidebar / detail / wiki | Design | Low | ⬜ Todo | `CampaignDashboard.cs` |
+| 14 | Three-column layout — sidebar / detail / wiki | Design | Low | ✅ Done | `CampaignDashboard.cs` |
 | 15 | Session detail pane — significant development needed | Design | Planned | ⬜ Todo | `SessionDetailPane.cs` |
 | 16 | Campaign cover image | Feature | Planned | ⬜ Todo | `EntityType.cs`, CampaignCard |
 | 17 | Players section — party overview | Feature | Planned | ⬜ Todo | `CampaignDashboard.cs` |
 | 18 | PC abilities / class features | Feature | Planned | ⬜ Todo | Greenfield |
-| 19 | Quests entity + Quest History sub-feature | Feature | Planned | ⬜ Todo | Greenfield |
-| 20 | NPC–NPC relationships (design open) | Feature | Planned | ⬜ Todo | Greenfield |
+| 19 | Quests entity + Quest History sub-feature | Feature | Planned | ✅ Done | `Quest.cs`, `QuestHistory.cs`, `QuestStatus.cs`, `QuestRepository.cs`, `QuestDetailPane`, `CampaignDashboard` |
+| 20 | NPC–NPC relationships (design open) | Feature | Planned | ✅ Done | `NpcDetailPane.cs` |
 | 21 | NPC–Location relationship (design open) | Feature | Planned | ⬜ Todo | `Npc.cs` |
 | 22 | History section (concept only) | Parked | TBD | ⬜ Parked | — |
 | 23 | Tab system for the detail pane | Design | Planned | ⬜ Todo | `CampaignDashboard.cs` (new `TabBar` component) |
@@ -42,6 +42,8 @@ This document captures all feedback, bugs, and design decisions arising from the
 | 25 | Detail pane footer — breathing room at window bottom | UX | High | ✅ Done | `CampaignDashboard.cs` |
 | 26 | New sessions always append to end of sidebar list | Bug | High | ✅ Done | `CampaignDashboard.cs`, `ImportExportService.cs` |
 | 27 | Settings menu tooltips | UX | Medium | ✅ Done | `NavBar.cs` |
+| 28 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ Todo | `ImageCarousel.cs`, `EntityImageRepository.cs` |
+| 29 | Image export/import in `.dndx` packages | Feature | Medium | ⬜ Todo | `ImportExportService.cs`, `ExportPackage.cs` |
 
 ---
 
@@ -196,11 +198,15 @@ Investigate Godot `.tres` theme resources before doing any visual overhaul. A si
 | Import Campaign Data... | File picker for `.dndx` → opens `ImportExportModal` in Import mode (pre-checked with file contents) → inserts selected data into current campaign → reloads sidebar. |
 
 **Key files:**
-- `Core/Models/ExportPackage.cs` — JSON-serializable container (8 type tables + 5 entity types)
+- `Core/Models/ExportPackage.cs` — JSON-serializable container (9 type tables + 6 entity types, including `QuestStatuses` and `Quests`)
 - `Core/ImportExportService.cs` — `BuildPackage()` + `ApplyPackage()` with FK remapping by name for types, fresh IDs for entities
 - `Scenes/Modals/ImportExportModal/` — modular selection UI using `FoldableContainer` sections with cascade checkboxes
 
-**Import FK resolution:** Types matched by name (insert if not found). Cross-entity FKs (e.g. NPC → Faction) remapped using old→new ID maps; nulled if referenced entity wasn't included in the import. Sessions assigned fresh numbers after the current max to avoid the `UNIQUE(campaign_id, number)` constraint.
+**Type tables exported:** Species, NPC Statuses, NPC Relationship Types, NPC Faction Roles, Character Relationship Types, Location Faction Roles, Faction Relationship Types, Item Types, Quest Statuses
+
+**Entity types exported:** Factions, NPCs, Locations, Sessions, Items, Quests (including `quest_history` entries with session FK remapping)
+
+**Import FK resolution:** Types matched by name (insert if not found). Cross-entity FKs (e.g. NPC → Faction, Quest → NPC/Location) remapped using old→new ID maps; nulled if referenced entity wasn't included in the import. Sessions assigned fresh numbers after the current max to avoid the `UNIQUE(campaign_id, number)` constraint.
 
 ---
 
@@ -288,9 +294,19 @@ The original reason for building the app. The Obsidian frontmatter schema maps d
 
 ---
 
-### Task 19 — Quests entity and Quest History
+### Task 19 — Quests entity and Quest History ✅ Done
 
 A Quests entity on the sidebar for tracking active, completed, and failed quests. Quest History is a sub-feature that logs session-stamped progress entries.
+
+**Implemented files:**
+- `Core/Models/Quest.cs`, `QuestHistory.cs`, `QuestStatus.cs`
+- `Core/Repositories/QuestRepository.cs`, `QuestHistoryRepository.cs`, `QuestStatusRepository.cs`
+- `Core/DatabaseService.cs` — repos registered, migrated, seeded
+- `Core/Models/EntityType.cs` — `Quest = 5` added
+- `Scenes/Components/QuestDetailPane/QuestDetailPane.cs` + `.tscn`
+- `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` + `.tscn` — Quests accordion (pastel teal), `LoadQuests()`, all signal handlers
+
+**Detail pane fields:** Name (select-all on focus), Status (TypeOptionButton), Given by NPC (TypeOptionButton), Location (TypeOptionButton), Reward, Description, WikiNotes, Quest History section with per-entry session picker + note TextEdit + delete, ImageCarousel. Delete via trashcan icon in name row.
 
 **Core `quests` table**
 
@@ -421,7 +437,8 @@ The following should be ported into `Project_Standards.md` and the Future TODOs 
 | Session detail pane | High | Entity tagging, inline stub creation, wiki hover preview, quest updates. Plan with three-column layout. |
 | PC abilities | High | `abilities` table, greenfield. Maps from Obsidian frontmatter schema. |
 | Three-column layout | Medium | Sidebar / detail / wiki panel. Start on `LocationDetailPane`, propagate. |
-| Quests entity | Medium | `quests` + `quest_history` tables. Quest giver FK, location FK, status seeded type. |
+| Standardize image save location | High | Copy images to `imgs/<type>/<id>/` on add. Store relative paths. Prerequisite for image export. (Task 28) |
+| Image export/import | Medium | Base64-embed images in `.dndx`. Requires Task 28. Optional "Include Images" checkbox in modal. (Task 29) |
 | NPC–Location relationship | Medium | Design open: `HomeLocationId` FK vs `npc_locations` join table. No decision yet. |
 | NPC–NPC relationships UI | Medium | Direction TBD. "Acquainted with" seed added to `CharacterRelationshipTypeRepository`; existing campaigns need check-and-insert migration. |
 | OS-native file picker | Medium | `DisplayServer.FileDialogShow()` added in Godot 4.3. Check version first. |
@@ -452,6 +469,73 @@ Without the app margins, detail pane content butted against the bottom edge of t
 **Fix (implemented)**
 
 Added `_detailPanel.OffsetBottom = -DetailFooterPadding` (24px) in `CampaignDashboard.ApplySidebarWidth()`.
+
+---
+
+---
+
+### Task 28 — Standardize image save location to `imgs/` folder
+
+Currently, `entity_images.path` stores whatever absolute path the user picked from the OS file dialog. This means:
+- Paths are machine-specific (breaks on migration / backup restore to a different machine)
+- Images cannot be included in `.dndx` export packages (Task 29 depends on this)
+- No predictable folder to back up alongside the `.db` file
+
+**Plan**
+
+When the user picks or drops an image, copy it into a managed folder before recording the path:
+
+```
+OS.GetUserDataDir()/imgs/<entity_type>/<entity_id>/<original_filename>
+```
+
+Store only the relative path (e.g. `imgs/npc/42/portrait.png`) in the DB. On load, resolve to absolute using `OS.GetUserDataDir()`.
+
+**Changes required**
+- `ImageCarousel.cs` — after file picked/dropped, `File.Copy` to the managed path, store relative path
+- `EntityImageRepository.cs` — no schema change; just a path convention
+- All image display code — resolve relative paths with `OS.GetUserDataDir() + "/" + path` before loading texture
+- Existing absolute paths in the DB remain valid (backwards-compatible read: if path starts with `/` or a drive letter, treat as absolute legacy path)
+
+**Folder structure**
+```
+%APPDATA%/Godot/app_userdata/dnd-builder/
+  campaign.db
+  imgs/
+    npc/42/portrait.png
+    location/7/map.jpg
+    quest/3/handout.png
+```
+
+---
+
+### Task 29 — Image export/import in `.dndx` packages
+
+Currently export/import transfers all text data but leaves images behind. Once Task 28 is done (images in a managed `imgs/` folder), this becomes tractable.
+
+**Approach: embed as base64 in the JSON**
+
+Each exported entity image becomes a record in `ExportPackage.Images` with:
+- `EntityType` (string key matching entity type)
+- `OldEntityId` (for remapping on import)
+- `Filename` (original filename, used to reconstruct the path on import)
+- `Data` (base64-encoded bytes of the image file)
+
+On import, for each image record:
+1. Decode base64 → write file to `imgs/<entity_type>/<new_entity_id>/<filename>`
+2. Insert `entity_images` row with the new relative path and remapped entity ID
+
+**Alternative: zip bundle**
+
+Instead of base64 in JSON, package the `.dndx` file as a `.zip` containing `data.json` + an `imgs/` folder. More efficient for large images but requires a zip library or Godot's `ZIPPacker`. Defer unless base64 sizes become a problem.
+
+**Changes required**
+- `ExportPackage.cs` — add `List<ExportedImage> Images`
+- `ImportExportService.BuildPackage()` — for each exported entity, load its `entity_images` rows, read file bytes, base64-encode, append to `pkg.Images`
+- `ImportExportService.ApplyPackage()` — write image files and insert `entity_images` rows using remapped entity IDs
+- `ImportExportModal.cs` — optionally add an "Include Images" checkbox (images can be large; let the user opt in)
+
+> **Dependency:** Task 28 must be complete first. Without a managed `imgs/` folder, there is no reliable way to find or copy image files during export.
 
 ---
 

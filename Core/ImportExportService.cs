@@ -21,6 +21,7 @@ namespace DndBuilder.Core
         public bool LocationFactionRoles       { get; set; }
         public bool FactionRelationshipTypes   { get; set; }
         public bool ItemTypes                  { get; set; }
+        public bool QuestStatuses              { get; set; }
 
         // Entities
         public bool        AllNpcs      { get; set; }
@@ -33,6 +34,8 @@ namespace DndBuilder.Core
         public HashSet<int> SessionIds  { get; set; } = new();
         public bool        AllItems     { get; set; }
         public HashSet<int> ItemIds     { get; set; } = new();
+        public bool        AllQuests    { get; set; }
+        public HashSet<int> QuestIds    { get; set; } = new();
     }
 
     public static class ImportExportService
@@ -52,6 +55,7 @@ namespace DndBuilder.Core
             if (sel.AllTypes || sel.LocationFactionRoles)       pkg.LocationFactionRoles      = db.LocationFactionRoles.GetAll(campaignId);
             if (sel.AllTypes || sel.FactionRelationshipTypes)   pkg.FactionRelationshipTypes  = db.FactionRelationshipTypes.GetAll(campaignId);
             if (sel.AllTypes || sel.ItemTypes)                  pkg.ItemTypes                 = db.ItemTypes.GetAll(campaignId);
+            if (sel.AllTypes || sel.QuestStatuses)              pkg.QuestStatuses             = db.QuestStatuses.GetAll(campaignId);
 
             // Entities
             if (sel.AllFactions || sel.FactionIds.Count > 0)
@@ -86,6 +90,13 @@ namespace DndBuilder.Core
                 pkg.Items = sel.AllItems ? all : all.Where(i => sel.ItemIds.Contains(i.Id)).ToList();
             }
 
+            if (sel.AllQuests || sel.QuestIds.Count > 0)
+            {
+                var all = db.Quests.GetAll(campaignId);
+                foreach (var q in all) q.History = db.QuestHistory.GetAll(q.Id);
+                pkg.Quests = sel.AllQuests ? all : all.Where(q => sel.QuestIds.Contains(q.Id)).ToList();
+            }
+
             return pkg;
         }
 
@@ -106,7 +117,8 @@ namespace DndBuilder.Core
             var charRelMap    = ImportTypes(pkg.CharacterRelationshipTypes,sel.AllTypes || sel.CharacterRelationshipTypes, campaignId, db.CharacterRelationshipTypes.GetAll(campaignId),(t, cid) => db.CharacterRelationshipTypes.Add(new CharacterRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var locRoleMap    = ImportTypes(pkg.LocationFactionRoles,      sel.AllTypes || sel.LocationFactionRoles,       campaignId, db.LocationFactionRoles.GetAll(campaignId),      (t, cid) => db.LocationFactionRoles.Add(new LocationFactionRole { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var facRelTypeMap = ImportTypes(pkg.FactionRelationshipTypes,  sel.AllTypes || sel.FactionRelationshipTypes,   campaignId, db.FactionRelationshipTypes.GetAll(campaignId),  (t, cid) => db.FactionRelationshipTypes.Add(new FactionRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
-            var itemTypeMap   = ImportTypes(pkg.ItemTypes,                 sel.AllTypes || sel.ItemTypes,                  campaignId, db.ItemTypes.GetAll(campaignId),                 (t, cid) => db.ItemTypes.Add(new ItemType                       { CampaignId = cid, Name = t.Name, Description = t.Description }));
+            var itemTypeMap      = ImportTypes(pkg.ItemTypes,      sel.AllTypes || sel.ItemTypes,      campaignId, db.ItemTypes.GetAll(campaignId),      (t, cid) => db.ItemTypes.Add(new ItemType           { CampaignId = cid, Name = t.Name, Description = t.Description }));
+            var questStatusMap   = ImportTypes(pkg.QuestStatuses,  sel.AllTypes || sel.QuestStatuses,  campaignId, db.QuestStatuses.GetAll(campaignId),  (t, cid) => db.QuestStatuses.Add(new QuestStatus   { CampaignId = cid, Name = t.Name, Description = t.Description }));
 
             // ── Step 2: factions (no FK dependencies on other entities) ───────
             var factionMap = new Dictionary<int, int>();
@@ -193,6 +205,7 @@ namespace DndBuilder.Core
             }
 
             // ── Step 5: NPCs ──────────────────────────────────────────────────
+            var npcMap = new Dictionary<int, int>();
             foreach (var npc in GetEntities(pkg.Npcs, sel.AllNpcs, sel.NpcIds))
             {
                 var remappedFactions = npc.Factions
@@ -221,7 +234,7 @@ namespace DndBuilder.Core
                     Factions           = remappedFactions,
                     FactionIds         = remappedFactions.ConvertAll(f => f.FactionId),
                 };
-                db.Npcs.Add(newNpc);
+                npcMap[npc.Id] = db.Npcs.Add(newNpc);
             }
 
             // ── Step 6: items ─────────────────────────────────────────────────
@@ -236,6 +249,31 @@ namespace DndBuilder.Core
                     IsUnique    = item.IsUnique,
                     TypeId      = Remap(item.TypeId, itemTypeMap),
                 });
+            }
+
+            // ── Step 7: quests (depends on quest_statuses, locations, npcs) ──
+            foreach (var quest in GetEntities(pkg.Quests, sel.AllQuests, sel.QuestIds))
+            {
+                var newQuestId = db.Quests.Add(new Quest
+                {
+                    CampaignId   = campaignId,
+                    Name         = quest.Name,
+                    Description  = quest.Description,
+                    Notes        = quest.Notes,
+                    Reward       = quest.Reward,
+                    StatusId     = Remap(quest.StatusId,     questStatusMap),
+                    QuestGiverId = Remap(quest.QuestGiverId, npcMap),
+                    LocationId   = Remap(quest.LocationId,   locationMap),
+                });
+                foreach (var h in quest.History)
+                {
+                    db.QuestHistory.Add(new QuestHistory
+                    {
+                        QuestId   = newQuestId,
+                        SessionId = Remap(h.SessionId, sessionMap),
+                        Note      = h.Note,
+                    });
+                }
             }
         }
 

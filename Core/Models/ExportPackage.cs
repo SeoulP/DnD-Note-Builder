@@ -17,6 +17,7 @@ namespace DndBuilder.Core.Models
         public List<LocationFactionRole>       LocationFactionRoles      { get; set; } = new();
         public List<FactionRelationshipType>   FactionRelationshipTypes  { get; set; } = new();
         public List<ItemType>                  ItemTypes                 { get; set; } = new();
+        public List<QuestStatus>               QuestStatuses             { get; set; } = new();
 
         // Entities (IDs preserved so cross-references within the package can be remapped on import)
         public List<Faction>  Factions  { get; set; } = new();
@@ -24,5 +25,6 @@ namespace DndBuilder.Core.Models
         public List<Location> Locations { get; set; } = new();
         public List<Session>  Sessions  { get; set; } = new();
         public List<Item>     Items     { get; set; } = new();
+        public List<Quest>    Quests    { get; set; } = new();
     }
 }

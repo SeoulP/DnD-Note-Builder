@@ -22,6 +22,9 @@ public partial class DatabaseService : Node
     public ItemTypeRepository             ItemTypes             { get; private set; }
     public ItemRepository                 Items                 { get; private set; }
     public EntityImageRepository          EntityImages          { get; private set; }
+    public QuestStatusRepository          QuestStatuses         { get; private set; }
+    public QuestRepository                Quests                { get; private set; }
+    public QuestHistoryRepository         QuestHistory          { get; private set; }
 
     public string DbPath { get; private set; }
 
@@ -57,6 +60,9 @@ public partial class DatabaseService : Node
         ItemTypes            = new ItemTypeRepository(_conn);
         Items                = new ItemRepository(_conn);
         EntityImages         = new EntityImageRepository(_conn);
+        QuestStatuses        = new QuestStatusRepository(_conn);
+        Quests               = new QuestRepository(_conn);
+        QuestHistory         = new QuestHistoryRepository(_conn);
 
         RunMigrations();
     }
@@ -79,6 +85,9 @@ public partial class DatabaseService : Node
         ItemTypes           .Migrate();  // references campaigns; must precede Items
         Items               .Migrate();  // references campaigns, item_types, characters, locations
         EntityImages        .Migrate();  // polymorphic; no FK constraints — references any entity by type+id
+        QuestStatuses       .Migrate();  // references campaigns; must precede Quests
+        Quests              .Migrate();  // references campaigns, quest_statuses, characters, locations
+        QuestHistory        .Migrate();  // references quests, sessions
 
         MigrateLegacyPortraits();
 
@@ -98,6 +107,7 @@ public partial class DatabaseService : Node
             FactionRelationshipTypes  .SeedDefaults(campaign.Id);
             CharacterRelationshipTypes.SeedDefaults(campaign.Id);
             ItemTypes                 .SeedDefaults(campaign.Id);
+            QuestStatuses             .SeedDefaults(campaign.Id);
         }
     }
 

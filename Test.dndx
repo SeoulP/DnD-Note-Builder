@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "ExportedAt": "2026-03-19T00:35:55.6312179Z",
+  "ExportedAt": "2026-03-19T01:36:23.0371768Z",
   "Species": [
     {
       "Id": 19,
@@ -529,6 +529,32 @@
       "Description": "Swords, axes, bows, and other offensive items"
     }
   ],
+  "QuestStatuses": [
+    {
+      "Id": 1,
+      "CampaignId": 1,
+      "Name": "Active",
+      "Description": "Currently being pursued"
+    },
+    {
+      "Id": 2,
+      "CampaignId": 1,
+      "Name": "Completed",
+      "Description": "Successfully resolved"
+    },
+    {
+      "Id": 3,
+      "CampaignId": 1,
+      "Name": "Failed",
+      "Description": "Abandoned or ended in failure"
+    },
+    {
+      "Id": 4,
+      "CampaignId": 1,
+      "Name": "On Hold",
+      "Description": "Paused \u2014 not currently being pursued"
+    }
+  ],
   "Factions": [
     {
       "Id": 2,
@@ -559,33 +585,6 @@
       "FirstSeenSession": null,
       "RelationshipTypeId": null,
       "StatusId": null,
-      "Factions": [
-        {
-          "NpcId": 2,
-          "FactionId": 2,
-          "RoleId": 7
-        }
-      ],
-      "Relationships": [],
-      "Id": 2,
-      "CampaignId": 1,
-      "Name": "Tester Boy",
-      "PortraitPath": "",
-      "Gender": "",
-      "Occupation": "",
-      "Description": "",
-      "Personality": "",
-      "Notes": "Test This is not working",
-      "SpeciesId": null,
-      "FactionIds": [
-        2
-      ]
-    },
-    {
-      "HomeLocationId": null,
-      "FirstSeenSession": null,
-      "RelationshipTypeId": null,
-      "StatusId": null,
       "Factions": [],
       "Relationships": [],
       "Id": 1,
@@ -604,6 +603,17 @@
   "Locations": [
     {
       "Id": 1,
+      "CampaignId": 1,
+      "Name": "New Location",
+      "Type": "",
+      "Description": "",
+      "Notes": "",
+      "ParentLocationId": null,
+      "SubLocations": [],
+      "Factions": []
+    },
+    {
+      "Id": 3,
       "CampaignId": 1,
       "Name": "New Location",
       "Type": "",
@@ -641,7 +651,71 @@
       "Title": "Fake Test Session 002",
       "Notes": "",
       "PlayedOn": ""
+    },
+    {
+      "Id": 3,
+      "CampaignId": 1,
+      "Number": 3,
+      "Title": "New Session",
+      "Notes": "",
+      "PlayedOn": ""
     }
   ],
-  "Items": []
+  "Items": [
+    {
+      "Id": 1,
+      "CampaignId": 1,
+      "Name": "New Item",
+      "Description": "",
+      "Notes": "",
+      "IsUnique": false,
+      "TypeId": null
+    }
+  ],
+  "Quests": [
+    {
+      "Id": 3,
+      "CampaignId": 1,
+      "Name": "New Quest",
+      "StatusId": null,
+      "Description": "",
+      "Notes": "",
+      "QuestGiverId": null,
+      "LocationId": null,
+      "Reward": "",
+      "History": [
+        {
+          "Id": 1,
+          "QuestId": 3,
+          "SessionId": null,
+          "Note": "Test"
+        },
+        {
+          "Id": 2,
+          "QuestId": 3,
+          "SessionId": null,
+          "Note": "Test2"
+        }
+      ]
+    },
+    {
+      "Id": 4,
+      "CampaignId": 1,
+      "Name": "New Quest",
+      "StatusId": null,
+      "Description": "",
+      "Notes": "",
+      "QuestGiverId": null,
+      "LocationId": null,
+      "Reward": "",
+      "History": [
+        {
+          "Id": 3,
+          "QuestId": 4,
+          "SessionId": null,
+          "Note": "Test3"
+        }
+      ]
+    }
+  ]
 }

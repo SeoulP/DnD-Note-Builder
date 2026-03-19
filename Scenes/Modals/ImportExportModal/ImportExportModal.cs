@@ -83,6 +83,7 @@ public partial class ImportExportModal : Window
             BuildEntitySection("Locations", _db.Locations.GetAll(_campaignId).Select(l => (l.Id, l.Name)).ToList());
             BuildEntitySection("Sessions",  _db.Sessions.GetAll(_campaignId).Select(s => (s.Id, string.IsNullOrEmpty(s.Title) ? "Untitled Session" : s.Title)).ToList());
             BuildEntitySection("Items",     _db.Items.GetAll(_campaignId).Select(i => (i.Id, i.Name)).ToList());
+            BuildEntitySection("Quests",    _db.Quests.GetAll(_campaignId).Select(q => (q.Id, q.Name)).ToList());
         }
         else // Import — show only what's in the file
         {
@@ -91,6 +92,7 @@ public partial class ImportExportModal : Window
             BuildEntitySection("Locations", _importPackage.Locations.Select(l => (l.Id, l.Name)).ToList());
             BuildEntitySection("Sessions",  _importPackage.Sessions.Select(s => (s.Id, string.IsNullOrEmpty(s.Title) ? "Untitled Session" : s.Title)).ToList());
             BuildEntitySection("Items",     _importPackage.Items.Select(i => (i.Id, i.Name)).ToList());
+            BuildEntitySection("Quests",    _importPackage.Quests.Select(q => (q.Id, q.Name)).ToList());
         }
     }
 
@@ -107,6 +109,7 @@ public partial class ImportExportModal : Window
                 (5,  $"Location Faction Roles ({_db.LocationFactionRoles.GetAll(_campaignId).Count})"),
                 (6,  $"Faction Relationship Types ({_db.FactionRelationshipTypes.GetAll(_campaignId).Count})"),
                 (7,  $"Item Types ({_db.ItemTypes.GetAll(_campaignId).Count})"),
+                (8,  $"Quest Statuses ({_db.QuestStatuses.GetAll(_campaignId).Count})"),
             }
             : new List<(int id, string name)>
             {
@@ -118,6 +121,7 @@ public partial class ImportExportModal : Window
                 (5,  $"Location Faction Roles ({_importPackage.LocationFactionRoles.Count})"),
                 (6,  $"Faction Relationship Types ({_importPackage.FactionRelationshipTypes.Count})"),
                 (7,  $"Item Types ({_importPackage.ItemTypes.Count})"),
+                (8,  $"Quest Statuses ({_importPackage.QuestStatuses.Count})"),
             };
 
         // Hide rows with 0 items
@@ -232,6 +236,7 @@ public partial class ImportExportModal : Window
                         case 5: sel.LocationFactionRoles       = on; break;
                         case 6: sel.FactionRelationshipTypes   = on; break;
                         case 7: sel.ItemTypes                  = on; break;
+                        case 8: sel.QuestStatuses              = on; break;
                     }
                 }
             }
@@ -246,6 +251,7 @@ public partial class ImportExportModal : Window
                     case "Locations": sel.AllLocations = allChecked; sel.LocationIds = ids; break;
                     case "Sessions":  sel.AllSessions  = allChecked; sel.SessionIds  = ids; break;
                     case "Items":     sel.AllItems     = allChecked; sel.ItemIds     = ids; break;
+                    case "Quests":    sel.AllQuests    = allChecked; sel.QuestIds    = ids; break;
                 }
             }
         }

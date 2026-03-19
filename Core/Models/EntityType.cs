@@ -7,5 +7,6 @@ namespace DndBuilder.Core.Models
         Item     = 2,
         Faction  = 3,
         Session  = 4,
+        Quest    = 5,
     }
 }
