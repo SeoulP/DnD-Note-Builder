@@ -26,6 +26,7 @@ public partial class ItemDetailPane : ScrollContainer
 
         _nameInput.TextChanged   += name => { Save(); EmitSignal(SignalName.NameChanged, "item", _item?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Item" : name); };
         _nameInput.FocusExited   += () => { if (_nameInput.Text == "") _nameInput.Text = "New Item"; };
+        _nameInput.FocusEntered  += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _typeInput.TypeSelected  += _ => Save();
         _isUniqueInput.Toggled   += _ => Save();
         _descInput.TextChanged   += () => Save();

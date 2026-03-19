@@ -36,6 +36,7 @@ public partial class LocationDetailPane : ScrollContainer
 
         _nameInput.TextChanged  += name => { Save(); EmitSignal(SignalName.NameChanged, "location", _location?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Location" : name); };
         _nameInput.FocusExited  += () => { if (_nameInput.Text == "") _nameInput.Text = "New Location"; };
+        _nameInput.FocusEntered += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _typeInput.TextChanged  += _ => Save();
         _descInput.TextChanged  += () => Save();
         _notes.TextChanged += () => Save();

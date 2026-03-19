@@ -47,6 +47,7 @@ public partial class FactionDetailPane : ScrollContainer
             LoadRelFactionRows();
         };
         _nameInput.FocusExited         += () => { if (_nameInput.Text == "") _nameInput.Text = "New Faction"; };
+        _nameInput.FocusEntered        += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _typeInput.TextChanged += _ => Save();
         _descInput.TextChanged += () => Save();
         _goalsInput.TextChanged        += () => Save();

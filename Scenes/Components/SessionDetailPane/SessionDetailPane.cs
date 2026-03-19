@@ -25,6 +25,7 @@ public partial class SessionDetailPane : ScrollContainer
 
         _titleInput.TextChanged    += title => { Save(); EmitSignal(SignalName.NameChanged, "session", _session?.Id ?? 0, string.IsNullOrEmpty(title) ? "Untitled Session" : title); };
         _titleInput.FocusExited    += () => { if (_titleInput.Text == "") _titleInput.Text = "New Session"; };
+        _titleInput.FocusEntered   += () => _titleInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _playedOnInput.TextChanged += _ => Save();
         _notes.TextChanged += () => Save();
         _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);

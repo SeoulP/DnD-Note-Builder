@@ -49,6 +49,7 @@ public partial class NpcDetailPane : ScrollContainer
             LoadRelRows();
         };
         _nameInput.FocusExited          += () => { if (_nameInput.Text == "") _nameInput.Text = "New NPC"; };
+        _nameInput.FocusEntered         += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _occupationInput.TextChanged    += _ => Save();
         _genderInput.TextChanged        += _ => Save();
         _speciesInput.TypeSelected      += _ => Save();
