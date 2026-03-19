@@ -23,7 +23,7 @@ This document captures all feedback, bugs, and design decisions arising from the
 | 6 | All text areas auto-expand in edit mode | UX | Medium | ✅ Done | `WikiNotes.cs` |
 | 7 | Entity name fields select-all on focus | UX | Medium | ✅ Done | All detail panes |
 | 8 | Lightbox cursor shows magnifier on hover | UX | Medium | ✅ Done | `ImageLightbox.cs` |
-| 9 | Image picker — OS-native file dialog | UX | Medium | ⬜ Todo | `ImageCarousel.cs` |
+| 9 | Image picker — OS-native file dialog | UX | Medium | ✅ Done | `ImageCarousel.cs`, `NavBar.cs` |
 | 10 | Navbar — define purpose and build out | UX | Medium | ✅ Done | `NavBar.cs` |
 | 11 | Add "Acquainted with" NPC relationship seed | Schema | Medium | ✅ Done | `CharacterRelationshipTypeRepository.cs` |
 | 12 | Background colour — investigate Godot Themes | UX | Low | ⬜ Todo | Global (`.tres`) |

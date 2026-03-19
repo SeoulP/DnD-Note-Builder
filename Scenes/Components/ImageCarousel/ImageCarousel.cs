@@ -228,17 +228,18 @@ public partial class ImageCarousel : Control
     private void OnAddPressed()
     {
         if (_db == null) return;
-        var dialog = new FileDialog
-        {
-            FileMode = FileDialog.FileModeEnum.OpenFile,
-            Access   = FileDialog.AccessEnum.Filesystem,
-            Title    = "Select Image",
-        };
-        dialog.Filters = new[] { "*.png,*.jpg,*.jpeg,*.webp;Image Files" };
-        dialog.FileSelected += path => { AddImage(path); dialog.QueueFree(); };
-        dialog.Canceled     += ()   => dialog.QueueFree();
-        GetTree().Root.AddChild(dialog);
-        dialog.PopupCentered(new Vector2I(800, 600));
+        DisplayServer.FileDialogShow(
+            "Select Image",
+            OS.GetSystemDir(OS.SystemDir.Pictures),
+            "",
+            false,
+            DisplayServer.FileDialogMode.OpenFile,
+            new[] { "*.png,*.jpg,*.jpeg,*.webp ; Image Files" },
+            Callable.From((bool ok, string[] paths, long _) =>
+            {
+                if (ok && paths.Length > 0)
+                    AddImage(paths[0]);
+            }));
     }
 
     private void ConfirmDelete() => DialogHelper.Show(_confirmDialog);

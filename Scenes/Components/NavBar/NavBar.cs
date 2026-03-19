@@ -17,24 +17,14 @@ public partial class NavBar : PanelContainer
 
     private DatabaseService    _db;
     private int?               _campaignId;
-    private FileDialog         _fileDialog;
     private ConfirmationDialog _restoreConfirmDialog;
     private string             _pendingRestorePath = "";
-    private ExportSelection    _pendingExportSel;
-
-    private enum FileDialogPurpose { Backup, Restore, ExportCampaign, ImportCampaign }
-    private FileDialogPurpose _fileDialogPurpose;
 
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
 
         _backButton.Pressed += () => EmitSignal(SignalName.BackPressed);
-
-        // File dialog (shared — purpose set before each open)
-        _fileDialog = new FileDialog { Access = FileDialog.AccessEnum.Filesystem };
-        AddChild(_fileDialog);
-        _fileDialog.FileSelected += OnFileSelected;
 
         // Restore confirmation
         _restoreConfirmDialog = DialogHelper.Make("Restore Database");
@@ -83,20 +73,35 @@ public partial class NavBar : PanelContainer
 
     private void OpenBackupDialog()
     {
-        _fileDialogPurpose       = FileDialogPurpose.Backup;
-        _fileDialog.FileMode     = FileDialog.FileModeEnum.SaveFile;
-        _fileDialog.Title        = "Backup Database";
-        _fileDialog.Filters      = new[] { "*.db ; SQLite Database" };
-        _fileDialog.PopupCentered(new Vector2I(900, 600));
+        DisplayServer.FileDialogShow(
+            "Backup Database",
+            OS.GetSystemDir(OS.SystemDir.Documents),
+            "campaign_backup.db",
+            false,
+            DisplayServer.FileDialogMode.SaveFile,
+            new[] { "*.db ; SQLite Database" },
+            Callable.From((bool ok, string[] paths, long _) =>
+            {
+                if (ok && paths.Length > 0)
+                    File.Copy(_db.DbPath, paths[0], overwrite: true);
+            }));
     }
 
     private void OpenRestoreDialog()
     {
-        _fileDialogPurpose       = FileDialogPurpose.Restore;
-        _fileDialog.FileMode     = FileDialog.FileModeEnum.OpenFile;
-        _fileDialog.Title        = "Restore Database";
-        _fileDialog.Filters      = new[] { "*.db ; SQLite Database" };
-        _fileDialog.PopupCentered(new Vector2I(900, 600));
+        DisplayServer.FileDialogShow(
+            "Restore Database",
+            OS.GetSystemDir(OS.SystemDir.Documents),
+            "",
+            false,
+            DisplayServer.FileDialogMode.OpenFile,
+            new[] { "*.db ; SQLite Database" },
+            Callable.From((bool ok, string[] paths, long _) =>
+            {
+                if (!ok || paths.Length == 0) return;
+                _pendingRestorePath = paths[0];
+                DialogHelper.Show(_restoreConfirmDialog, "Restore will replace ALL current data. This cannot be undone. Continue?");
+            }));
     }
 
     private void DoRestore()
@@ -118,12 +123,18 @@ public partial class NavBar : PanelContainer
         modal.SetupExport(_campaignId.Value, _db);
         modal.Confirmed += sel =>
         {
-            _pendingExportSel    = sel;
-            _fileDialogPurpose   = FileDialogPurpose.ExportCampaign;
-            _fileDialog.FileMode = FileDialog.FileModeEnum.SaveFile;
-            _fileDialog.Title    = "Export Campaign Data";
-            _fileDialog.Filters  = new[] { "*.dndx ; DnD Builder Export" };
-            _fileDialog.PopupCentered(new Vector2I(900, 600));
+            DisplayServer.FileDialogShow(
+                "Export Campaign Data",
+                OS.GetSystemDir(OS.SystemDir.Documents),
+                "campaign_export.dndx",
+                false,
+                DisplayServer.FileDialogMode.SaveFile,
+                new[] { "*.dndx ; DnD Builder Export" },
+                Callable.From((bool ok, string[] paths, long _) =>
+                {
+                    if (ok && paths.Length > 0)
+                        WriteExportFile(paths[0], sel);
+                }));
         };
         modal.PopupCentered();
     }
@@ -131,11 +142,18 @@ public partial class NavBar : PanelContainer
     private void OpenImportCampaignDialog()
     {
         if (!_campaignId.HasValue) return;
-        _fileDialogPurpose   = FileDialogPurpose.ImportCampaign;
-        _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
-        _fileDialog.Title    = "Import Campaign Data";
-        _fileDialog.Filters  = new[] { "*.dndx ; DnD Builder Export" };
-        _fileDialog.PopupCentered(new Vector2I(900, 600));
+        DisplayServer.FileDialogShow(
+            "Import Campaign Data",
+            OS.GetSystemDir(OS.SystemDir.Documents),
+            "",
+            false,
+            DisplayServer.FileDialogMode.OpenFile,
+            new[] { "*.dndx ; DnD Builder Export" },
+            Callable.From((bool ok, string[] paths, long _) =>
+            {
+                if (ok && paths.Length > 0)
+                    ShowImportCampaignModal(paths[0]);
+            }));
     }
 
     private void WriteExportFile(string path, ExportSelection sel)
@@ -165,28 +183,4 @@ public partial class NavBar : PanelContainer
         modal.PopupCentered();
     }
 
-    // ─── Shared file dialog handler ───────────────────────────────────────────
-
-    private void OnFileSelected(string path)
-    {
-        switch (_fileDialogPurpose)
-        {
-            case FileDialogPurpose.Backup:
-                File.Copy(_db.DbPath, path, overwrite: true);
-                break;
-
-            case FileDialogPurpose.Restore:
-                _pendingRestorePath = path;
-                DialogHelper.Show(_restoreConfirmDialog, "Restore will replace ALL current data. This cannot be undone. Continue?");
-                break;
-
-            case FileDialogPurpose.ExportCampaign:
-                WriteExportFile(path, _pendingExportSel);
-                break;
-
-            case FileDialogPurpose.ImportCampaign:
-                ShowImportCampaignModal(path);
-                break;
-        }
-    }
 }
