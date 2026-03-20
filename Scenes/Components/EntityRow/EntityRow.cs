@@ -10,8 +10,10 @@ public partial class EntityRow : PanelContainer
     [Signal] public delegate void NavigatePressedEventHandler();
     [Signal] public delegate void DeletePressedEventHandler();
 
-    private string _text = "";
-    private Label  _label;
+    private string       _text = "";
+    private Label        _label;
+    private StyleBoxFlat _rowHoverBox;
+    private StyleBoxFlat _deleteHoverBox;
 
     public string Text
     {
@@ -21,6 +23,10 @@ public partial class EntityRow : PanelContainer
 
     public override void _Ready()
     {
+        _rowHoverBox    = GetThemeStylebox("row_hover",    "DndBuilder") as StyleBoxFlat ?? MakeBox(new Color(0.35f, 0.50f, 0.70f));
+        _deleteHoverBox = GetThemeStylebox("delete_hover", "DndBuilder") as StyleBoxFlat ?? MakeBox(new Color(0.76f, 0.46f, 0.54f));
+
+        MouseDefaultCursorShape = CursorShape.PointingHand;
         SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
         var hbox = new HBoxContainer();
@@ -42,7 +48,7 @@ public partial class EntityRow : PanelContainer
         clip.AddChild(_label);
 
         // Transparent overlay: handles click and hover for the text area
-        var navBtn = new Button { Flat = true };
+        var navBtn = new Button { Flat = true, MouseDefaultCursorShape = CursorShape.PointingHand };
         navBtn.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         clip.AddChild(navBtn);
 
@@ -50,7 +56,7 @@ public partial class EntityRow : PanelContainer
             _label.Size = new Vector2(Mathf.Max(_label.GetMinimumSize().X + 8, clip.Size.X), clip.Size.Y);
 
         // ── delete button ────────────────────────────────────────────────────
-        var delBtn = new Button { Text = "×", Flat = true };
+        var delBtn = new Button { Text = "×", Flat = true, MouseDefaultCursorShape = CursorShape.PointingHand };
         delBtn.Modulate = new Color(1, 1, 1, 0);  // hidden until row hovered
 
         // ── hover effects ────────────────────────────────────────────────────
@@ -59,7 +65,7 @@ public partial class EntityRow : PanelContainer
         navBtn.MouseEntered += () =>
         {
             delBtn.Modulate = Colors.White;
-            AddThemeStyleboxOverride("panel", RowHoverBox);
+            AddThemeStyleboxOverride("panel", _rowHoverBox);
             tween?.Kill();
             float overflow = _label.GetMinimumSize().X + 8 - clip.Size.X;
             if (overflow > 0)
@@ -77,7 +83,7 @@ public partial class EntityRow : PanelContainer
             tween.TweenProperty(_label, "position:x", 4f, 0.2f);
         };
 
-        delBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; AddThemeStyleboxOverride("panel", DeleteHoverBox); };
+        delBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; AddThemeStyleboxOverride("panel", _deleteHoverBox); };
         delBtn.MouseExited  += () => RemoveThemeStyleboxOverride("panel");
 
         var confirmDialog = DialogHelper.Make(text: "Remove this entry? This cannot be undone.");
@@ -91,9 +97,6 @@ public partial class EntityRow : PanelContainer
         hbox.AddChild(delBtn);
         AddChild(hbox);
     }
-
-    private static readonly StyleBoxFlat RowHoverBox    = MakeBox(new Color(0.25f, 0.25f, 0.25f));
-    private static readonly StyleBoxFlat DeleteHoverBox = MakeBox(new Color(0.90f, 0.55f, 0.55f));
 
     private static StyleBoxFlat MakeBox(Color color)
     {

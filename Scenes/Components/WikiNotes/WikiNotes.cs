@@ -69,6 +69,10 @@ public partial class WikiNotes : VBoxContainer
         _input.PlaceholderText      = _pendingPlaceholder;
         _renderer.CustomMinimumSize = new Vector2(0, _input.CustomMinimumSize.Y);
 
+        // Grow to fit content instead of showing a scrollbar — height is managed via
+        // CustomMinimumSize so the control never needs to scroll internally.
+        _input.ScrollFitContentHeight = true;
+
         _input.TextChanged += () => EmitSignal(SignalName.TextChanged);
         _input.TextChanged += UpdateInputHeight;
         _input.TextChanged += CheckAutocomplete;
@@ -82,22 +86,55 @@ public partial class WikiNotes : VBoxContainer
                 EmitSignal(SignalName.NavigateTo, parts[0], id);
         };
         _renderer.MouseDefaultCursorShape = CursorShape.Ibeam;
-        var inputStyle = _input.GetThemeStylebox("normal").Duplicate() as StyleBox;
-        if (inputStyle != null)
-            _renderer.AddThemeStyleboxOverride("normal", inputStyle);
+
+        // Match renderer appearance to the TextEdit so view/edit look identical.
+        // Use type-specific lookup so we get the font the TextEdit actually renders with.
+
+        var font        = _input.GetThemeFont("font", "TextEdit") ?? ThemeDB.Singleton.FallbackFont;
+        int fontSize    = _input.GetThemeFontSize("font_size", "TextEdit");
+        int lineSpacing = _input.GetThemeConstant("line_spacing", "TextEdit");
+        foreach (var name in new[] { "normal_font", "bold_font", "italics_font", "bold_italics_font", "mono_font" })
+            _renderer.AddThemeFontOverride(name, font);
+        foreach (var name in new[] { "normal_font_size", "bold_font_size", "italics_font_size", "bold_italics_font_size", "mono_font_size" })
+            _renderer.AddThemeFontSizeOverride(name, fontSize);
+        _renderer.AddThemeConstantOverride("line_separation", lineSpacing);
+
+        // Font color
+        var fontColor = _input.GetThemeColor("font_color", "TextEdit");
+        _renderer.AddThemeColorOverride("default_color", fontColor);
+
+        // Renderer stylebox: apply the same stylebox as TextEdit "normal" (defined in theme.tres).
+        // Both TextEdit states share identical geometry in the theme (2px border, 4px margins),
+        // so the renderer wraps at exactly the same width with no layout shift on focus.
+        var normalSb = _input.GetThemeStylebox("normal", "TextEdit") as StyleBoxFlat;
+        if (normalSb != null)
+            _renderer.AddThemeStyleboxOverride("normal", normalSb);
         _renderer.GuiInput += (InputEvent e) =>
         {
-            if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+            if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } mb)
             {
+                var scroll      = FindParentScrollContainer();
+                int savedScroll = scroll?.ScrollVertical ?? 0;
+                var clickPos    = mb.Position;
+
                 _input.Visible    = true;
                 _renderer.Visible = false;
                 UpdateInputHeight();
+
+                // Disable FollowFocus so the ScrollContainer doesn't auto-scroll
+                // when GrabFocus fires — we restore the position manually below.
+                if (scroll != null) scroll.FollowFocus = false;
                 _input.GrabFocus();
+                if (scroll != null) scroll.FollowFocus = true;
+
+                CallDeferred(nameof(PlaceCaretAt), clickPos);
+                if (scroll != null)
+                    CallDeferred(nameof(RestoreScroll), scroll, savedScroll);
             }
         };
     }
 
-    public override void _ExitTree()
+public override void _ExitTree()
     {
         if (_acPanel != null && IsInstanceValid(_acPanel))
             _acPanel.QueueFree();
@@ -155,6 +192,20 @@ public partial class WikiNotes : VBoxContainer
             node = node.GetParent();
         }
         return null;
+    }
+
+    private void PlaceCaretAt(Vector2 clickPos)
+    {
+        if (_input == null || !_input.Visible) return;
+        var lineCol = _input.GetLineColumnAtPos(new Vector2I((int)clickPos.X, (int)clickPos.Y), true);
+        _input.SetCaretLine(lineCol.Y);
+        _input.SetCaretColumn(lineCol.X);
+    }
+
+    private void RestoreScroll(ScrollContainer scroll, int savedScroll)
+    {
+        if (IsInstanceValid(scroll))
+            scroll.ScrollVertical = savedScroll;
     }
 
     // ── autocomplete ──────────────────────────────────────────────────────────

@@ -3,8 +3,12 @@
 [ext_resource type="Script" uid="uid://c7nbarscp1x2y" path="res://Scenes/Components/NavBar/NavBar.cs" id="1_navbar"]
 [ext_resource type="PackedScene" path="res://Scenes/Modals/ImportExportModal/import_export_modal.tscn" id="2_importexport"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_navbar"]
+bg_color = Color(0.05882, 0.09020, 0.16471, 1)
+
 [node name="NavBar" type="PanelContainer" node_paths=PackedStringArray("_backButton", "_settingsButton")]
 custom_minimum_size = Vector2(0, 48)
+theme_override_styleboxes/panel = SubResource("StyleBoxFlat_navbar")
 script = ExtResource("1_navbar")
 _backButton             = NodePath("HBox/BackButton")
 _settingsButton         = NodePath("HBox/SettingsButton")

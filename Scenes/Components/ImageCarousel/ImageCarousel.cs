@@ -41,10 +41,9 @@ public partial class ImageCarousel : Control
 
         // ── background ───────────────────────────────────────────────────────
         var style = new StyleBoxFlat();
-        style.BgColor = new Color(0.12f, 0.12f, 0.12f);
+        style.BgColor = new Color(0.11f, 0.13f, 0.16f, 1f);  // #1e293b — matches app background
         style.SetCornerRadiusAll(12);
-        style.SetBorderWidthAll(2);
-        style.BorderColor = new Color(0.3f, 0.3f, 0.3f);
+        style.SetBorderWidthAll(0);
         var bg = new Panel();
         bg.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         bg.AddThemeStyleboxOverride("panel", style);

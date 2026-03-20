@@ -27,6 +27,11 @@ project/assembly_name="DndBuilder"
 
 3d/physics_engine="Jolt Physics"
 
+[gui]
+
+theme/custom="res://theme.tres"
+
 [rendering]
 
 rendering_device/driver.windows="d3d12"
+environment/defaults/default_clear_color=Color(0.11765, 0.16078, 0.23137, 1)

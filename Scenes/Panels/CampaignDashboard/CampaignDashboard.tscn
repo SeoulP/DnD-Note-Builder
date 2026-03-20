@@ -21,12 +21,12 @@ _addFactionButton = NodePath("ScrollContainer/VBoxContainer/FactionsPanel/VBoxCo
 _addLocationsButton = NodePath("ScrollContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer/AddLocationsButton")
 _addSessionsButton = NodePath("ScrollContainer/VBoxContainer/SessionsPanel/VBoxContainer/AddSessionsButton")
 _addItemsButton = NodePath("ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer/AddItemsButton")
+_addQuestsButton = NodePath("ScrollContainer/VBoxContainer/QuestsPanel/VBoxContainer/AddQuestsButton")
 _npcsContainer = NodePath("ScrollContainer/VBoxContainer/NpcsPanel/VBoxContainer")
 _factionsContainer = NodePath("ScrollContainer/VBoxContainer/FactionsPanel/VBoxContainer")
 _locationsContainer = NodePath("ScrollContainer/VBoxContainer/LocationsFoldableContainer/VBoxContainer")
 _sessionsContainer = NodePath("ScrollContainer/VBoxContainer/SessionsPanel/VBoxContainer")
 _itemsContainer = NodePath("ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer")
-_addQuestsButton = NodePath("ScrollContainer/VBoxContainer/QuestsPanel/VBoxContainer/AddQuestsButton")
 _questsContainer = NodePath("ScrollContainer/VBoxContainer/QuestsPanel/VBoxContainer")
 _detailPanel = NodePath("DetailPanel")
 _npcDetailPaneScene = ExtResource("1_npcdet")
@@ -38,6 +38,7 @@ _questDetailPaneScene = ExtResource("6_questdet")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=620386472]
 layout_mode = 1
+anchors_preset = 9
 anchor_bottom = 1.0
 offset_right = 250.0
 grow_horizontal = 2
@@ -47,11 +48,12 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SearchInput" type="LineEdit" parent="ScrollContainer/VBoxContainer"]
+[node name="SearchInput" type="LineEdit" parent="ScrollContainer/VBoxContainer" unique_id=1716651749]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Search..."
 clear_button_enabled = true
+caret_blink = true
 
 [node name="NpcsPanel" type="FoldableContainer" parent="ScrollContainer/VBoxContainer" unique_id=2046014427]
 layout_mode = 2
@@ -133,6 +135,7 @@ text = "New +"
 
 [node name="DetailPanel" type="Control" parent="." unique_id=712217800]
 layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 250.0

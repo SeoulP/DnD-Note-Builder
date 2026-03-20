@@ -44,6 +44,7 @@ layout_mode = 2
 [node name="NameInput" type="LineEdit" parent="Margin/VBox/NameRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+caret_blink = true
 placeholder_text = "Quest Name"
 theme_override_font_sizes/font_size = 18
 
@@ -118,6 +119,7 @@ text = "Description"
 
 [node name="DescInput" type="TextEdit" parent="Margin/VBox/ContentHBox/Fields"]
 layout_mode = 2
+caret_blink = true
 custom_minimum_size = Vector2(0, 80)
 placeholder_text = "Quest summary and background..."
 wrap_mode = 1

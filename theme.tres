@@ -1,0 +1,68 @@
+[gd_resource type="Theme" format=3 uid="uid://serwwl5j7fdu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_hover"]
+bg_color = Color(0.76, 0.46, 0.54, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_row_hover"]
+bg_color = Color(0.35, 0.5, 0.7, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input_focus"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.2, 0.2549, 0.33333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.42745, 0.15686, 0.85098, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input_normal"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.2, 0.2549, 0.33333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_panel"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.2, 0.25, 0.32, 1)
+
+[resource]
+DndBuilder/styles/delete_hover = SubResource("StyleBoxFlat_delete_hover")
+DndBuilder/styles/row_hover = SubResource("StyleBoxFlat_row_hover")
+Label/colors/font_color = Color(0.8784314, 0.84313726, 0.8392157, 1)
+LineEdit/colors/font_color = Color(0.8784314, 0.84313726, 0.8392157, 1)
+LineEdit/colors/font_placeholder_color = Color(0.69411767, 0.62352943, 0.6156863, 1)
+LineEdit/styles/focus = SubResource("StyleBoxFlat_input_focus")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_input_normal")
+PopupPanel/styles/panel = SubResource("StyleBoxFlat_popup_panel")
+TextEdit/colors/font_color = Color(0.8784314, 0.84313726, 0.8392157, 1)
+TextEdit/colors/font_placeholder_color = Color(0.69411767, 0.62352943, 0.6156863, 1)
+TextEdit/styles/focus = SubResource("StyleBoxFlat_input_focus")
+TextEdit/styles/normal = SubResource("StyleBoxFlat_input_normal")

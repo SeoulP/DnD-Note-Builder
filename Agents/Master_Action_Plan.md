@@ -30,8 +30,8 @@
 
 | # | Task | Category | Priority | Status |
 |---|------|----------|----------|--------|
-| U1 | WikiNotes scroll-jump on first click to edit | UX | High | ⬜ |
-| U2 | EntityRow hover — show pointer cursor | UX | Low | ⬜ |
+| U1 | WikiNotes scroll-jump on first click to edit | UX | High | ✅ |
+| U2 | EntityRow hover — show pointer cursor | UX | Low | ✅ |
 | U3 | Background colour — investigate Godot Themes | UX | Low | ⬜ |
 | F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
 | F2 | Per-tab back/forward navigation | Feature | Medium | ⬜ |
@@ -438,12 +438,7 @@ When reopening a campaign, restore the last viewed entity (type + id) so the det
 
 ## Implementation Order
 
-### Immediate
-1. **U2 — EntityRow pointer cursor** — one line.
-
 ### Short-term
-2. **U1 — WikiNotes scroll-jump** — isolated, zero risk.
-4. **B2 — Drag-and-drop** — check `project.godot` setting first.
 5. **F3 — Session related-links panel** — self-contained, no schema changes.
 6. **F16 — Seed check-and-insert on campaign load** — additive, safe.
 7. **F4 — NPC pane field audit** — finish the partial work.
@@ -507,6 +502,10 @@ All items below are done and require no further action unless noted.
 - ✅ `NpcDetailPane` — enum dropdowns replaced with DB-loaded dropdowns (Status + RelationshipType)
 - ✅ Item list + detail pane
 - ✅ Entity image carousel system (`ImageCarousel`, `ImageLightbox`, `EntityImageRepository`, all five detail panes wired)
+
+### UX Polish (2026-03-19)
+- ✅ U2 — EntityRow pointer cursor: `MouseDefaultCursorShape = CursorShape.PointingHand` on `navBtn` and `delBtn` inside `EntityRow._Ready()`.
+- ✅ U1 — WikiNotes click-to-edit fully resolved: scroll position saved/restored around `GrabFocus`; caret placed at click position via `GetLineColumnAtPos`; `ScrollFitContentHeight = true` prevents scrollbar flicker; fonts/sizes matched between `TextEdit` and `RichTextLabel` via theme API; renderer stylebox tuned to match focused TextEdit layout (left margin = `focusSb.ContentMarginLeft`, top margin = `focusSb.ContentMarginTop + focusSb.BorderWidthTop * 2` to compensate for the 2 px layout shift when focus border activates); `caret_blink = true` added to `wiki_notes.tscn`.
 
 ### Image loading (2026-03-19)
 - ✅ B1 — Image load bug fixed: `ImageCarousel` and `ImageLightbox` now read raw bytes via `System.IO.File.ReadAllBytes` and detect format from magic bytes (PNG/JPEG/WebP), bypassing Godot's extension-based loader. Handles files with mismatched extensions (e.g. WebP saved as .png).

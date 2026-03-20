@@ -23,6 +23,7 @@ _imageCarousel = NodePath("Margin/VBoxContainer/ContentHBox/CarouselColumn/Image
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Margin"]
@@ -41,6 +42,7 @@ layout_mode = 2
 [node name="TitleInput" type="LineEdit" parent="Margin/VBoxContainer/TitleRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+caret_blink = true
 placeholder_text = "Session title..."
 theme_override_font_sizes/font_size = 22
 
@@ -72,6 +74,7 @@ text = "Played On"
 [node name="PlayedOnInput" type="LineEdit" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+caret_blink = true
 placeholder_text = "yyyy-mm-dd"
 
 [node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]

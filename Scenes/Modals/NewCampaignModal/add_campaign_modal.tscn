@@ -60,6 +60,7 @@ text = "Campaign Name"
 [node name="NameLineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/NameHBoxContainer" unique_id=714386222]
 layout_mode = 2
 size_flags_horizontal = 3
+caret_blink = true
 placeholder_text = "Enter a Name..."
 
 [node name="GameSystemHBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer" unique_id=977139801]
@@ -89,6 +90,7 @@ text = "Description"
 [node name="DescriptionTextEdit" type="TextEdit" parent="VBoxContainer/HBoxContainer/OptionsVBoxContainer/DescriptionHBoxContainer" unique_id=1609673716]
 layout_mode = 2
 size_flags_horizontal = 3
+caret_blink = true
 placeholder_text = "Describe your campaign..."
 wrap_mode = 1
 

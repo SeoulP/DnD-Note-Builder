@@ -97,6 +97,7 @@ public partial class TypeOptionButton : Button
             PlaceholderText     = "Search...",
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             ClearButtonEnabled  = true,
+            CaretBlink          = true,
         };
         outer.AddChild(searchInput);
         outer.AddChild(new HSeparator());
@@ -131,6 +132,7 @@ public partial class TypeOptionButton : Button
         {
             PlaceholderText     = "New...",
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            CaretBlink          = true,
         };
         var addBtn = new Button { Text = "+ Add" };
 
@@ -169,17 +171,6 @@ public partial class TypeOptionButton : Button
         addRow.AddChild(addBtn);
         outer.AddChild(addRow);
 
-        // Fully opaque background, no extra content margins
-        var panelBg = new StyleBoxFlat
-        {
-            BgColor             = new Color(0.14f, 0.14f, 0.14f),
-            ContentMarginLeft   = 0,
-            ContentMarginRight  = 0,
-            ContentMarginTop    = 0,
-            ContentMarginBottom = 0,
-        };
-        popup.AddThemeStyleboxOverride("panel", panelBg);
-
         popup.AddChild(outer);
         popup.PopupHide += () => popup.QueueFree();
         AddChild(popup);
@@ -198,6 +189,9 @@ public partial class TypeOptionButton : Button
     {
         foreach (Node child in vbox.GetChildren())
             child.QueueFree();
+
+        var rowHoverBox    = GetThemeStylebox("row_hover",    "DndBuilder") as StyleBoxFlat ?? MakeHoverBox(new Color(0.35f, 0.50f, 0.70f));
+        var deleteHoverBox = GetThemeStylebox("delete_hover", "DndBuilder") as StyleBoxFlat ?? MakeHoverBox(new Color(0.76f, 0.46f, 0.54f));
 
         // "— None —" row
         var noneBtn = MakeRowButton(NoneText);
@@ -237,9 +231,9 @@ public partial class TypeOptionButton : Button
                 DialogHelper.Show(_deleteDialog, $"Delete \"{cName}\"?\n\nThis will remove it from all records currently using this type.");
             };
 
-            nameBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", RowHoverBox); };
+            nameBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", rowHoverBox); };
             nameBtn.MouseExited  += () => { delBtn.Modulate = new Color(1, 1, 1, 0); panel.RemoveThemeStyleboxOverride("panel"); };
-            delBtn.MouseEntered  += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", DeleteHoverBox); };
+            delBtn.MouseEntered  += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", deleteHoverBox); };
             delBtn.MouseExited   += () => panel.RemoveThemeStyleboxOverride("panel");
 
             var row = new HBoxContainer();
@@ -300,19 +294,9 @@ public partial class TypeOptionButton : Button
 
     // ── styles ────────────────────────────────────────────────────────────────
 
-    private static readonly StyleBoxFlat RowHoverBox    = MakeRowHoverBox();
-    private static readonly StyleBoxFlat DeleteHoverBox = MakeDeleteHoverBox();
-
-    private static StyleBoxFlat MakeRowHoverBox()
+    private static StyleBoxFlat MakeHoverBox(Color color)
     {
-        var box = new StyleBoxFlat { BgColor = new Color(0.25f, 0.25f, 0.25f) };
-        box.SetCornerRadiusAll(3);
-        return box;
-    }
-
-    private static StyleBoxFlat MakeDeleteHoverBox()
-    {
-        var box = new StyleBoxFlat { BgColor = new Color(0.90f, 0.55f, 0.55f) };
+        var box = new StyleBoxFlat { BgColor = color };
         box.SetCornerRadiusAll(3);
         return box;
     }

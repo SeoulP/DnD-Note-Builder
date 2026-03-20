@@ -55,6 +55,16 @@ public partial class App : Control
 		margin.AddThemeConstantOverride("margin_bottom", bottom);
 	}
 
+	public override void _Input(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } mb)
+		{
+			var focused = GetViewport().GuiGetFocusOwner();
+			if (focused != null && !focused.GetGlobalRect().HasPoint(mb.GlobalPosition))
+				focused.ReleaseFocus();
+		}
+	}
+
 	private void ClearPanel()
 	{
 		foreach (Node child in _appPanel.GetChildren())
