@@ -101,7 +101,8 @@ public partial class FactionDetailPane : ScrollContainer
         _npcSelect.TypeCreated += id => EmitSignal(SignalName.EntityCreated, "npc", id);
         _npcSelect.SelectById(null);
 
-        _roleSelect.NoneText = "No role";
+        _roleSelect.NoneText        = "No role";
+        _roleSelect.AutoSelectOnAdd = true;
         _roleSelect.Setup(
             () => _db.NpcFactionRoles.GetAll(faction.CampaignId).ConvertAll(r => (r.Id, r.Name)),
             name => { _db.NpcFactionRoles.Add(new DndBuilder.Core.Models.NpcFactionRole { CampaignId = _faction.CampaignId, Name = name, Description = "" }); },
@@ -114,7 +115,8 @@ public partial class FactionDetailPane : ScrollContainer
 
         _relFactionSelfLabel.Text = string.IsNullOrEmpty(faction.Name) ? "New Faction" : faction.Name;
 
-        _relFactionTypeSelect.NoneText = "Relationship";
+        _relFactionTypeSelect.NoneText        = "Relationship";
+        _relFactionTypeSelect.AutoSelectOnAdd = true;
         _relFactionTypeSelect.Setup(
             () => _db.FactionRelationshipTypes.GetAll(faction.CampaignId).ConvertAll(t => (t.Id, t.Name)),
             name => { _db.FactionRelationshipTypes.Add(new DndBuilder.Core.Models.FactionRelationshipType { CampaignId = _faction.CampaignId, Name = name, Description = "" }); },

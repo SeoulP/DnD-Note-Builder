@@ -33,7 +33,7 @@
 | U1 | WikiNotes scroll-jump on first click to edit | UX | High | ✅ |
 | U2 | EntityRow hover — show pointer cursor | UX | Low | ✅ |
 | U3 | Background colour — project-wide Godot Theme | UX | Low | ✅ |
-| U4 | TypeOptionButton — auto-select newly added type | UX | Medium | ⬜ |
+| U4 | TypeOptionButton — auto-select newly added type | UX | Medium | ✅ |
 | U5 | WikiNotes — bullet point continuation on Enter | UX | Low | ⬜ |
 | F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
 | F2 | Per-tab back/forward navigation | Feature | Medium | ⬜ |
@@ -51,8 +51,8 @@
 | F14 | Remember last opened entity per campaign | Feature | Medium | ⬜ |
 | F15 | NPC–NPC relationships — directionality display | Feature | Medium | ⬜ |
 | F16 | Call SeedDefaults on campaign load (+ add God/Worship seeds) | Schema | Medium | ⬜ |
-| F17 | WikiNotes — Items and Quests included in WikiLink autocomplete | Feature | High | ⬜ |
-| F18 | Session view — quick-create entities without navigating away | Feature | High | ⬜ |
+| F17 | WikiNotes — Items and Quests included in WikiLink autocomplete | Feature | High | ✅ |
+| F18 | WikiNotes — stub creation via `[[+NoteType]]` syntax | Feature | High | ✅ |
 
 ---
 
@@ -82,21 +82,9 @@
 
 ---
 
-### U4 — TypeOptionButton: Auto-Select Newly Added Type
+### U4 — TypeOptionButton: Auto-Select Newly Added Type ✅
 
-When a user types a new type name and clicks "+ Add", the popup closes and the new type is automatically selected. Currently `AutoSelectOnAdd` defaults to `false` and is only set to `true` on entity-picker dropdowns (e.g. NPC select, Faction select). It is missing from all the "type" dropdowns that save directly to a record.
-
-**Affected call sites — add `AutoSelectOnAdd = true` before each `Setup()` call:**
-
-| File | Field |
-|------|-------|
-| `NpcDetailPane.cs` | `_speciesInput`, `_statusInput`, `_relationshipInput`, `_roleSelect`, `_relTypeSelect` |
-| `ItemDetailPane.cs` | `_typeInput` |
-| `QuestDetailPane.cs` | `_statusInput` |
-| `FactionDetailPane.cs` | `_roleSelect`, `_relFactionTypeSelect` |
-| `LocationDetailPane.cs` | `_roleSelect` |
-
-No changes required to `TypeOptionButton.cs` — the `AutoSelectOnAdd` path already works correctly.
+*(See Completed Work Log)*
 
 ---
 
@@ -657,218 +645,25 @@ These will reach existing campaigns automatically once F16 is wired in.
 
 ---
 
-### F17 — WikiNotes: Items and Quests in WikiLink Autocomplete
+### F17 — WikiNotes: Items and Quests in WikiLink Autocomplete ✅
 
-`GetEntityMatches()` in `WikiNotes.cs` currently queries NPCs, Factions, Locations, and Sessions. Items and Quests are missing, so typing `[[` will not suggest them and their names will not render as links in the viewer.
-
-**Fix — `WikiNotes.cs`, `GetEntityMatches()`:**
-
-```csharp
-foreach (var x in _db.Items.GetAll(_campaignId))  Add(x.Name,  "Item");
-foreach (var x in _db.Quests.GetAll(_campaignId)) Add(x.Title, "Quest");
-```
-
-**Fix — `WikiLinkParser.cs`:** Ensure Items and Quests are included in the reverse-lookup used for rendering `[[links]]` as coloured text. If `WikiLinkParser` builds its own lookup independently of `WikiNotes`, the same two entity types must be added there too.
-
-**Fix — `SessionDetailPane.cs` `BuildReverseLookup()`** (F3): When F3 is implemented, include Items and Quests in the reverse lookup so the related-links panel also surfaces them.
+*(See Completed Work Log)*
 
 ---
 
-### F18 — WikiNotes: Stub Creation via `+EntityType` Syntax
+### F18 — WikiNotes: Stub Creation via `[[+NoteType]]` Syntax ✅
 
-Typing `+NPC`, `+Location`, `+Item`, `+Faction`, or `+Quest` anywhere in WikiNotes (not inside `[[...]]`) opens a lightweight name-prompt modal. Confirming creates a stub record with only a name and inserts `[[Name]]` at the cursor position, replacing the trigger text.
-
-#### Trigger detection
-
-The trigger piggybacks entirely on the existing `[[...]]` detection in `CheckAutocomplete()`. When the query string inside `[[` starts with `+` and matches a known entity type token exactly, the stub modal fires instead of the autocomplete list.
-
-```
-[[+NPC]]      → entity type: npc
-[[+Location]] → entity type: location
-[[+Item]]     → entity type: item
-[[+Faction]]  → entity type: faction
-[[+Quest]]    → entity type: quest
-```
-
-Match is case-insensitive. The trigger fires on the closing `]]` — at that moment `CheckAutocomplete()` sees `query == "+NPC"` (or similar) and opens the modal instead of the list. Partial typing (`[[+NP`) does nothing — the existing autocomplete finds no matches and hides normally.
-
-**Detection logic — extend `CheckAutocomplete()` after the existing `query` extraction:**
-
-```csharp
-// Existing code already extracts `query` from inside [[...]]
-// Add immediately after:
-string stubType = DetectStubTrigger(query);
-if (stubType != null)
-{
-    HideAutocomplete();
-    OpenStubModal(stubType, openIdx);
-    return;
-}
-```
-
-```csharp
-private static readonly Dictionary<string, string> StubTriggers = new(StringComparer.OrdinalIgnoreCase)
-{
-    { "+NPC",      "npc"      },
-    { "+Location", "location" },
-    { "+Item",     "item"     },
-    { "+Faction",  "faction"  },
-    { "+Quest",    "quest"    },
-};
-
-private string DetectStubTrigger(string query)
-{
-    return StubTriggers.TryGetValue(query, out string entityType) ? entityType : null;
-}
-```
-
-Note: `CheckAutocomplete()` already returns early if `query.Contains("]]")`, so the trigger only fires while the caret is still inside the open `[[`. The closing `]]` the user types is what produces the final exact match that fires the modal.
-
-#### Stub modal
-
-`OpenStubModal` shows a `PopupPanel` positioned below the caret — same placement logic as the autocomplete panel. It contains:
-
-- A single `LineEdit` pre-focused, placeholder `"Name..."`
-- A confirm button (`+ Create`) and implicit Enter key support
-- No other fields — stub creation is name-only
-
-```csharp
-private void OpenStubModal(string entityType, int triggerStartCol)
-{
-    HideAutocomplete();
-
-    int    line     = _input.GetCaretLine();
-    string lineText = _input.GetLine(line);
-    var    caretRect = _input.GetRectAtLineColumn(line, _input.GetCaretColumn());
-    var    screenPos = _input.GlobalPosition + caretRect.Position + new Vector2(0, caretRect.Size.Y);
-
-    var popup   = new PopupPanel();
-    var vbox    = new VBoxContainer();
-    vbox.AddThemeConstantOverride("separation", 6);
-    vbox.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-
-    var nameInput = new LineEdit
-    {
-        PlaceholderText     = "Name...",
-        SizeFlagsHorizontal = SizeFlags.ExpandFill,
-        CaretBlink          = true,
-    };
-    var addBtn = new Button { Text = "+ Create" };
-
-    Action doCreate = () =>
-    {
-        string name = nameInput.Text.Trim();
-        if (string.IsNullOrEmpty(name)) return;
-
-        CreateStub(entityType, name);
-
-        // The user typed [[+NPC]] — openIdx points to the `[` of `[[`.
-        // Replace the whole [[+Token]] with [[Name]].
-        string currentLine = _input.GetLine(line);
-        int closeIdx = currentLine.IndexOf("]]", openIdx, StringComparison.Ordinal);
-        int replaceEnd = closeIdx >= 0 ? closeIdx + 2 : _input.GetCaretColumn();
-
-        string newLine = currentLine[..openIdx] + $"[[{name}]]" + currentLine[replaceEnd..];
-        _input.SetLine(line, newLine);
-        _input.SetCaretColumn(openIdx + 2 + name.Length + 2);
-
-        popup.Hide();
-        _input.GrabFocus();
-    };
-
-    addBtn.Pressed          += doCreate;
-    nameInput.TextSubmitted += _ => doCreate();
-
-    vbox.AddChild(nameInput);
-    vbox.AddChild(addBtn);
-    popup.AddChild(vbox);
-    popup.PopupHide += () => { popup.QueueFree(); _input.GrabFocus(); };
-    AddChild(popup);
-    popup.Popup(new Rect2I((int)screenPos.X, (int)screenPos.Y, 220, 70));
-    nameInput.CallDeferred(LineEdit.MethodName.GrabFocus);
-}
-```
-
-#### Stub creation
-
-```csharp
-private void CreateStub(string entityType, string name)
-{
-    if (_db == null) return;
-    switch (entityType)
-    {
-        case "npc":
-            _db.Npcs.Add(new Npc { CampaignId = _campaignId, Name = name });
-            break;
-        case "location":
-            _db.Locations.Add(new Location { CampaignId = _campaignId, Name = name });
-            break;
-        case "item":
-            _db.Items.Add(new Item { CampaignId = _campaignId, Name = name });
-            break;
-        case "faction":
-            _db.Factions.Add(new Faction { CampaignId = _campaignId, Name = name });
-            break;
-        case "quest":
-            _db.Quests.Add(new Quest { CampaignId = _campaignId, Name = name });
-            break;
-    }
-}
-```
-
-#### Signal for sidebar refresh
-
-When a stub is created, the sidebar needs to know so it can add the new row without requiring a full campaign reload. Add a new signal to `WikiNotes`:
-
-```csharp
-[Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
-```
-
-Emit it from `CreateStub()` using the `int` returned by each `Add()` call. The parent pane (e.g. `SessionDetailPane`) connects to this signal and forwards it up the tree to `CampaignDashboard`, which already handles `EntityCreated` signals from other detail panes.
-
-#### Escape handling
-
-If the popup is open and the user presses Escape, the popup closes and the entire `[[+Token]]` is removed from the line — it's a fully typed trigger with no other meaning, so leaving it would just be noise. Focus returns to the `TextEdit` with the caret positioned where the token was.
-
-```csharp
-popup.PopupHide += () =>
-{
-    popup.QueueFree();
-    // Remove [[+Token]] if the modal was dismissed without creating
-    if (!_stubCreated)
-    {
-        string currentLine = _input.GetLine(line);
-        int closeIdx = currentLine.IndexOf("]]", openIdx, StringComparison.Ordinal);
-        int replaceEnd = closeIdx >= 0 ? closeIdx + 2 : openIdx + 2;
-        _input.SetLine(line, currentLine[..openIdx] + currentLine[replaceEnd..]);
-        _input.SetCaretColumn(openIdx);
-    }
-    _input.GrabFocus();
-};
-```
-
-Set `_stubCreated = true` inside `doCreate` before calling `popup.Hide()` so the `PopupHide` handler knows not to clean up.
-
-#### Files
-
-| File | Change |
-|------|--------|
-| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add `DetectStubTrigger()`, `OpenStubModal()`, `CreateStub()`; extend `CheckAutocomplete()`; add `EntityCreated` signal |
-| `Scenes/Components/SessionDetailPane/SessionDetailPane.cs` | Connect `_notes.EntityCreated` → forward to `CampaignDashboard` |
-| All other panes using `WikiNotes` | Connect `EntityCreated` the same way if applicable |
+*(See Completed Work Log)*
 
 ---
 
 ## Implementation Order
 
 ### Short-term
-1. **U4 — TypeOptionButton auto-select** — one-liner per call site, no design needed.
-2. **F14 — Remember last opened entity** — two `Settings.Get/Set` calls; no schema changes.
-3. **F16 — Call SeedDefaults on campaign load** — trivial wiring; ships the God/Worship seeds too.
-4. **F15 — NPC relationship directionality** — new component + two additive migrations; design settled. Do before more relationships are entered.
-5. **F17 — Items + Quests in WikiLink autocomplete** — two extra queries in `GetEntityMatches` + `WikiLinkParser`.
-6. **F18 — WikiNotes stub creation** — self-contained `WikiNotes.cs` addition; design is settled.
-7. **F3 — Session related-links panel** — no schema changes.
+1. **F14 — Remember last opened entity** — two `Settings.Get/Set` calls; no schema changes.
+2. **F16 — Call SeedDefaults on campaign load** — trivial wiring; ships the God/Worship seeds too.
+3. **F15 — NPC relationship directionality** — new component + two additive migrations; design settled. Do before more relationships are entered.
+4. **F3 — Session related-links panel** — no schema changes.
 
 ### Medium-term
 8. **F4 — NPC pane: Home Location field** — small addition, finish the partial work.
@@ -918,10 +713,11 @@ Set `_stubCreated = true` inside `doCreate` before calling `popup.Hide()` so the
 | `Scenes/Components/SessionDetailPane/session_detail_pane.tscn` | Add `RelatedLinksContainer` under `CarouselColumn`; remove/reposition `CarouselSpacer` | F3 |
 | `Scenes/Components/NpcDetailPane/NpcDetailPane.cs` + `.tscn` | Add HomeLocationId, FirstSeenSession, verify Personality | F4 |
 | `Core/Repositories/*RelationshipTypeRepository.cs` et al. | Add check-and-insert on campaign load for new seeds | F16 |
-| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add Items + Quests to `GetEntityMatches()` | F17 |
+| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add Items + Quests to `GetEntityMatches()`; add `EntityCreated` signal; add `DetectStubTrigger()`, `OpenStubModal()`, `CreateStub()`; extend `CheckAutocomplete()` | F17, F18 |
 | `Core/WikiLinkParser.cs` | Add Items + Quests to reverse-lookup for link rendering | F17 |
-| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add `DetectStubTrigger()`, `OpenStubModal()`, `CreateStub()`; extend `CheckAutocomplete()`; add `EntityCreated` signal | F18 |
-| `Scenes/Components/SessionDetailPane/SessionDetailPane.cs` + all other WikiNotes-bearing panes | Connect `_notes.EntityCreated` → forward to `CampaignDashboard` | F18 |
+| All six detail panes | Wire `_notes.EntityCreated` → `EmitSignal(EntityCreated)`; add `EntityCreated` signal declaration where missing | F18 |
+| `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | Wire `EntityCreated` for sesPane, itemPane, questPane | F18 |
+| `Scenes/Components/WikiNotes/wiki_notes.tscn` | Add `StubHint` label footnote | F18 |
 
 ---
 
@@ -983,6 +779,13 @@ All items below are done and require no further action unless noted.
 - ✅ Three-column layout (sidebar / detail / wiki panel)
 - ✅ Quests entity + Quest History sub-feature
 - ✅ NPC–NPC relationships — `character_relationships` table, full CRUD, `NpcDetailPane` panel with type/NPC pickers, add/remove/navigate. Both directions surface on both NPC panes via `OR related_character_id = @cid` query. Directionality display is a separate open design question (F15).
+
+### UX Polish (2026-03-20)
+- ✅ U4 — TypeOptionButton auto-select on add: `AutoSelectOnAdd = true` added before `Setup()` on all type dropdowns — `_speciesInput`, `_statusInput`, `_relationshipInput`, `_roleSelect`, `_relTypeSelect` (NPC); `_typeInput` (Item); `_statusInput` (Quest); `_roleSelect`, `_relFactionTypeSelect` (Faction); `_roleSelect` (Location). Entity-picker dropdowns already had it.
+
+### WikiNotes improvements (2026-03-20)
+- ✅ F17 — Items and Quests added to `[[` autocomplete (`WikiNotes.GetEntityMatches()`) and to link rendering (`WikiLinkParser.BuildLookup()`). All six entity types now suggest and render as navigable gold links.
+- ✅ F18 — Stub creation via `[[+NoteType]]` syntax. Typing `[[+NPC]]`, `[[+Location]]`, `[[+Item]]`, `[[+Faction]]`, or `[[+Quest]]` (closing `]]` triggers the modal) opens a name-prompt popup. Confirming creates a stub record, replaces the trigger with `[[Name]]`, and refreshes the sidebar via `EntityCreated` signal wired through all six detail panes and `CampaignDashboard`. Escape removes the trigger text. Footer hint added to `wiki_notes.tscn`: `[[Name]] links to a note  ·  [[+NoteType]] creates a new one  (NPC, Location, Item, Faction, Quest)`.
 
 ---
 

@@ -81,19 +81,22 @@ public partial class NpcDetailPane : ScrollContainer
     {
         _npc = npc;
 
-        _speciesInput.NoneText = "(unknown)";
+        _speciesInput.NoneText        = "(unknown)";
+        _speciesInput.AutoSelectOnAdd = true;
         _speciesInput.Setup(
             () => _db.Species.GetAll(npc.CampaignId).ConvertAll(s => (s.Id, s.Name)),
             name => { _db.Species.Add(new Species { CampaignId = npc.CampaignId, Name = name }); },
             id   => _db.Species.Delete(id));
         _speciesInput.SelectById(npc.SpeciesId);
 
+        _statusInput.AutoSelectOnAdd = true;
         _statusInput.Setup(
             () => _db.NpcStatuses.GetAll(npc.CampaignId).ConvertAll(s => (s.Id, s.Name)),
             name => { _db.NpcStatuses.Add(new NpcStatus { CampaignId = npc.CampaignId, Name = name, Description = "" }); },
             id   => _db.NpcStatuses.Delete(id));
         _statusInput.SelectById(npc.StatusId);
 
+        _relationshipInput.AutoSelectOnAdd = true;
         _relationshipInput.Setup(
             () => _db.NpcRelationshipTypes.GetAll(npc.CampaignId).ConvertAll(r => (r.Id, r.Name)),
             name => { _db.NpcRelationshipTypes.Add(new NpcRelationshipType { CampaignId = npc.CampaignId, Name = name, Description = "" }); },
@@ -132,7 +135,8 @@ public partial class NpcDetailPane : ScrollContainer
 
         _relNpcSelfLabel.Text = string.IsNullOrEmpty(npc.Name) ? "New NPC" : npc.Name;
 
-        _relTypeSelect.NoneText = "Relationship";
+        _relTypeSelect.NoneText        = "Relationship";
+        _relTypeSelect.AutoSelectOnAdd = true;
         _relTypeSelect.Setup(
             () => _db.CharacterRelationshipTypes.GetAll(npc.CampaignId).ConvertAll(t => (t.Id, t.Name)),
             name => { _db.CharacterRelationshipTypes.Add(new DndBuilder.Core.Models.CharacterRelationshipType { CampaignId = _npc.CampaignId, Name = name, Description = "" }); },

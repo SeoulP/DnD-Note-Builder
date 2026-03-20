@@ -58,7 +58,8 @@ public partial class QuestDetailPane : ScrollContainer
     {
         _quest = quest;
 
-        _statusInput.NoneText = "(none)";
+        _statusInput.NoneText        = "(none)";
+        _statusInput.AutoSelectOnAdd = true;
         _statusInput.Setup(
             () => _db.QuestStatuses.GetAll(quest.CampaignId).ConvertAll(s => (s.Id, s.Name)),
             name => _db.QuestStatuses.Add(new QuestStatus { CampaignId = quest.CampaignId, Name = name, Description = "" }),

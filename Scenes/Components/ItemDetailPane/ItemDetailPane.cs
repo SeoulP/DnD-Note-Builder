@@ -48,7 +48,8 @@ public partial class ItemDetailPane : ScrollContainer
     {
         _item = item;
 
-        _typeInput.NoneText = "(none)";
+        _typeInput.NoneText        = "(none)";
+        _typeInput.AutoSelectOnAdd = true;
         _typeInput.Setup(
             () => _db.ItemTypes.GetAll(item.CampaignId).ConvertAll(t => (t.Id, t.Name)),
             name => { _db.ItemTypes.Add(new ItemType { CampaignId = item.CampaignId, Name = name, Description = "" }); },

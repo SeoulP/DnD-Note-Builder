@@ -118,7 +118,8 @@ public partial class LocationDetailPane : ScrollContainer
     {
         _location = location;
 
-        _roleSelect.NoneText = "No role";
+        _roleSelect.NoneText        = "No role";
+        _roleSelect.AutoSelectOnAdd = true;
         _roleSelect.Setup(
             () => _db.LocationFactionRoles.GetAll(location.CampaignId).ConvertAll(r => (r.Id, r.Name)),
             name => { _db.LocationFactionRoles.Add(new LocationFactionRole { CampaignId = location.CampaignId, Name = name, Description = "" }); },
