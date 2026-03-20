@@ -12,6 +12,7 @@ public partial class TypeOptionButton : Button
 {
     [Signal] public delegate void TypeSelectedEventHandler(int id);  // -1 = none
     [Signal] public delegate void TypeCreatedEventHandler(int id);   // fired when a new item is added via the form
+    [Signal] public delegate void PopupClosedEventHandler();          // fired whenever the popup is dismissed
 
     private Func<List<(int Id, string Name)>> _getAll;
     private Action<string>                    _addItem;
@@ -24,8 +25,9 @@ public partial class TypeOptionButton : Button
     private int                _pendingDeleteId;
     private string             _pendingDeleteName;
 
-    public string NoneText        { get; set; } = "None";
-    public bool   AutoSelectOnAdd { get; set; } = false;
+    public string NoneText          { get; set; } = "None";
+    public bool   AutoSelectOnAdd   { get; set; } = false;
+    public bool   ShowDeleteButtons { get; set; } = true;
 
     public int? SelectedId => _selectedId;
 
@@ -81,7 +83,7 @@ public partial class TypeOptionButton : Button
 
     // -------------------------------------------------------------------------
 
-    private void ShowPopup()
+    public void ShowPopup()
     {
         if (_getAll == null) return;
         _items = _getAll();
@@ -172,7 +174,7 @@ public partial class TypeOptionButton : Button
         outer.AddChild(addRow);
 
         popup.AddChild(outer);
-        popup.PopupHide += () => popup.QueueFree();
+        popup.PopupHide += () => { popup.QueueFree(); EmitSignal(SignalName.PopupClosed); };
         AddChild(popup);
 
         // Position below this button; height fits search bar + visible items + add row
@@ -221,26 +223,34 @@ public partial class TypeOptionButton : Button
                 popup.Hide();
             };
 
-            var delBtn = new Button { Text = "×", Flat = true };
-            delBtn.Modulate = new Color(1, 1, 1, 0);
-            delBtn.Pressed += () =>
-            {
-                _pendingDeleteId   = cId;
-                _pendingDeleteName = cName;
-                popup.Hide();
-                DialogHelper.Show(_deleteDialog, $"Delete \"{cName}\"?\n\nThis will remove it from all records currently using this type.");
-            };
-
-            nameBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", rowHoverBox); };
-            nameBtn.MouseExited  += () => { delBtn.Modulate = new Color(1, 1, 1, 0); panel.RemoveThemeStyleboxOverride("panel"); };
-            delBtn.MouseEntered  += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", deleteHoverBox); };
-            delBtn.MouseExited   += () => panel.RemoveThemeStyleboxOverride("panel");
-
             var row = new HBoxContainer();
             row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             row.AddThemeConstantOverride("separation", 0);
             row.AddChild(nameBtn);
-            row.AddChild(delBtn);
+
+            if (ShowDeleteButtons)
+            {
+                var delBtn = new Button { Text = "×", Flat = true };
+                delBtn.Modulate = new Color(1, 1, 1, 0);
+                delBtn.Pressed += () =>
+                {
+                    _pendingDeleteId   = cId;
+                    _pendingDeleteName = cName;
+                    popup.Hide();
+                    DialogHelper.Show(_deleteDialog, $"Delete \"{cName}\"?\n\nThis will remove it from all records currently using this type.");
+                };
+                nameBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", rowHoverBox); };
+                nameBtn.MouseExited  += () => { delBtn.Modulate = new Color(1, 1, 1, 0); panel.RemoveThemeStyleboxOverride("panel"); };
+                delBtn.MouseEntered  += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", deleteHoverBox); };
+                delBtn.MouseExited   += () => panel.RemoveThemeStyleboxOverride("panel");
+                row.AddChild(delBtn);
+            }
+            else
+            {
+                nameBtn.MouseEntered += () => panel.AddThemeStyleboxOverride("panel", rowHoverBox);
+                nameBtn.MouseExited  += () => panel.RemoveThemeStyleboxOverride("panel");
+            }
+
             panel.AddChild(row);
             vbox.AddChild(panel);
         }

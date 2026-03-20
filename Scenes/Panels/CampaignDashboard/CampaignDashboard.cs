@@ -1,12 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
 public partial class CampaignDashboard : Control
 {
-    private int _campaignId;
+    private int             _campaignId;
     private DatabaseService _db;
+    private HashSet<int>    _collapsedLocations = new();
 
     [Export] private Button _addNpcsButton;
     [Export] private Button _addFactionButton;
@@ -123,6 +125,7 @@ public partial class CampaignDashboard : Control
     public void SetCampaign(int campaignId)
     {
         _campaignId = campaignId;
+        _collapsedLocations.Clear();
     }
 
     public void ReloadSidebar() => LoadAll();
@@ -173,13 +176,86 @@ public partial class CampaignDashboard : Control
     private void LoadLocations()
     {
         ClearItems(_locationsContainer, _addLocationsButton);
-        foreach (var location in _db.Locations.GetAll(_campaignId))
+        AddLocationRows(_db.Locations.GetTopLevel(_campaignId), 0);
+    }
+
+    private void AddLocationRows(System.Collections.Generic.List<Location> locs, int depth)
+    {
+        foreach (var loc in locs)
         {
-            int id = location.Id;
-            var btn = MakeSidebarButton(location.Name, LocationColor);
-            btn.SetMeta("id", id);
-            btn.Pressed += () => ShowDetailPane("location", id);
-            _locationsContainer.AddChild(btn);
+            int  id          = loc.Id;
+            var  children    = _db.Locations.GetChildren(loc.Id);
+            bool isCollapsed = _collapsedLocations.Contains(loc.Id);
+
+            if (children.Count > 0)
+            {
+                var hbox = new HBoxContainer();
+                hbox.AddThemeConstantOverride("separation", 0);
+                hbox.SetMeta("location_id", id);
+
+                if (depth > 0)
+                {
+                    var spacer = new Control { CustomMinimumSize = new Vector2(depth * 14, 0) };
+                    hbox.AddChild(spacer);
+                }
+
+                var toggleBtn = new Button
+                {
+                    Text              = isCollapsed ? "▶" : "▼",
+                    Flat              = false,
+                    CustomMinimumSize = new Vector2(24, 0),
+                };
+                ApplyButtonStyle(toggleBtn, LocationColor, roundRight: false);
+                toggleBtn.Pressed += () =>
+                {
+                    if (_collapsedLocations.Contains(id)) _collapsedLocations.Remove(id);
+                    else _collapsedLocations.Add(id);
+                    LoadLocations();
+                };
+
+                var btn = new Button
+                {
+                    Text                = loc.Name,
+                    Flat                = false,
+                    Alignment           = HorizontalAlignment.Left,
+                    TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
+                    SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                };
+                ApplyButtonStyle(btn, LocationColor, roundLeft: false);
+                btn.SetMeta("id", id);
+                btn.Pressed += () => ShowDetailPane("location", id);
+
+                hbox.AddChild(toggleBtn);
+                hbox.AddChild(btn);
+                _locationsContainer.AddChild(hbox);
+
+                if (!isCollapsed)
+                    AddLocationRows(children, depth + 1);
+            }
+            else if (depth == 0)
+            {
+                var btn = MakeSidebarButton(loc.Name, LocationColor);
+                btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                btn.SetMeta("id", id);
+                btn.Pressed += () => ShowDetailPane("location", id);
+                _locationsContainer.AddChild(btn);
+            }
+            else
+            {
+                var hbox = new HBoxContainer();
+                hbox.AddThemeConstantOverride("separation", 0);
+
+                var spacer = new Control { CustomMinimumSize = new Vector2(depth * 14, 0) };
+                hbox.AddChild(spacer);
+
+                var btn = MakeSidebarButton(loc.Name, LocationColor, extraLeft: 24);
+                btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                btn.SetMeta("id", id);
+                btn.Pressed += () => ShowDetailPane("location", id);
+                hbox.AddChild(btn);
+
+                _locationsContainer.AddChild(hbox);
+            }
         }
     }
 
@@ -224,7 +300,7 @@ public partial class CampaignDashboard : Control
 
     private static readonly Color DarkText = new Color(0.10f, 0.10f, 0.10f);
 
-    private static Button MakeSidebarButton(string text, Color color)
+    private static Button MakeSidebarButton(string text, Color color, int extraLeft = 0)
     {
         var btn = new Button
         {
@@ -233,15 +309,15 @@ public partial class CampaignDashboard : Control
             Alignment           = HorizontalAlignment.Left,
             TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
         };
-        ApplyButtonStyle(btn, color);
+        ApplyButtonStyle(btn, color, extraLeft);
         return btn;
     }
 
-    private static void ApplyButtonStyle(Button btn, Color color)
+    private static void ApplyButtonStyle(Button btn, Color color, int extraLeft = 0, bool roundLeft = true, bool roundRight = true)
     {
-        var normal  = MakeBox(color,                padding: 2);
-        var hover   = MakeBox(color.Lightened(0.12f), padding: 2);
-        var pressed = MakeBox(color.Darkened(0.12f),  padding: 2);
+        var normal  = MakeBox(color,                  padding: 2, extraLeft: extraLeft, roundLeft: roundLeft, roundRight: roundRight);
+        var hover   = MakeBox(color.Lightened(0.12f), padding: 2, extraLeft: extraLeft, roundLeft: roundLeft, roundRight: roundRight);
+        var pressed = MakeBox(color.Darkened(0.12f),  padding: 2, extraLeft: extraLeft, roundLeft: roundLeft, roundRight: roundRight);
         btn.AddThemeStyleboxOverride("normal",  normal);
         btn.AddThemeStyleboxOverride("hover",   hover);
         btn.AddThemeStyleboxOverride("pressed", pressed);
@@ -269,13 +345,17 @@ public partial class CampaignDashboard : Control
         accordion.AddThemeStyleboxOverride("panel",                    MakeBox(baseColor.Darkened(0.35f)));
     }
 
-    private static StyleBoxFlat MakeBox(Color color, int padding = 0)
+    private static StyleBoxFlat MakeBox(Color color, int padding = 0, int extraLeft = 0, bool roundLeft = true, bool roundRight = true)
     {
         var box = new StyleBoxFlat { BgColor = color };
-        box.SetCornerRadiusAll(3);
-        if (padding > 0)
+        const int r = 3;
+        box.CornerRadiusTopLeft     = roundLeft  ? r : 0;
+        box.CornerRadiusBottomLeft  = roundLeft  ? r : 0;
+        box.CornerRadiusTopRight    = roundRight ? r : 0;
+        box.CornerRadiusBottomRight = roundRight ? r : 0;
+        if (padding > 0 || extraLeft > 0)
         {
-            box.ContentMarginLeft   = padding;
+            box.ContentMarginLeft   = padding + extraLeft;
             box.ContentMarginRight  = padding;
             box.ContentMarginTop    = padding / 2f;
             box.ContentMarginBottom = padding / 2f;
@@ -319,11 +399,12 @@ public partial class CampaignDashboard : Control
                 if (location == null) return;
                 var locPane = _locationDetailPaneScene.Instantiate<LocationDetailPane>();
                 AddDetailPane(locPane);
-                locPane.NavigateTo      += ShowDetailPane;
-                locPane.NameChanged     += OnNameChanged;
-                locPane.Deleted         += OnEntityDeleted;
-                locPane.SubLocationAdded += (_, __)     => LoadLocations();
-                locPane.EntityCreated    += (type, id) =>
+                locPane.NavigateTo           += ShowDetailPane;
+                locPane.NameChanged          += OnNameChanged;
+                locPane.Deleted              += OnEntityDeleted;
+                locPane.SubLocationAdded     += (_, __)     => LoadLocations();
+                locPane.ParentLocationChanged += _           => LoadLocations();
+                locPane.EntityCreated         += (type, id) =>
                 {
                     if (type == "faction")  LoadFactions();
                     if (type == "location") LoadLocations();
@@ -396,7 +477,12 @@ public partial class CampaignDashboard : Control
         if (container == null) return;
         foreach (Node child in container.GetChildren())
         {
-            if (child is Button btn && btn.HasMeta("id") && btn.GetMeta("id").AsInt32() == entityId)
+            Button btn = null;
+            if (child is Button b && b.HasMeta("id"))
+                btn = b;
+            else if (child is HBoxContainer hbox)
+                btn = hbox.GetChildren().OfType<Button>().FirstOrDefault(b => b.HasMeta("id"));
+            if (btn != null && btn.GetMeta("id").AsInt32() == entityId)
             {
                 btn.Text = displayText;
                 break;
@@ -440,8 +526,11 @@ public partial class CampaignDashboard : Control
                 panel.Visible = true;
                 panel.Set("folded", true);
                 items.Visible = false;
-                foreach (Node child in items.GetChildren())
-                    if (child is Control c) c.Visible = true;
+                if (items == _locationsContainer)
+                    LoadLocations();
+                else
+                    foreach (Node child in items.GetChildren())
+                        if (child is Control c) c.Visible = true;
                 continue;
             }
 
@@ -453,6 +542,16 @@ public partial class CampaignDashboard : Control
                     bool match = FuzzyMatch(query, btn.Text);
                     btn.Visible = match;
                     if (match) hasMatch = true;
+                }
+                else if (items == _locationsContainer && child is HBoxContainer hbox)
+                {
+                    var locBtn = hbox.GetChildren().OfType<Button>().FirstOrDefault(b => b.HasMeta("id"));
+                    if (locBtn != null)
+                    {
+                        bool match = FuzzyMatch(query, locBtn.Text);
+                        hbox.Visible = match;
+                        if (match) hasMatch = true;
+                    }
                 }
             }
 

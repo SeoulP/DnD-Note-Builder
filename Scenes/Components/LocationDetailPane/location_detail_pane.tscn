@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="5_wikinotes"]
 
-[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notes", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_subLocationSelect", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
+[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notes", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_setParentButton", "_parentLocationSelect", "_parentLocationContainer", "_subLocationSelect", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -22,7 +22,10 @@ _factionRowsContainer  = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/F
 _factionSelect         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/FactionSelect")
 _roleSelect            = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/RoleSelect")
 _addFactionButton      = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/AddFactionButton")
-_subLocationSelect     = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow/SubLocationSelect")
+_setParentButton          = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/ParentRow/SetParentButton")
+_parentLocationSelect     = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/ParentRow/ParentLocationSelect")
+_parentLocationContainer  = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/ParentRow/ParentLocationContainer")
+_subLocationSelect        = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow/SubLocationSelect")
 _addSubLocationButton  = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow/AddSubLocationButton")
 _subLocationsContainer = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SubLocationsContainer")
 _imageCarousel         = NodePath("Margin/VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
@@ -126,12 +129,40 @@ script = ExtResource("3_typeopt")
 
 [node name="AddFactionButton" type="Button" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow"]
 layout_mode = 2
+custom_minimum_size = Vector2(62, 0)
 text = "+ Add"
 
 [node name="FactionRowsContainer" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
+
+[node name="ParentRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ParentLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/ParentRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 17
+text = "Parent Location"
+
+[node name="ParentLocationContainer" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/ParentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SetParentButton" type="Button" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/ParentRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(62, 0)
+text = "Set"
+
+[node name="ParentLocationSelect" type="Button" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/ParentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+visible = false
+script = ExtResource("3_typeopt")
 
 [node name="SubLocationsRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2
@@ -151,6 +182,7 @@ script = ExtResource("3_typeopt")
 
 [node name="AddSubLocationButton" type="Button" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/SubLocationsRow"]
 layout_mode = 2
+custom_minimum_size = Vector2(62, 0)
 text = "+ Add"
 
 [node name="SubLocationsContainer" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]

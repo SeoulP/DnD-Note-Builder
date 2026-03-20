@@ -32,13 +32,13 @@
 |---|------|----------|----------|--------|
 | U1 | WikiNotes scroll-jump on first click to edit | UX | High | ✅ |
 | U2 | EntityRow hover — show pointer cursor | UX | Low | ✅ |
-| U3 | Background colour — investigate Godot Themes | UX | Low | ⬜ |
+| U3 | Background colour — project-wide Godot Theme | UX | Low | ✅ |
 | F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
 | F2 | Per-tab back/forward navigation | Feature | Medium | ⬜ |
 | F3 | Session related-links panel (wiki panel, third column) | Feature | Medium | ⬜ |
 | F4 | NPC detail pane — full field audit (HomeLocationId, FirstSeenSession, Personality) | Feature | Medium | 🔶 |
 | F5 | Campaign Settings screen — manage seeded types | Feature | Medium | ⬜ |
-| F6 | Nested locations in sidebar | Feature | Low | ⬜ |
+| F6 | Nested locations in sidebar | Feature | Low | ✅ |
 | F7 | Campaign cover image | Feature | Low | ⬜ |
 | F8 | Players section — party overview | Feature | Medium | ⬜ |
 | F9 | PC abilities / class features | Feature | High | ⬜ |
@@ -110,11 +110,9 @@ MouseDefaultCursorShape = CursorShape.PointingHand;
 
 ---
 
-### U3 — Background Colour: Investigate Godot Themes
+### U3 — Background Colour: Project-Wide Godot Theme ✅
 
-Colours are currently hardcoded per-component throughout the codebase. Any visual overhaul would require hunting through every file.
-
-**Recommended approach:** Investigate Godot `.tres` theme resources before any visual work. A single theme file defines colours, fonts, and StyleBoxes applied automatically to all matching Control nodes. Do this before touching individual component colours.
+Created `theme.tres` and wired it as the project-wide custom theme via `project.godot`. All visual constants (input colours, hover states, popup backgrounds) now live in one file. Remaining hardcoded colours in components either read from the theme via `GetThemeStylebox("…", "DndBuilder")` with fallback construction, or are component-specific values that don't belong in a shared theme.
 
 ---
 
@@ -299,13 +297,9 @@ Five per-campaign tables need UI for add/rename/delete. All five screens are str
 
 ---
 
-### F6 — Nested Locations in Sidebar
+### F6 — Nested Locations in Sidebar ✅
 
-The data layer is complete: `LocationRepository.GetTopLevel()` and `GetChildren()` already exist.
-
-**Change:** In `CampaignDashboard.LoadLocations()`, replace the flat `GetAll()` call with a recursive tree using `GetTopLevel()` + `GetChildren()`. Indent child buttons visually with left padding or use Godot's `Tree` control.
-
-> Ship together with the Parent Location picker in `LocationDetailPane` — they are the same feature from two angles.
+Completed 2026-03-20. Recursive `AddLocationRows()` in `CampaignDashboard`, collapsible parent nodes (toggle button + connected location button with shared rounded-corner styling), leaf/depth indentation via spacer + `extraLeft` padding. `LocationDetailPane` gained Parent Location picker (Set button → hidden `TypeOptionButton` → EntityRow, with `ExitParentEditMode` on `PopupClosed`), cycle/sibling prevention via `GetDescendantIds` + `GetAncestorIds`. `ParentLocationChanged` signal keeps sidebar tree in sync.
 
 ---
 
@@ -450,13 +444,12 @@ When reopening a campaign, restore the last viewed entity (type + id) so the det
 11. **F2 — Back/forward navigation** — largest navigation change; do after simpler fixes are stable.
 
 ### Planned / Larger scope
-12. **F6 — Nested locations** — ship with parent location picker.
+12. ~~**F6 — Nested locations**~~ ✅ Complete.
 13. **F9 — PC abilities / class features** — new table, greenfield.
 14. **F12 + F13 — Session redesign + Tab system** — plan together.
 15. **F10 — Image export/import** — requires F1.
 16. **F7 — Campaign cover image** — one enum entry; trivial but low priority.
 17. **F14 — Remember last opened entity** — quality-of-life, low risk.
-18. **U3 — Theme investigation** — prerequisite for any visual overhaul.
 
 ### Blocked / No decision
 - **F11 — NPC–Location relationship** — blocked on design decision.
@@ -472,6 +465,17 @@ When reopening a campaign, restore the last viewed entity (type + id) so the det
 | `Scenes/Components/ImageLightbox/ImageLightbox.cs` | Magic-byte format detection + raw byte loading | B1 |
 | `Scenes/Components/WikiNotes/WikiNotes.cs` | Fix `_renderer.GuiInput` handler; add `RestoreScroll()` | U1 |
 | `Scenes/Components/EntityRow/EntityRow.cs` | Add `MouseDefaultCursorShape = CursorShape.PointingHand` in `_Ready()` | U2 |
+| `theme.tres` | **New** — project-wide Godot theme: TextEdit/LineEdit styles, NavBar, hover states, popup bg | U3 |
+| `project.godot` | `[gui] theme/custom`, `[rendering] environment/defaults/default_clear_color` | U3 |
+| `Scenes/Components/NavBar/nav_bar.tscn` | Inline StyleBoxFlat panel override — background `#0f172a` | U3 |
+| `Scenes/Components/EntityRow/EntityRow.cs` | Hover boxes read from theme with hardcoded fallback | U3 |
+| `Scenes/Components/TypeOptionButton/TypeOptionButton.cs` | Hover boxes from theme; popup bg from theme; `CaretBlink = true` on dynamic LineEdits | U3 |
+| `Scenes/Components/ImageCarousel/ImageCarousel.cs` | Background `#1e293b`, border `#334155` to match app palette | U3 |
+| `Scenes/Components/*/[detail pane].tscn` (×5) | `margin_top = 8` restored on `Margin` node | U3 |
+| `Scenes/Components/*/[detail pane].tscn` (all) | `caret_blink = true` on all LineEdit and TextEdit nodes | U3 |
+| `Scenes/Panels/CampaignDashboard/CampaignDashboard.tscn` | `caret_blink = true` on SearchInput | U3 |
+| `Scenes/Modals/NewCampaignModal/add_campaign_modal.tscn` | `caret_blink = true` on NameLineEdit and DescriptionTextEdit | U3 |
+| `Scenes/App.cs` | `_Input` override — release focus when clicking outside active control | U3 |
 | `Scenes/Components/ImageCarousel/ImageCarousel.cs` | Copy image to managed path on add; store relative path | F1 |
 | `Scenes/Components/TabHistory.cs` | **New** — `TabHistory` helper class | F2 |
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | Add history, back/forward buttons, `NavigateToInternal`, `_UnhandledInput`, `RefreshNavButtons()` | F2 |
@@ -510,6 +514,17 @@ All items below are done and require no further action unless noted.
 ### Image loading (2026-03-19)
 - ✅ B1 — Image load bug fixed: `ImageCarousel` and `ImageLightbox` now read raw bytes via `System.IO.File.ReadAllBytes` and detect format from magic bytes (PNG/JPEG/WebP), bypassing Godot's extension-based loader. Handles files with mismatched extensions (e.g. WebP saved as .png).
 - ✅ B2 — Drag-and-drop now works via `Window.FilesDropped` signal. Godot 4 does not route OS file drops through `_CanDropData`/`_DropData` — those are internal-only. Drop hover overlay was investigated and dropped: Godot 4 exposes no OS drag hover events, so reliable visual feedback during drag is not possible without platform-specific hooks.
+
+### Visual / Theme polish (2026-03-20)
+- ✅ U3 — Project-wide Godot theme (`theme.tres`): TextEdit + LineEdit steel-blue bg (`#334155`), violet focus ring (`#6d28d9`), rounded corners (r=5), transparent resting border; warm light text; `Label/colors/font_color` set globally.
+- ✅ App background `#1e293b` via `rendering/environment/defaults/default_clear_color` in `project.godot` (no Panel nodes in scene tree — clear colour is the correct mechanism).
+- ✅ NavBar background `#0f172a` via inline StyleBoxFlat override in `nav_bar.tscn`.
+- ✅ EntityRow + TypeOptionButton hover states read from `DndBuilder/styles/row_hover` + `delete_hover` in theme; fallback to hardcoded colours if theme lookup fails (prevents silent null-stylebox override bug).
+- ✅ TypeOptionButton popup background from `PopupPanel/styles/panel` in theme.
+- ✅ ImageCarousel background changed to `#1e293b` (app background), border to `#334155`; border width set to 0 (user preference).
+- ✅ `margin_top = 8` restored on `Margin` node in all five detail panes that were missing it (npc, faction, location, session, item).
+- ✅ `caret_blink = true` added to every LineEdit and TextEdit node across all detail panes, the dashboard search field, the new-campaign modal, and dynamically created TypeOptionButton search/add inputs.
+- ✅ Global unfocus on blank click — `App._Input` override releases focus when a left-click lands outside the currently focused control. (`_UnhandledInput` was insufficient because detail panes are `ScrollContainer` roots which absorb mouse events before they reach unhandled input.)
 
 ### Session feedback
 - ✅ Spacebar opens image importer from lightbox — fixed via `GetViewport().GuiReleaseFocus()` in `OpenLightbox()`

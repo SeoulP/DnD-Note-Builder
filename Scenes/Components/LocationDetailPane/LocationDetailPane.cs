@@ -15,6 +15,7 @@ public partial class LocationDetailPane : ScrollContainer
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
     [Signal] public delegate void SubLocationAddedEventHandler(int parentLocationId, int newLocationId);
     [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
+    [Signal] public delegate void ParentLocationChangedEventHandler(int locationId);
 
     [Export] private LineEdit         _nameInput;
     [Export] private LineEdit         _typeInput;
@@ -25,6 +26,9 @@ public partial class LocationDetailPane : ScrollContainer
     [Export] private TypeOptionButton _factionSelect;
     [Export] private TypeOptionButton _roleSelect;
     [Export] private Button           _addFactionButton;
+    [Export] private Button           _setParentButton;
+    [Export] private TypeOptionButton _parentLocationSelect;
+    [Export] private VBoxContainer    _parentLocationContainer;
     [Export] private TypeOptionButton _subLocationSelect;
     [Export] private Button           _addSubLocationButton;
     [Export] private VBoxContainer    _subLocationsContainer;
@@ -65,6 +69,19 @@ public partial class LocationDetailPane : ScrollContainer
         {
             DialogHelper.Show(_confirmDialog, $"Delete \"{_location?.Name}\"? This cannot be undone.");
         };
+
+        _setParentButton.Pressed += EnterParentEditMode;
+
+        _parentLocationSelect.TypeSelected += id =>
+        {
+            if (_location == null) return;
+            _location.ParentLocationId = id == -1 ? null : (int?)id;
+            _db.Locations.Edit(_location);
+            ExitParentEditMode();
+            EmitSignal(SignalName.ParentLocationChanged, _location.Id);
+        };
+        _parentLocationSelect.TypeCreated  += _ => EmitSignal(SignalName.ParentLocationChanged, _location?.Id ?? 0);
+        _parentLocationSelect.PopupClosed  += ExitParentEditMode;
 
         _subLocationSelect.TypeSelected += id => _addSubLocationButton.Disabled = (id == -1);
         _subLocationSelect.TypeCreated  += id =>
@@ -109,6 +126,24 @@ public partial class LocationDetailPane : ScrollContainer
 
         _imageCarousel?.Setup(EntityType.Location, location.Id, _db);
 
+        _parentLocationSelect.NoneText          = "No parent (top-level)";
+        _parentLocationSelect.AutoSelectOnAdd   = true;
+        _parentLocationSelect.ShowDeleteButtons = false;
+        _parentLocationSelect.Setup(
+            () =>
+            {
+                var excluded = GetDescendantIds(_location.Id);
+                excluded.Add(_location.Id);
+                return _db.Locations.GetAll(_location.CampaignId)
+                          .Where(l => !excluded.Contains(l.Id))
+                          .Select(l => (l.Id, l.Name))
+                          .ToList();
+            },
+            name => _db.Locations.Add(new Location { CampaignId = _location.CampaignId, Name = name }),
+            _ => { });
+        _parentLocationSelect.SelectById(location.ParentLocationId);
+        ExitParentEditMode();
+
         _nameInput.Text  = string.IsNullOrEmpty(location.Name) ? "New Location" : location.Name;
         _typeInput.Text  = location.Type;
         _descInput.Text  = location.Description;
@@ -127,10 +162,18 @@ public partial class LocationDetailPane : ScrollContainer
         _subLocationSelect.NoneText       = "Pick a sub-location";
         _subLocationSelect.AutoSelectOnAdd = true;
         _subLocationSelect.Setup(
-            () => _db.Locations.GetAll(_location.CampaignId)
-                      .Where(l => l.Id != _location.Id && l.ParentLocationId != _location.Id)
-                      .Select(l => (l.Id, l.Name))
-                      .ToList(),
+            () =>
+            {
+                var excluded = GetAncestorIds(_location.Id);
+                excluded.Add(_location.Id);
+                if (_location.ParentLocationId.HasValue)
+                    foreach (var sibling in _db.Locations.GetChildren(_location.ParentLocationId.Value))
+                        excluded.Add(sibling.Id);
+                return _db.Locations.GetAll(_location.CampaignId)
+                          .Where(l => !excluded.Contains(l.Id) && l.ParentLocationId != _location.Id)
+                          .Select(l => (l.Id, l.Name))
+                          .ToList();
+            },
             name => _db.Locations.Add(new Location { CampaignId = _location.CampaignId, Name = name }),
             id =>
             {
@@ -140,6 +183,46 @@ public partial class LocationDetailPane : ScrollContainer
         _subLocationSelect.SelectById(null);
         LoadFactionRows();
         LoadSubLocations();
+    }
+
+    private void EnterParentEditMode()
+    {
+        _parentLocationContainer.Visible  = false;
+        _setParentButton.Visible          = false;
+        _parentLocationSelect.Visible     = true;
+        Callable.From(_parentLocationSelect.ShowPopup).CallDeferred();
+    }
+
+    private void ExitParentEditMode()
+    {
+        _parentLocationSelect.Visible     = false;
+        _setParentButton.Visible          = true;
+        _parentLocationContainer.Visible  = true;
+        LoadParentRow();
+    }
+
+    private void LoadParentRow()
+    {
+        foreach (Node child in _parentLocationContainer.GetChildren())
+            child.QueueFree();
+
+        if (!_location.ParentLocationId.HasValue) return;
+
+        var parent = _db.Locations.Get(_location.ParentLocationId.Value);
+        if (parent == null) return;
+
+        int parentId = parent.Id;
+        var row = new EntityRow { Text = parent.Name };
+        row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "location", parentId);
+        row.DeletePressed   += () =>
+        {
+            _location.ParentLocationId = null;
+            _db.Locations.Edit(_location);
+            _parentLocationSelect.SelectById(null);
+            ExitParentEditMode();
+            EmitSignal(SignalName.ParentLocationChanged, _location.Id);
+        };
+        _parentLocationContainer.AddChild(row);
     }
 
     private void LoadSubLocations()
@@ -208,6 +291,33 @@ public partial class LocationDetailPane : ScrollContainer
             DialogHelper.Show(_confirmDialog, $"Delete \"{_location.Name}\"? This cannot be undone.");
             AcceptEvent();
         }
+    }
+
+    private HashSet<int> GetAncestorIds(int locationId)
+    {
+        var ids = new HashSet<int>();
+        var current = _db.Locations.Get(locationId);
+        while (current?.ParentLocationId.HasValue == true)
+        {
+            int parentId = current.ParentLocationId.Value;
+            if (!ids.Add(parentId)) break; // cycle guard
+            current = _db.Locations.Get(parentId);
+        }
+        return ids;
+    }
+
+    private HashSet<int> GetDescendantIds(int locationId)
+    {
+        var ids   = new HashSet<int>();
+        var queue = new Queue<int>();
+        queue.Enqueue(locationId);
+        while (queue.Count > 0)
+        {
+            int cur = queue.Dequeue();
+            foreach (var child in _db.Locations.GetChildren(cur))
+                if (ids.Add(child.Id)) queue.Enqueue(child.Id);
+        }
+        return ids;
     }
 
     private void Save()

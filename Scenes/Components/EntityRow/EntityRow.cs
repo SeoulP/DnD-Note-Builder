@@ -43,7 +43,7 @@ public partial class EntityRow : PanelContainer
             Text              = _text,
             VerticalAlignment = VerticalAlignment.Center,
             AutowrapMode      = TextServer.AutowrapMode.Off,
-            Position          = new Vector2(4, 0),
+            Position          = new Vector2(6, 0),
         };
         clip.AddChild(_label);
 
@@ -71,7 +71,7 @@ public partial class EntityRow : PanelContainer
             if (overflow > 0)
             {
                 tween = clip.CreateTween().SetTrans(Tween.TransitionType.Linear);
-                tween.TweenProperty(_label, "position:x", 4f - overflow, overflow / 80f);
+                tween.TweenProperty(_label, "position:x", 6f - overflow, overflow / 80f);
             }
         };
         navBtn.MouseExited += () =>
@@ -80,7 +80,7 @@ public partial class EntityRow : PanelContainer
             RemoveThemeStyleboxOverride("panel");
             tween?.Kill();
             tween = clip.CreateTween();
-            tween.TweenProperty(_label, "position:x", 4f, 0.2f);
+            tween.TweenProperty(_label, "position:x", 6f, 0.2f);
         };
 
         delBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; AddThemeStyleboxOverride("panel", _deleteHoverBox); };
