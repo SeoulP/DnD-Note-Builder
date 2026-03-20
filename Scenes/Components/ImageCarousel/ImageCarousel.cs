@@ -147,6 +147,7 @@ public partial class ImageCarousel : Control
         AddChild(_counter);
 
         Refresh();
+        GetWindow().FilesDropped += OnFilesDropped;
     }
 
     // ── public API ────────────────────────────────────────────────────────────
@@ -161,27 +162,19 @@ public partial class ImageCarousel : Control
         Refresh();
     }
 
-    // ── drag-and-drop ─────────────────────────────────────────────────────────
-
-    public override bool _CanDropData(Vector2 atPosition, Variant data)
+    public override void _ExitTree()
     {
-        if (_db == null) return false;
-        if (data.VariantType != Variant.Type.Dictionary) return false;
-        var dict = data.AsGodotDictionary();
-        if (!dict.ContainsKey("files")) return false;
-        foreach (var f in dict["files"].AsStringArray())
-            if (IsImagePath(f)) return true;
-        return false;
+        GetWindow().FilesDropped -= OnFilesDropped;
     }
 
-    public override void _DropData(Vector2 atPosition, Variant data)
+    // ── drag-and-drop ─────────────────────────────────────────────────────────
+
+    private void OnFilesDropped(string[] files)
     {
-        var dict = data.AsGodotDictionary();
-        foreach (var path in dict["files"].AsStringArray())
-        {
-            if (!IsImagePath(path)) continue;
-            AddImage(path);
-        }
+        if (_db == null) return;
+        if (!new Rect2(GlobalPosition, Size).HasPoint(GetGlobalMousePosition())) return;
+        foreach (var path in files)
+            if (IsImagePath(path)) AddImage(path);
     }
 
     // ── private ───────────────────────────────────────────────────────────────
@@ -277,9 +270,28 @@ public partial class ImageCarousel : Control
     private static ImageTexture LoadTexture(string path)
     {
         if (!File.Exists(path)) return null;
-        var img = new Image();
-        if (img.Load(path) != Error.Ok) return null;
+        var bytes = File.ReadAllBytes(path);
+        var img   = new Image();
+        var err   = LoadImageFromBytes(img, bytes);
+        if (err != Error.Ok) return null;
         return ImageTexture.CreateFromImage(img);
+    }
+
+    // Detects format from magic bytes to avoid noisy Godot errors from mismatched loaders.
+    private static Error LoadImageFromBytes(Image img, byte[] bytes)
+    {
+        if (bytes.Length < 12) return Error.Failed;
+        // PNG: 89 50 4E 47
+        if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+            return img.LoadPngFromBuffer(bytes);
+        // JPEG: FF D8 FF
+        if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
+            return img.LoadJpgFromBuffer(bytes);
+        // WebP: RIFF????WEBP
+        if (bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46
+            && bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50)
+            return img.LoadWebpFromBuffer(bytes);
+        return Error.FileUnrecognized;
     }
 
     private static bool IsImagePath(string path)
