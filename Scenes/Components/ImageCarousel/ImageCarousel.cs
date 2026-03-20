@@ -21,6 +21,7 @@ public partial class ImageCarousel : Control
     private int               _index    = 0;
     private bool              _hovering = false;
 
+    private StyleBoxFlat       _bgStyle;
     private TextureRect _image;
     private Label       _emptyHint;
     private Button      _prevBtn;
@@ -40,15 +41,17 @@ public partial class ImageCarousel : Control
         ClipContents        = true;
 
         // ── background ───────────────────────────────────────────────────────
-        var style = new StyleBoxFlat();
-        style.BgColor = new Color(0.11f, 0.13f, 0.16f, 1f);  // #1e293b — matches app background
-        style.SetCornerRadiusAll(12);
-        style.SetBorderWidthAll(0);
+        _bgStyle = new StyleBoxFlat();
+        _bgStyle.BgColor = ThemeManager.Instance?.Current?.Component ?? new Color(0.2f, 0.2549f, 0.3333f, 1f);
+        _bgStyle.SetCornerRadiusAll(12);
+        _bgStyle.SetBorderWidthAll(0);
         var bg = new Panel();
         bg.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        bg.AddThemeStyleboxOverride("panel", style);
+        bg.AddThemeStyleboxOverride("panel", _bgStyle);
         bg.MouseFilter = MouseFilterEnum.Ignore;  // don't block input
         AddChild(bg);
+
+        ThemeManager.Instance.ThemeChanged += OnThemeChanged;
 
         // ── image (receives clicks → opens lightbox) ──────────────────────────
         _image = new TextureRect
@@ -164,6 +167,13 @@ public partial class ImageCarousel : Control
     public override void _ExitTree()
     {
         GetWindow().FilesDropped -= OnFilesDropped;
+        if (ThemeManager.Instance != null)
+            ThemeManager.Instance.ThemeChanged -= OnThemeChanged;
+    }
+
+    private void OnThemeChanged(string _)
+    {
+        _bgStyle.BgColor = ThemeManager.Instance.Current.Component;
     }
 
     // ── drag-and-drop ─────────────────────────────────────────────────────────

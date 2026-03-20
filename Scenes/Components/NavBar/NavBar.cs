@@ -20,6 +20,9 @@ public partial class NavBar : PanelContainer
     private ConfirmationDialog _restoreConfirmDialog;
     private string             _pendingRestorePath = "";
 
+    private StyleBoxFlat _navBarStyle;
+    private PopupMenu    _themeMenu;
+
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
@@ -44,6 +47,25 @@ public partial class NavBar : PanelContainer
         popup.SetItemTooltip(3, "Selectively export NPCs, Locations, Factions, Sessions, Items, and types from this campaign to a .dndx file.");
         popup.SetItemTooltip(4, "Import entities and types from a .dndx file into this campaign.");
         popup.IdPressed += OnMenuItemPressed;
+
+        // Theme submenu
+        _themeMenu = new PopupMenu { Name = "ThemeSubMenu" };
+        for (int i = 0; i < ThemeManager.Palettes.Count; i++)
+        {
+            var p = ThemeManager.Palettes[i];
+            _themeMenu.AddItem(p.Name);
+            _themeMenu.SetItemIcon(i, MakeColorSwatch(p.Background));
+        }
+        popup.AddChild(_themeMenu);
+        popup.AddSeparator();
+        popup.AddSubmenuNodeItem("Theme", _themeMenu);
+        UpdateThemeCheckmarks();
+        _themeMenu.IdPressed += OnThemeSelected;
+
+        // Navbar background — driven by ThemeManager so it updates live
+        _navBarStyle = new StyleBoxFlat { BgColor = ThemeManager.Instance.Current.NavBar };
+        AddThemeStyleboxOverride("panel", _navBarStyle);
+        ThemeManager.Instance.ThemeChanged += OnThemeChanged;
     }
 
     public void ShowBack(bool show) => _backButton.Visible = show;
@@ -54,6 +76,28 @@ public partial class NavBar : PanelContainer
         var popup = _settingsButton.GetPopup();
         popup.SetItemDisabled(popup.GetItemIndex(2), !campaignId.HasValue);
         popup.SetItemDisabled(popup.GetItemIndex(3), !campaignId.HasValue);
+    }
+
+    // ─── Theme ────────────────────────────────────────────────────────────────
+
+    private void OnThemeSelected(long index)
+    {
+        ThemeManager.Instance.ApplyTheme(ThemeManager.Palettes[(int)index].Name);
+        UpdateThemeCheckmarks();
+    }
+
+    private void OnThemeChanged(string _)
+    {
+        _navBarStyle.BgColor = ThemeManager.Instance.Current.NavBar;
+        UpdateThemeCheckmarks();
+    }
+
+    private void UpdateThemeCheckmarks()
+    {
+        if (_themeMenu == null) return;
+        var current = ThemeManager.Instance.Current.Name;
+        for (int i = 0; i < _themeMenu.ItemCount; i++)
+            _themeMenu.SetItemChecked(i, _themeMenu.GetItemText(i) == current);
     }
 
     // ─── Menu dispatch ────────────────────────────────────────────────────────
@@ -181,6 +225,21 @@ public partial class NavBar : PanelContainer
             EmitSignal(SignalName.CampaignDataImported);
         };
         modal.PopupCentered();
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private static Texture2D MakeColorSwatch(Color background)
+    {
+        const int Size = 16;
+        float cx = Size / 2f - 0.5f, cy = Size / 2f - 0.5f, r = Size / 2f - 0.5f;
+        var img = Image.CreateEmpty(Size, Size, false, Image.Format.Rgba8);
+        img.Fill(new Color(0, 0, 0, 0));
+        for (int x = 0; x < Size; x++)
+            for (int y = 0; y < Size; y++)
+                if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r)
+                    img.SetPixel(x, y, background);
+        return ImageTexture.CreateFromImage(img);
     }
 
 }

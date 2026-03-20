@@ -517,6 +517,7 @@ All items below are done and require no further action unless noted.
 
 ### Visual / Theme polish (2026-03-20)
 - ✅ U3 — Project-wide Godot theme (`theme.tres`): TextEdit + LineEdit steel-blue bg (`#334155`), violet focus ring (`#6d28d9`), rounded corners (r=5), transparent resting border; warm light text; `Label/colors/font_color` set globally.
+- ✅ ThemeManager — `Core/ThemeManager.cs` autoload; 18 Tailwind colour families selectable from Settings → Theme submenu (circle colour swatch per option); Slate (800/900/700) is the primary palette — other families use 900/950/800 to reduce saturation; hover accent = same-family 600 (Slate 600), focus ring = complementary colour; persisted via `SettingsRepository` (`app_settings` table, global); NavBar bg and ImageCarousel bg (Component/700) update live. **Slate is the intended default — other palettes are available but Slate is the best fit for a dark UI.**
 - ✅ App background `#1e293b` via `rendering/environment/defaults/default_clear_color` in `project.godot` (no Panel nodes in scene tree — clear colour is the correct mechanism).
 - ✅ NavBar background `#0f172a` via inline StyleBoxFlat override in `nav_bar.tscn`.
 - ✅ EntityRow + TypeOptionButton hover states read from `DndBuilder/styles/row_hover` + `delete_hover` in theme; fallback to hardcoded colours if theme lookup fails (prevents silent null-stylebox override bug).

@@ -25,6 +25,7 @@ public partial class DatabaseService : Node
     public QuestStatusRepository          QuestStatuses         { get; private set; }
     public QuestRepository                Quests                { get; private set; }
     public QuestHistoryRepository         QuestHistory          { get; private set; }
+    public SettingsRepository             Settings              { get; private set; }
 
     public string DbPath { get; private set; }
 
@@ -63,6 +64,7 @@ public partial class DatabaseService : Node
         QuestStatuses        = new QuestStatusRepository(_conn);
         Quests               = new QuestRepository(_conn);
         QuestHistory         = new QuestHistoryRepository(_conn);
+        Settings             = new SettingsRepository(_conn);
 
         RunMigrations();
     }
@@ -70,6 +72,7 @@ public partial class DatabaseService : Node
     private void RunMigrations()
     {
         // Order matters — each table must be created after all tables it references
+        Settings            .Migrate();  // global app settings — no FK dependencies
         Campaigns           .Migrate();  // top-level container
         Sessions            .Migrate();  // references campaigns
         Factions            .Migrate();  // references campaigns
