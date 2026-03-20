@@ -21,7 +21,6 @@ public partial class NavBar : PanelContainer
     private string             _pendingRestorePath = "";
 
     private StyleBoxFlat _navBarStyle;
-    private PopupMenu    _themeMenu;
 
     public override void _Ready()
     {
@@ -41,26 +40,13 @@ public partial class NavBar : PanelContainer
         popup.AddSeparator();
         popup.AddItem("Export Campaign Data...", 2);
         popup.AddItem("Import Campaign Data...", 3);
+        popup.AddSeparator();
+        popup.AddItem("Appearance...",           4);
         popup.SetItemTooltip(0, "Copy the entire database file to a location you choose. Backs up all campaigns and their data.");
         popup.SetItemTooltip(1, "Replace the entire database with a previously backed-up file. Overwrites all current data.");
-        // index 2 is the separator
         popup.SetItemTooltip(3, "Selectively export NPCs, Locations, Factions, Sessions, Items, and types from this campaign to a .dndx file.");
         popup.SetItemTooltip(4, "Import entities and types from a .dndx file into this campaign.");
         popup.IdPressed += OnMenuItemPressed;
-
-        // Theme submenu
-        _themeMenu = new PopupMenu { Name = "ThemeSubMenu" };
-        for (int i = 0; i < ThemeManager.Palettes.Count; i++)
-        {
-            var p = ThemeManager.Palettes[i];
-            _themeMenu.AddItem(p.Name);
-            _themeMenu.SetItemIcon(i, MakeColorSwatch(p.Background));
-        }
-        popup.AddChild(_themeMenu);
-        popup.AddSeparator();
-        popup.AddSubmenuNodeItem("Theme", _themeMenu);
-        UpdateThemeCheckmarks();
-        _themeMenu.IdPressed += OnThemeSelected;
 
         // Navbar background — driven by ThemeManager so it updates live
         _navBarStyle = new StyleBoxFlat { BgColor = ThemeManager.Instance.Current.NavBar };
@@ -80,24 +66,112 @@ public partial class NavBar : PanelContainer
 
     // ─── Theme ────────────────────────────────────────────────────────────────
 
-    private void OnThemeSelected(long index)
-    {
-        ThemeManager.Instance.ApplyTheme(ThemeManager.Palettes[(int)index].Name);
-        UpdateThemeCheckmarks();
-    }
-
-    private void OnThemeChanged(string _)
+    private void OnThemeChanged()
     {
         _navBarStyle.BgColor = ThemeManager.Instance.Current.NavBar;
-        UpdateThemeCheckmarks();
     }
 
-    private void UpdateThemeCheckmarks()
+    private void OpenAppearancePopup()
     {
-        if (_themeMenu == null) return;
-        var current = ThemeManager.Instance.Current.Name;
-        for (int i = 0; i < _themeMenu.ItemCount; i++)
-            _themeMenu.SetItemChecked(i, _themeMenu.GetItemText(i) == current);
+        var tm = ThemeManager.Instance;
+
+        // ── popup shell ──────────────────────────────────────────────────────
+        var panel = new PopupPanel();
+        var outer = new VBoxContainer();
+        outer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        outer.AddThemeConstantOverride("separation", 10);
+
+        // inline padding via a MarginContainer
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left",   12);
+        margin.AddThemeConstantOverride("margin_right",  12);
+        margin.AddThemeConstantOverride("margin_top",    12);
+        margin.AddThemeConstantOverride("margin_bottom", 12);
+        var inner = new VBoxContainer();
+        inner.AddThemeConstantOverride("separation", 10);
+        margin.AddChild(inner);
+        outer.AddChild(margin);
+        panel.AddChild(outer);
+
+        // ── dark / light toggle ───────────────────────────────────────────────
+        var modeRow = new HBoxContainer();
+        var modeLabel = new Label { Text = "Dark Mode" };
+        modeLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        var modeToggle = new CheckButton { ButtonPressed = tm.IsDark };
+        modeRow.AddChild(modeLabel);
+        modeRow.AddChild(modeToggle);
+        inner.AddChild(modeRow);
+
+        // ── hue slider ────────────────────────────────────────────────────────
+        var hueRow = new HBoxContainer();
+        hueRow.AddThemeConstantOverride("separation", 8);
+
+        var hueLabel = new Label { Text = "Hue" };
+        hueLabel.CustomMinimumSize = new Vector2(32, 0);
+
+        var slider = new HSlider
+        {
+            MinValue            = 0,
+            MaxValue            = 359,
+            Step                = 1,
+            Value               = tm.CurrentHue,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+
+        var hueValue = new Label { Text = $"{tm.CurrentHue:F0}°" };
+        hueValue.CustomMinimumSize = new Vector2(40, 0);
+
+        hueRow.AddChild(hueLabel);
+        hueRow.AddChild(slider);
+        hueRow.AddChild(hueValue);
+        inner.AddChild(hueRow);
+
+        // ── saturation slider ─────────────────────────────────────────────────
+        var satRow = new HBoxContainer();
+        satRow.AddThemeConstantOverride("separation", 8);
+
+        var satLabel = new Label { Text = "Saturation" };
+        satLabel.CustomMinimumSize = new Vector2(80, 0);
+
+        var satSlider = new HSlider
+        {
+            MinValue            = 0,
+            MaxValue            = ThemeManager.SatLabels.Length - 1,
+            Step                = 1,
+            Value               = tm.CurrentSat,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+
+        var satValue = new Label { Text = ThemeManager.SatLabels[tm.CurrentSat] };
+        satValue.CustomMinimumSize = new Vector2(64, 0);
+
+        satRow.AddChild(satLabel);
+        satRow.AddChild(satSlider);
+        satRow.AddChild(satValue);
+        inner.AddChild(satRow);
+
+        // ── wire live preview ─────────────────────────────────────────────────
+        slider.ValueChanged += val =>
+        {
+            hueValue.Text = $"{val:F0}°";
+            tm.ApplyHue((float)val, modeToggle.ButtonPressed, (int)satSlider.Value);
+        };
+        modeToggle.Toggled += on => tm.ApplyHue((float)slider.Value, on, (int)satSlider.Value);
+        satSlider.ValueChanged += val =>
+        {
+            satValue.Text = ThemeManager.SatLabels[(int)val];
+            tm.ApplyHue((float)slider.Value, modeToggle.ButtonPressed, (int)val);
+        };
+
+        // ── show popup below the settings button ──────────────────────────────
+        AddChild(panel);
+        var btnRect = _settingsButton.GetGlobalRect();
+        panel.Popup(new Rect2I(
+            (int)btnRect.Position.X,
+            (int)(btnRect.Position.Y + btnRect.Size.Y),
+            280, 145));
+
+        panel.PopupHide += () => panel.QueueFree();
     }
 
     // ─── Menu dispatch ────────────────────────────────────────────────────────
@@ -110,6 +184,7 @@ public partial class NavBar : PanelContainer
             case 1: OpenRestoreDialog();        break;
             case 2: OpenExportCampaignModal();  break;
             case 3: OpenImportCampaignDialog(); break;
+            case 4: OpenAppearancePopup();      break;
         }
     }
 
@@ -226,20 +301,4 @@ public partial class NavBar : PanelContainer
         };
         modal.PopupCentered();
     }
-
-    // ─── Helpers ──────────────────────────────────────────────────────────────
-
-    private static Texture2D MakeColorSwatch(Color background)
-    {
-        const int Size = 16;
-        float cx = Size / 2f - 0.5f, cy = Size / 2f - 0.5f, r = Size / 2f - 0.5f;
-        var img = Image.CreateEmpty(Size, Size, false, Image.Format.Rgba8);
-        img.Fill(new Color(0, 0, 0, 0));
-        for (int x = 0; x < Size; x++)
-            for (int y = 0; y < Size; y++)
-                if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r)
-                    img.SetPixel(x, y, background);
-        return ImageTexture.CreateFromImage(img);
-    }
-
 }

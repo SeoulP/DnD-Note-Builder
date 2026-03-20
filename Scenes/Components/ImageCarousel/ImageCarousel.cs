@@ -171,7 +171,7 @@ public partial class ImageCarousel : Control
             ThemeManager.Instance.ThemeChanged -= OnThemeChanged;
     }
 
-    private void OnThemeChanged(string _)
+    private void OnThemeChanged()
     {
         _bgStyle.BgColor = ThemeManager.Instance.Current.Component;
     }
