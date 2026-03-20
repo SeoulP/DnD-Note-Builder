@@ -23,3 +23,10 @@ bbcode_enabled = true
 fit_content = true
 scroll_active = false
 visible = false
+
+[node name="StubHint" type="Label" parent="."]
+layout_mode = 2
+text = "[[Name]] links to a note  ·  [[+NoteType]] creates a new one  (NPC, Location, Item, Faction, Quest)"
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)

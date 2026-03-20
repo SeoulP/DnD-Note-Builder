@@ -1,5 +1,5 @@
 # TTRPG Companion App — Master Action Plan
-*March 2026 · v1.0 · Consolidated from Model, UI, Session Feedback, and Navigation/UX plans*
+*March 2026 · v1.1 · Consolidated from Model, UI, Session Feedback, and Navigation/UX plans*
 
 ---
 
@@ -33,6 +33,8 @@
 | U1 | WikiNotes scroll-jump on first click to edit | UX | High | ✅ |
 | U2 | EntityRow hover — show pointer cursor | UX | Low | ✅ |
 | U3 | Background colour — project-wide Godot Theme | UX | Low | ✅ |
+| U4 | TypeOptionButton — auto-select newly added type | UX | Medium | ⬜ |
+| U5 | WikiNotes — bullet point continuation on Enter | UX | Low | ⬜ |
 | F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
 | F2 | Per-tab back/forward navigation | Feature | Medium | ⬜ |
 | F3 | Session related-links panel (wiki panel, third column) | Feature | Medium | ⬜ |
@@ -44,11 +46,13 @@
 | F9 | PC abilities / class features | Feature | High | ⬜ |
 | F10 | Image export/import in `.dndx` packages | Feature | Medium | ⬜ |
 | F11 | NPC–Location relationship | Design | Medium | 🚫 |
-| F12 | Session detail pane — significant redesign | Design | High | ⬜ |
+| F12 | Session detail pane — significant redesign | Design | High | 🔶 |
 | F13 | Tab system for the detail pane | Design | Planned | ⬜ |
-| F14 | Remember last opened entity per campaign | Feature | Low | ⬜ |
-| F15 | NPC–NPC relationships — directional UI | Feature | Medium | ⬜ |
-| F16 | Existing campaigns: check-and-insert missing relationship seeds | Schema | Medium | ⬜ |
+| F14 | Remember last opened entity per campaign | Feature | Medium | ⬜ |
+| F15 | NPC–NPC relationships — directionality display | Feature | Medium | ⬜ |
+| F16 | Call SeedDefaults on campaign load (+ add God/Worship seeds) | Schema | Medium | ⬜ |
+| F17 | WikiNotes — Items and Quests included in WikiLink autocomplete | Feature | High | ⬜ |
+| F18 | Session view — quick-create entities without navigating away | Feature | High | ⬜ |
 
 ---
 
@@ -60,59 +64,99 @@
 
 ## UX Polish
 
-### U1 — WikiNotes Scroll-Jump Fix
+### U1 — WikiNotes Scroll-Jump Fix ✅
 
-**Root cause:** When clicking the `RichTextLabel` renderer to enter edit mode, `_input.GrabFocus()` causes Godot to scroll the nearest `ScrollContainer` ancestor to bring the focused `TextEdit` into view. Because `_input` is near the top of the `VBoxContainer`, the scroll resets to the top.
-
-**Fix — `Scenes/Components/WikiNotes/WikiNotes.cs`:**
-
-Replace the `_renderer.GuiInput` handler:
-```csharp
-_renderer.GuiInput += (InputEvent e) =>
-{
-    if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
-    {
-        var scroll = FindParentScrollContainer();
-        int savedScroll = scroll?.ScrollVertical ?? 0;
-
-        _input.Visible    = true;
-        _renderer.Visible = false;
-        UpdateInputHeight();
-        _input.GrabFocus();
-
-        if (scroll != null)
-            CallDeferred(MethodName.RestoreScroll, scroll, savedScroll);
-    }
-};
-```
-
-Add the restore method:
-```csharp
-private void RestoreScroll(ScrollContainer scroll, int savedScroll)
-{
-    if (IsInstanceValid(scroll))
-        scroll.ScrollVertical = savedScroll;
-}
-```
-
-`FindParentScrollContainer()` already exists — no changes needed there. `CallDeferred` ensures the restore runs after Godot's internal focus-scroll fires. Fix applies to all panes that use `WikiNotes`, not just sessions.
+*(See Completed Work Log)*
 
 ---
 
-### U2 — EntityRow Pointer Cursor
+### U2 — EntityRow Pointer Cursor ✅
 
-`EntityRow` is a `PanelContainer` whose `MouseDefaultCursorShape` defaults to `Arrow`. The flat `Button` overlay covers most of the row and already shows the pointer, but the root node shows the arrow in gaps and edge cases.
-
-**Fix — `Scenes/Components/EntityRow/EntityRow.cs`, one line at the top of `_Ready()`:**
-```csharp
-MouseDefaultCursorShape = CursorShape.PointingHand;
-```
+*(See Completed Work Log)*
 
 ---
 
 ### U3 — Background Colour: Project-Wide Godot Theme ✅
 
-Created `theme.tres` and wired it as the project-wide custom theme via `project.godot`. All visual constants (input colours, hover states, popup backgrounds) now live in one file. Remaining hardcoded colours in components either read from the theme via `GetThemeStylebox("…", "DndBuilder")` with fallback construction, or are component-specific values that don't belong in a shared theme.
+*(See Completed Work Log)*
+
+---
+
+### U4 — TypeOptionButton: Auto-Select Newly Added Type
+
+When a user types a new type name and clicks "+ Add", the popup closes and the new type is automatically selected. Currently `AutoSelectOnAdd` defaults to `false` and is only set to `true` on entity-picker dropdowns (e.g. NPC select, Faction select). It is missing from all the "type" dropdowns that save directly to a record.
+
+**Affected call sites — add `AutoSelectOnAdd = true` before each `Setup()` call:**
+
+| File | Field |
+|------|-------|
+| `NpcDetailPane.cs` | `_speciesInput`, `_statusInput`, `_relationshipInput`, `_roleSelect`, `_relTypeSelect` |
+| `ItemDetailPane.cs` | `_typeInput` |
+| `QuestDetailPane.cs` | `_statusInput` |
+| `FactionDetailPane.cs` | `_roleSelect`, `_relFactionTypeSelect` |
+| `LocationDetailPane.cs` | `_roleSelect` |
+
+No changes required to `TypeOptionButton.cs` — the `AutoSelectOnAdd` path already works correctly.
+
+---
+
+### U5 — WikiNotes: Bullet Point Continuation
+
+Typing `- ` (dash + space) at the start of a line should initiate a bullet list. Pressing Enter should continue the list on the next line. Pressing Enter on an empty bullet body (i.e. `- ` with nothing after it) should remove the bullet prefix and return to normal text.
+
+**Applies to:** the `TextEdit` (`_input`) inside `WikiNotes.cs`, and by extension any WikiNotes instance — including WikiLink reference panels.
+
+**Implementation — `WikiNotes.cs`, `OnInputKey()`:**
+
+The handler already intercepts `InputEventKey` for autocomplete navigation. Extend it to intercept `Key.Enter` / `Key.KpEnter` when the autocomplete panel is not visible:
+
+```csharp
+case Key.Enter:
+case Key.KpEnter:
+    if (_acPanel != null && IsInstanceValid(_acPanel) && _acPanel.Visible)
+    {
+        ConfirmSelection();
+        _input.AcceptEvent();
+        break;
+    }
+    if (HandleBulletContinuation())
+        _input.AcceptEvent();
+    break;
+```
+
+**Add `HandleBulletContinuation()`:**
+
+```csharp
+private bool HandleBulletContinuation()
+{
+    int    line     = _input.GetCaretLine();
+    string lineText = _input.GetLine(line);
+
+    // Only act if this line starts a bullet
+    if (!lineText.StartsWith("- ")) return false;
+
+    string body = lineText[2..]; // everything after "- "
+
+    if (string.IsNullOrEmpty(body))
+    {
+        // Empty bullet — remove the prefix and return to normal text
+        _input.SetLine(line, "");
+        _input.SetCaretColumn(0);
+    }
+    else
+    {
+        // Continue the list on a new line
+        int col = _input.GetCaretColumn();
+        _input.SetLine(line, lineText[..col]);
+        _input.InsertLineAt(line + 1, "- ");
+        _input.SetCaretLine(line + 1);
+        _input.SetCaretColumn(2);
+    }
+    return true;
+}
+```
+
+> The existing `OnInputKey` guard (`if (_acPanel == null || !IsInstanceValid(_acPanel)) return;`) must be relaxed — the bullet handler should fire even when there is no active autocomplete panel. Restructure the early return accordingly.
 
 ---
 
@@ -235,28 +279,6 @@ private Dictionary<string, (string EntityType, int EntityId)> BuildReverseLookup
     foreach (var x in _db.Sessions.GetAll(campaignId))  d[x.Title.ToLowerInvariant()] = ("session",  x.Id);
     return d;
 }
-
-private void RefreshRelatedLinks()
-{
-    if (_relatedLinksContainer == null) return;
-    foreach (Node child in _relatedLinksContainer.GetChildren()) child.QueueFree();
-    var links = ParseSessionLinks();
-    if (links.Count == 0) { _relatedLinksContainer.Visible = false; return; }
-    _relatedLinksContainer.Visible = true;
-    var header = new Label { Text = "Referenced" };
-    header.AddThemeFontSizeOverride("font_size", 13);
-    header.Modulate = new Color(0.7f, 0.7f, 0.7f);
-    _relatedLinksContainer.AddChild(header);
-    foreach (var (name, entityType, entityId) in links)
-    {
-        string eName = name; string eType = entityType; int eId = entityId;
-        var btn = new Button { Text = eName, Flat = true, Alignment = HorizontalAlignment.Left,
-            TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis };
-        btn.AddThemeFontSizeOverride("font_size", 12);
-        btn.Pressed += () => EmitSignal(SignalName.NavigateTo, eType, eId);
-        _relatedLinksContainer.AddChild(btn);
-    }
-}
 ```
 
 Call `RefreshRelatedLinks()` at end of `Load()` and on `_notes.TextChanged`.
@@ -265,23 +287,23 @@ Call `RefreshRelatedLinks()` at end of `Load()` and on `_notes.TextChanged`.
 
 ---
 
-### F4 — NPC Detail Pane: Full Field Audit 🔶 Partial
+### F4 — NPC Detail Pane: Home Location Field 🔶 Partial
 
-Status and RelationshipTypeId dropdowns are done. Still missing:
+Status and RelationshipTypeId dropdowns are done. Remaining field worth adding:
 
 | Field | Source | Action |
 |-------|--------|--------|
-| `HomeLocationId` | `Npc` | Add Location dropdown to NPC pane |
-| `FirstSeenSession` | `Npc` | Add Session dropdown to NPC pane |
-| `Personality` | `Character` | Verify present in pane and wired |
+| `HomeLocationId` | `Npc` | Add Location `TypeOptionButton` to NPC pane |
+
+`Personality` and `FirstSeenSession` deferred — personality isn't a priority, and first-seen session is better handled as part of the F12 session pane redesign.
 
 ---
 
-### F5 — Campaign Settings Screen: Manage Seeded Types
+### F5 — Bulk Type Management Screen
 
-Five per-campaign tables need UI for add/rename/delete. All five screens are structurally identical.
+A dedicated screen for managing all per-campaign seeded types in one place — useful for pre-session prep without having to open individual records. The inline `TypeOptionButton` already handles add/delete on the fly; this is purely a convenience screen for bulk editing.
 
-**Recommended approach:** One `CampaignSettingsModal` scene with a `TabContainer`. Each tab is an instance of a shared `TypeEditorPanel` subscene (list + name/description inputs + Add/Delete buttons). Each tab is wired to a different repository.
+**Recommended approach:** One `CampaignSettingsModal` scene with a `TabContainer`. Each tab is an instance of a shared `TypeEditorPanel` subscene (list + name input + Add/Delete buttons). Each tab wired to a different repository.
 
 **Tables to manage:**
 
@@ -290,16 +312,16 @@ Five per-campaign tables need UI for add/rename/delete. All five screens are str
 | Species | `SpeciesRepository` | `species` |
 | NPC Statuses | `NpcStatusRepository` | `npc_statuses` |
 | NPC Relationships | `NpcRelationshipTypeRepository` | `npc_relationship_types` |
-| Faction Roles | `LocationFactionRoleRepository` | `location_faction_roles` |
+| Faction Roles | `NpcFactionRoleRepository` | `npc_faction_roles` |
 | Item Types | `ItemTypeRepository` | `item_types` |
 
-> Do not allow deleting a type if any records reference it — warn the user before deletion.
+> Do not allow deleting a type that any records currently reference — warn the user before deletion.
 
 ---
 
 ### F6 — Nested Locations in Sidebar ✅
 
-Completed 2026-03-20. Recursive `AddLocationRows()` in `CampaignDashboard`, collapsible parent nodes (toggle button + connected location button with shared rounded-corner styling), leaf/depth indentation via spacer + `extraLeft` padding. `LocationDetailPane` gained Parent Location picker (Set button → hidden `TypeOptionButton` → EntityRow, with `ExitParentEditMode` on `PopupClosed`), cycle/sibling prevention via `GetDescendantIds` + `GetAncestorIds`. `ParentLocationChanged` signal keeps sidebar tree in sync.
+*(See Completed Work Log)*
 
 ---
 
@@ -374,13 +396,19 @@ A single location field on an NPC conflates three distinct concepts:
 
 ---
 
-### F12 — Session Detail Pane: Significant Redesign
+### F12 — Session Detail Pane: Significant Redesign 🔶 In Progress
 
-The current pane has: number label, title, played-on date, wiki notes, image carousel, delete. Most-used pane during active play; most underdeveloped.
+The current pane has: number label, title, played-on date, wiki notes, image carousel, delete. Most-used pane during active play; confirmed as the biggest active pain point from live session use.
 
-**Missing:**
+**Confirmed missing (from live session feedback):**
+- Abilities panel — quick reference during combat
+- Quick-create for entities from within the session (tracked as F18 — see below)
+- WikiLink coverage gap — Items and Quests not linked (tracked as F17)
+- Bullet point support in notes (tracked as U5)
+
+**Previously planned — still applies:**
 - Entity tagging panel — structured fields for which NPCs, locations, factions, and quests appeared
-- Inline stub creation — create a new NPC or location from within the session pane without losing place
+- Inline stub creation — create a new NPC or location without losing place
 - Wiki link hover preview — hovering a `[[Link]]` shows a preview without navigating
 - Quest status updates — log progress on a quest from within session notes
 
@@ -410,50 +438,454 @@ The current pane has: number label, title, played-on date, wiki notes, image car
 
 When reopening a campaign, restore the last viewed entity (type + id) so the detail pane is shown immediately rather than landing on a bare sidebar.
 
+`SettingsRepository` already has a generic `Get(key, default)` / `Set(key, value)` backed by the `app_settings` table. No schema changes needed.
+
+**Implementation — `CampaignDashboard.cs`:**
+
+Write on every navigation:
+```csharp
+// Inside ShowDetailPane / NavigateToInternal, after loading the pane:
+_db.Settings.Set($"last_entity_type_{_campaignId}", entityType);
+_db.Settings.Set($"last_entity_id_{_campaignId}", entityId.ToString());
+```
+
+Read in `SetCampaign()` after `LoadAll()`:
+```csharp
+string lastType = _db.Settings.Get($"last_entity_type_{_campaignId}");
+string lastIdStr = _db.Settings.Get($"last_entity_id_{_campaignId}");
+if (!string.IsNullOrEmpty(lastType) && int.TryParse(lastIdStr, out int lastId))
+    ShowDetailPane(lastType, lastId);
+```
+
+Per-campaign keys (`last_entity_type_42`) mean each campaign remembers independently.
+
 ---
 
-### F15 — NPC–NPC Relationships: Directional UI
+### F15 — NPC–NPC Relationships: Directionality Display
 
-`NpcRelationship` model and repository exist. The `CharacterRelationshipTypeRepository` has been seeded including "Acquainted with."
+**Design settled.** Full spec below.
 
-**Open question:** Relationships are directional in the model (from/to NPC). "Sildar is Acquainted with Iarno" does not automatically imply the reverse. The UI for displaying and editing both directions is not yet designed.
+#### Schema changes (additive only)
 
-**Recommendation:** Display both directions as separate records. Confirm direction behaviour before building.
+**`character_relationship_types`** — add nullable `reverse_label` column:
+```sql
+ALTER TABLE character_relationship_types ADD COLUMN reverse_label TEXT;
+```
+Migration guard pattern (same as all other additive columns):
+```csharp
+// In CharacterRelationshipTypeRepository.Migrate():
+var hasReverse = _conn.CreateCommand();
+hasReverse.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_relationship_types') WHERE name = 'reverse_label'";
+if ((long)hasReverse.ExecuteScalar() == 0)
+{
+    var alter = _conn.CreateCommand();
+    alter.CommandText = "ALTER TABLE character_relationship_types ADD COLUMN reverse_label TEXT";
+    alter.ExecuteNonQuery();
+}
+```
+
+**`character_relationships`** — add `is_reversed` boolean:
+```sql
+ALTER TABLE character_relationships ADD COLUMN is_reversed INTEGER NOT NULL DEFAULT 0;
+```
+Same migration guard pattern. `DEFAULT 0` means all existing rows are treated as forward — correct, since they were all stored from the `character_id` perspective.
+
+#### Model changes
+
+**`CharacterRelationshipType.cs`:**
+```csharp
+public string? ReverseLabel { get; set; }  // null = symmetric (use Name for both sides)
+```
+
+**`CharacterRelationship.cs`:**
+```csharp
+public bool IsReversed { get; set; }
+```
+
+#### Repository changes
+
+**`CharacterRelationshipTypeRepository`** — add `reverse_label` to all SELECT, INSERT, UPDATE queries. Add to `Map()`:
+```csharp
+ReverseLabel = reader.IsDBNull(4) ? null : reader.GetString(4),
+```
+
+**`NpcRepository.GetRelationships()`** — add `is_reversed` to SELECT and Map():
+```csharp
+cmd.CommandText = "SELECT character_id, related_character_id, relationship_type_id, is_reversed FROM character_relationships WHERE character_id = @cid OR related_character_id = @cid";
+// ...
+IsReversed = reader.GetInt32(3) == 1,
+```
+
+**`NpcRepository.AddRelationship()`** — add `is_reversed` parameter:
+```csharp
+public void AddRelationship(int characterId, int relatedCharacterId, int? typeId, bool isReversed)
+{
+    var cmd = _conn.CreateCommand();
+    cmd.CommandText = "INSERT OR IGNORE INTO character_relationships (character_id, related_character_id, relationship_type_id, is_reversed) VALUES (@cid, @rcid, @tid, @rev)";
+    cmd.Parameters.AddWithValue("@cid",  characterId);
+    cmd.Parameters.AddWithValue("@rcid", relatedCharacterId);
+    cmd.Parameters.AddWithValue("@tid",  typeId.HasValue ? typeId.Value : DBNull.Value);
+    cmd.Parameters.AddWithValue("@rev",  isReversed ? 1 : 0);
+    cmd.ExecuteNonQuery();
+}
+```
+
+#### New component: `RelationshipTypeOptionButton`
+
+A new component that extends or mirrors `TypeOptionButton` but handles the two-column relationship type list. Not a subclass of `TypeOptionButton` (Godot partial classes make inheritance awkward) — a standalone component that shares the same visual conventions.
+
+**Signals:**
+```csharp
+[Signal] public delegate void TypeSelectedEventHandler(int id, bool isReversed);
+[Signal] public delegate void TypeCreatedEventHandler(int id);
+[Signal] public delegate void PopupClosedEventHandler();
+```
+
+**List rows — two columns per row:**
+
+Each type generates **one row** in the list with two interactive halves:
+
+```
+[ Friend of       ] ↔ [ Friend of       ]
+[ Master of       ] ↔ [ Slave of        ]
+[ Mentor of       ] ↔ [ Student of      ]
+[ Acquainted with ] ↔ [ Acquainted with ]
+```
+
+- Left button: selects the type with `isReversed = false`
+- Right button: selects the type with `isReversed = true`
+- If `ReverseLabel` is null, right column displays `Name` (mirrored)
+- The `↔` separator is a non-interactive `Label`
+- Hover/delete behaviour identical to `TypeOptionButton` — the whole row highlights, `×` appears on hover
+
+**Add form — side by side:**
+```
+[ Forward label...  ] ↔ [ Reverse label (optional)... ] [ + Add ]
+```
+Both are `LineEdit`. Submitting with only the forward label filled creates a symmetric type (null `ReverseLabel`). Pressing Enter in either field submits.
+
+**`AutoSelectOnAdd` behaviour:** When a new type is created, emit `TypeSelected(id, isReversed: false)` and close — user picks direction from the list if they want the reverse.
+
+#### Display logic in `NpcDetailPane.LoadRelRows()`
+
+Replace the current `typeNames` dictionary lookup with a helper that accounts for direction:
+
+```csharp
+// Build type lookup including reverse labels
+var types = new Dictionary<int, CharacterRelationshipType>();
+foreach (var t in _db.CharacterRelationshipTypes.GetAll(_npc.CampaignId))
+    types[t.Id] = t;
+
+// In the foreach loop:
+string label = "";
+if (rel.RelationshipTypeId.HasValue && types.TryGetValue(rel.RelationshipTypeId.Value, out var relType))
+{
+    bool useReverse = rel.IsReversed && !string.IsNullOrEmpty(relType.ReverseLabel);
+    label = useReverse ? relType.ReverseLabel : relType.Name;
+}
+// Row text: "{otherNpcName}, {label} {thisNpcName}" when label non-empty
+//           "{otherNpcName}" when label empty
+string otherName = npcNames.TryGetValue(capturedOther, out var on) ? on : "Unknown";
+var row = new EntityRow
+{
+    Text = string.IsNullOrEmpty(label) ? otherName : $"{otherName}, {label} {_npc.Name}"
+};
+```
+
+Note the display format change: previously `"{A}, {type} {B}"` — now always `"{other}, {label} {thisNpc}"` so both sides read naturally. "Iarno, Slave of Sildar" on Sildar's pane; "Sildar, Master of Iarno" on Iarno's pane.
+
+#### `NpcDetailPane` wiring changes
+
+Replace `_relTypeSelect` (`TypeOptionButton`) with `_relTypeSelect` (`RelationshipTypeOptionButton`). Update `OnAddRelPressed()`:
+
+```csharp
+private void OnAddRelPressed()
+{
+    if (!_relNpcSelect.SelectedId.HasValue) return;
+    _db.Npcs.AddRelationship(_npc.Id, _relNpcSelect.SelectedId.Value, _relTypeSelect.SelectedId, _relTypeSelect.IsReversed);
+    _npc.Relationships = _db.Npcs.GetRelationships(_npc.Id);
+    LoadRelRows();
+}
+```
+
+Add `public bool IsReversed { get; private set; }` to `RelationshipTypeOptionButton`, set when `TypeSelected` fires.
+
+#### Files
+
+| File | Change |
+|------|--------|
+| `Core/Models/CharacterRelationshipType.cs` | Add `ReverseLabel` property |
+| `Core/Models/CharacterRelationship.cs` | Add `IsReversed` property |
+| `Core/Repositories/CharacterRelationshipTypeRepository.cs` | Migration guard for `reverse_label`; add to all queries |
+| `Core/Repositories/NpcRepository.cs` | Migration guard for `is_reversed`; update `GetRelationships`, `AddRelationship` |
+| `Scenes/Components/RelationshipTypeOptionButton/RelationshipTypeOptionButton.cs` | **New** — two-column type picker |
+| `Scenes/Components/RelationshipTypeOptionButton/relationship_type_option_button.tscn` | **New** |
+| `Scenes/Components/NpcDetailPane/NpcDetailPane.cs` | Swap `_relTypeSelect` type; update `LoadRelRows()`, `OnAddRelPressed()` |
+| `Scenes/Components/NpcDetailPane/npc_detail_pane.tscn` | Swap node type for `_relTypeSelect` |
 
 ---
 
-### F16 — Existing Campaigns: Check-and-Insert Missing Relationship Seeds
+### F16 — Call SeedDefaults on Campaign Load
 
-`SeedDefaults` only runs on campaign creation. Existing campaigns do not receive new seeds automatically.
+All `SeedDefaults` implementations already use `INSERT ... WHERE NOT EXISTS (... AND name = @name)` — they are fully idempotent and safe to call repeatedly. The only gap is they are currently only called from `DatabaseService` at campaign *creation*, not on subsequent loads.
 
-**Fix:** On campaign load, for each default relationship type, if no record with that name exists for this `campaign_id`, insert it. Apply to: `CharacterRelationshipTypeRepository`, `NpcRelationshipTypeRepository`, `NpcStatusRepository`, `LocationFactionRoleRepository`.
+**Fix — `DatabaseService.cs` or `CampaignDashboard.SetCampaign()`:** Call all `SeedDefaults` on campaign load, not just on creation. Because all the INSERT guards are already in place, this is safe for existing campaigns with real data.
+
+```csharp
+// Call in SetCampaign or wherever a campaign is opened:
+_db.Species.SeedDefaults(campaignId);
+_db.LocationFactionRoles.SeedDefaults(campaignId);
+_db.NpcFactionRoles.SeedDefaults(campaignId);
+_db.NpcRelationshipTypes.SeedDefaults(campaignId);
+_db.NpcStatuses.SeedDefaults(campaignId);
+_db.FactionRelationshipTypes.SeedDefaults(campaignId);
+_db.CharacterRelationshipTypes.SeedDefaults(campaignId);
+_db.ItemTypes.SeedDefaults(campaignId);
+_db.QuestStatuses.SeedDefaults(campaignId);
+```
+
+This also means any new seeds added to a `Defaults` array in the future will automatically appear in existing campaigns on next open — making F16 the permanent solution, not a one-time patch.
+
+**New seeds to add at the same time:**
+
+| Repository | New entry |
+|------------|-----------|
+| `CharacterRelationshipTypeRepository` | `("Worships", "Reveres as a deity or divine figure")` |
+| `NpcFactionRoleRepository` | `("Worshipped by", "Venerated as a god or divine patron by this faction")` |
+
+These will reach existing campaigns automatically once F16 is wired in.
+
+---
+
+### F17 — WikiNotes: Items and Quests in WikiLink Autocomplete
+
+`GetEntityMatches()` in `WikiNotes.cs` currently queries NPCs, Factions, Locations, and Sessions. Items and Quests are missing, so typing `[[` will not suggest them and their names will not render as links in the viewer.
+
+**Fix — `WikiNotes.cs`, `GetEntityMatches()`:**
+
+```csharp
+foreach (var x in _db.Items.GetAll(_campaignId))  Add(x.Name,  "Item");
+foreach (var x in _db.Quests.GetAll(_campaignId)) Add(x.Title, "Quest");
+```
+
+**Fix — `WikiLinkParser.cs`:** Ensure Items and Quests are included in the reverse-lookup used for rendering `[[links]]` as coloured text. If `WikiLinkParser` builds its own lookup independently of `WikiNotes`, the same two entity types must be added there too.
+
+**Fix — `SessionDetailPane.cs` `BuildReverseLookup()`** (F3): When F3 is implemented, include Items and Quests in the reverse lookup so the related-links panel also surfaces them.
+
+---
+
+### F18 — WikiNotes: Stub Creation via `+EntityType` Syntax
+
+Typing `+NPC`, `+Location`, `+Item`, `+Faction`, or `+Quest` anywhere in WikiNotes (not inside `[[...]]`) opens a lightweight name-prompt modal. Confirming creates a stub record with only a name and inserts `[[Name]]` at the cursor position, replacing the trigger text.
+
+#### Trigger detection
+
+The trigger piggybacks entirely on the existing `[[...]]` detection in `CheckAutocomplete()`. When the query string inside `[[` starts with `+` and matches a known entity type token exactly, the stub modal fires instead of the autocomplete list.
+
+```
+[[+NPC]]      → entity type: npc
+[[+Location]] → entity type: location
+[[+Item]]     → entity type: item
+[[+Faction]]  → entity type: faction
+[[+Quest]]    → entity type: quest
+```
+
+Match is case-insensitive. The trigger fires on the closing `]]` — at that moment `CheckAutocomplete()` sees `query == "+NPC"` (or similar) and opens the modal instead of the list. Partial typing (`[[+NP`) does nothing — the existing autocomplete finds no matches and hides normally.
+
+**Detection logic — extend `CheckAutocomplete()` after the existing `query` extraction:**
+
+```csharp
+// Existing code already extracts `query` from inside [[...]]
+// Add immediately after:
+string stubType = DetectStubTrigger(query);
+if (stubType != null)
+{
+    HideAutocomplete();
+    OpenStubModal(stubType, openIdx);
+    return;
+}
+```
+
+```csharp
+private static readonly Dictionary<string, string> StubTriggers = new(StringComparer.OrdinalIgnoreCase)
+{
+    { "+NPC",      "npc"      },
+    { "+Location", "location" },
+    { "+Item",     "item"     },
+    { "+Faction",  "faction"  },
+    { "+Quest",    "quest"    },
+};
+
+private string DetectStubTrigger(string query)
+{
+    return StubTriggers.TryGetValue(query, out string entityType) ? entityType : null;
+}
+```
+
+Note: `CheckAutocomplete()` already returns early if `query.Contains("]]")`, so the trigger only fires while the caret is still inside the open `[[`. The closing `]]` the user types is what produces the final exact match that fires the modal.
+
+#### Stub modal
+
+`OpenStubModal` shows a `PopupPanel` positioned below the caret — same placement logic as the autocomplete panel. It contains:
+
+- A single `LineEdit` pre-focused, placeholder `"Name..."`
+- A confirm button (`+ Create`) and implicit Enter key support
+- No other fields — stub creation is name-only
+
+```csharp
+private void OpenStubModal(string entityType, int triggerStartCol)
+{
+    HideAutocomplete();
+
+    int    line     = _input.GetCaretLine();
+    string lineText = _input.GetLine(line);
+    var    caretRect = _input.GetRectAtLineColumn(line, _input.GetCaretColumn());
+    var    screenPos = _input.GlobalPosition + caretRect.Position + new Vector2(0, caretRect.Size.Y);
+
+    var popup   = new PopupPanel();
+    var vbox    = new VBoxContainer();
+    vbox.AddThemeConstantOverride("separation", 6);
+    vbox.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+
+    var nameInput = new LineEdit
+    {
+        PlaceholderText     = "Name...",
+        SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        CaretBlink          = true,
+    };
+    var addBtn = new Button { Text = "+ Create" };
+
+    Action doCreate = () =>
+    {
+        string name = nameInput.Text.Trim();
+        if (string.IsNullOrEmpty(name)) return;
+
+        CreateStub(entityType, name);
+
+        // The user typed [[+NPC]] — openIdx points to the `[` of `[[`.
+        // Replace the whole [[+Token]] with [[Name]].
+        string currentLine = _input.GetLine(line);
+        int closeIdx = currentLine.IndexOf("]]", openIdx, StringComparison.Ordinal);
+        int replaceEnd = closeIdx >= 0 ? closeIdx + 2 : _input.GetCaretColumn();
+
+        string newLine = currentLine[..openIdx] + $"[[{name}]]" + currentLine[replaceEnd..];
+        _input.SetLine(line, newLine);
+        _input.SetCaretColumn(openIdx + 2 + name.Length + 2);
+
+        popup.Hide();
+        _input.GrabFocus();
+    };
+
+    addBtn.Pressed          += doCreate;
+    nameInput.TextSubmitted += _ => doCreate();
+
+    vbox.AddChild(nameInput);
+    vbox.AddChild(addBtn);
+    popup.AddChild(vbox);
+    popup.PopupHide += () => { popup.QueueFree(); _input.GrabFocus(); };
+    AddChild(popup);
+    popup.Popup(new Rect2I((int)screenPos.X, (int)screenPos.Y, 220, 70));
+    nameInput.CallDeferred(LineEdit.MethodName.GrabFocus);
+}
+```
+
+#### Stub creation
+
+```csharp
+private void CreateStub(string entityType, string name)
+{
+    if (_db == null) return;
+    switch (entityType)
+    {
+        case "npc":
+            _db.Npcs.Add(new Npc { CampaignId = _campaignId, Name = name });
+            break;
+        case "location":
+            _db.Locations.Add(new Location { CampaignId = _campaignId, Name = name });
+            break;
+        case "item":
+            _db.Items.Add(new Item { CampaignId = _campaignId, Name = name });
+            break;
+        case "faction":
+            _db.Factions.Add(new Faction { CampaignId = _campaignId, Name = name });
+            break;
+        case "quest":
+            _db.Quests.Add(new Quest { CampaignId = _campaignId, Name = name });
+            break;
+    }
+}
+```
+
+#### Signal for sidebar refresh
+
+When a stub is created, the sidebar needs to know so it can add the new row without requiring a full campaign reload. Add a new signal to `WikiNotes`:
+
+```csharp
+[Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
+```
+
+Emit it from `CreateStub()` using the `int` returned by each `Add()` call. The parent pane (e.g. `SessionDetailPane`) connects to this signal and forwards it up the tree to `CampaignDashboard`, which already handles `EntityCreated` signals from other detail panes.
+
+#### Escape handling
+
+If the popup is open and the user presses Escape, the popup closes and the entire `[[+Token]]` is removed from the line — it's a fully typed trigger with no other meaning, so leaving it would just be noise. Focus returns to the `TextEdit` with the caret positioned where the token was.
+
+```csharp
+popup.PopupHide += () =>
+{
+    popup.QueueFree();
+    // Remove [[+Token]] if the modal was dismissed without creating
+    if (!_stubCreated)
+    {
+        string currentLine = _input.GetLine(line);
+        int closeIdx = currentLine.IndexOf("]]", openIdx, StringComparison.Ordinal);
+        int replaceEnd = closeIdx >= 0 ? closeIdx + 2 : openIdx + 2;
+        _input.SetLine(line, currentLine[..openIdx] + currentLine[replaceEnd..]);
+        _input.SetCaretColumn(openIdx);
+    }
+    _input.GrabFocus();
+};
+```
+
+Set `_stubCreated = true` inside `doCreate` before calling `popup.Hide()` so the `PopupHide` handler knows not to clean up.
+
+#### Files
+
+| File | Change |
+|------|--------|
+| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add `DetectStubTrigger()`, `OpenStubModal()`, `CreateStub()`; extend `CheckAutocomplete()`; add `EntityCreated` signal |
+| `Scenes/Components/SessionDetailPane/SessionDetailPane.cs` | Connect `_notes.EntityCreated` → forward to `CampaignDashboard` |
+| All other panes using `WikiNotes` | Connect `EntityCreated` the same way if applicable |
 
 ---
 
 ## Implementation Order
 
 ### Short-term
-5. **F3 — Session related-links panel** — self-contained, no schema changes.
-6. **F16 — Seed check-and-insert on campaign load** — additive, safe.
-7. **F4 — NPC pane field audit** — finish the partial work.
+1. **U4 — TypeOptionButton auto-select** — one-liner per call site, no design needed.
+2. **F14 — Remember last opened entity** — two `Settings.Get/Set` calls; no schema changes.
+3. **F16 — Call SeedDefaults on campaign load** — trivial wiring; ships the God/Worship seeds too.
+4. **F15 — NPC relationship directionality** — new component + two additive migrations; design settled. Do before more relationships are entered.
+5. **F17 — Items + Quests in WikiLink autocomplete** — two extra queries in `GetEntityMatches` + `WikiLinkParser`.
+6. **F18 — WikiNotes stub creation** — self-contained `WikiNotes.cs` addition; design is settled.
+7. **F3 — Session related-links panel** — no schema changes.
 
 ### Medium-term
-8. **F1 — Standardize image save location** — prerequisite for F10.
-9. **F5 — Campaign Settings screen** — one generic screen, five type tables.
-10. **F8 — Players section** — basic party overview.
-11. **F2 — Back/forward navigation** — largest navigation change; do after simpler fixes are stable.
+8. **F4 — NPC pane: Home Location field** — small addition, finish the partial work.
+9. **F1 — Standardize image save location** — prerequisite for F10.
+10. **F5 — Bulk type management screen** — convenience, not blocking anything.
+11. **F8 — Players section** — basic party overview.
+12. **F2 — Back/forward navigation** — largest navigation change; do after simpler fixes are stable.
 
 ### Planned / Larger scope
-12. ~~**F6 — Nested locations**~~ ✅ Complete.
-13. **F9 — PC abilities / class features** — new table, greenfield.
-14. **F12 + F13 — Session redesign + Tab system** — plan together.
-15. **F10 — Image export/import** — requires F1.
-16. **F7 — Campaign cover image** — one enum entry; trivial but low priority.
-17. **F14 — Remember last opened entity** — quality-of-life, low risk.
+12. **F9 — PC abilities / class features** — new table, greenfield.
+13. **F12 + F13 — Session redesign + Tab system** — plan together.
+14. **F10 — Image export/import** — requires F1.
+15. **F7 — Campaign cover image** — one enum entry; trivial but low priority.
+16. **U5 — Bullet point continuation** — nice to have; defer until session redesign work.
 
 ### Blocked / No decision
-- **F11 — NPC–Location relationship** — blocked on design decision.
-- **F15 — NPC–NPC relationship UI** — blocked on direction behaviour decision.
+- **F11 — NPC–Location relationship** — revisit later; design TBD.
 
 ---
 
@@ -476,6 +908,8 @@ When reopening a campaign, restore the last viewed entity (type + id) so the det
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.tscn` | `caret_blink = true` on SearchInput | U3 |
 | `Scenes/Modals/NewCampaignModal/add_campaign_modal.tscn` | `caret_blink = true` on NameLineEdit and DescriptionTextEdit | U3 |
 | `Scenes/App.cs` | `_Input` override — release focus when clicking outside active control | U3 |
+| `NpcDetailPane.cs`, `ItemDetailPane.cs`, `QuestDetailPane.cs`, `FactionDetailPane.cs`, `LocationDetailPane.cs` | Add `AutoSelectOnAdd = true` before each type dropdown `Setup()` call | U4 |
+| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add `HandleBulletContinuation()`; extend `OnInputKey` Enter handler; relax early-return guard | U5 |
 | `Scenes/Components/ImageCarousel/ImageCarousel.cs` | Copy image to managed path on add; store relative path | F1 |
 | `Scenes/Components/TabHistory.cs` | **New** — `TabHistory` helper class | F2 |
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | Add history, back/forward buttons, `NavigateToInternal`, `_UnhandledInput`, `RefreshNavButtons()` | F2 |
@@ -484,6 +918,10 @@ When reopening a campaign, restore the last viewed entity (type + id) so the det
 | `Scenes/Components/SessionDetailPane/session_detail_pane.tscn` | Add `RelatedLinksContainer` under `CarouselColumn`; remove/reposition `CarouselSpacer` | F3 |
 | `Scenes/Components/NpcDetailPane/NpcDetailPane.cs` + `.tscn` | Add HomeLocationId, FirstSeenSession, verify Personality | F4 |
 | `Core/Repositories/*RelationshipTypeRepository.cs` et al. | Add check-and-insert on campaign load for new seeds | F16 |
+| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add Items + Quests to `GetEntityMatches()` | F17 |
+| `Core/WikiLinkParser.cs` | Add Items + Quests to reverse-lookup for link rendering | F17 |
+| `Scenes/Components/WikiNotes/WikiNotes.cs` | Add `DetectStubTrigger()`, `OpenStubModal()`, `CreateStub()`; extend `CheckAutocomplete()`; add `EntityCreated` signal | F18 |
+| `Scenes/Components/SessionDetailPane/SessionDetailPane.cs` + all other WikiNotes-bearing panes | Connect `_notes.EntityCreated` → forward to `CampaignDashboard` | F18 |
 
 ---
 
@@ -544,8 +982,8 @@ All items below are done and require no further action unless noted.
 - ✅ Settings menu tooltips
 - ✅ Three-column layout (sidebar / detail / wiki panel)
 - ✅ Quests entity + Quest History sub-feature
-- ✅ NPC–NPC relationships (model + UI; direction design note in F15)
+- ✅ NPC–NPC relationships — `character_relationships` table, full CRUD, `NpcDetailPane` panel with type/NPC pickers, add/remove/navigate. Both directions surface on both NPC panes via `OR related_character_id = @cid` query. Directionality display is a separate open design question (F15).
 
 ---
 
-*Generated March 2026 · TTRPG Companion App · Master Action Plan · v1.0*
+*Generated March 2026 · TTRPG Companion App · Master Action Plan · v1.1*

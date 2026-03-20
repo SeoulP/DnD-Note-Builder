@@ -11,6 +11,7 @@ public partial class ItemDetailPane : ScrollContainer
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
+    [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit         _nameInput;
     [Export] private TypeOptionButton _typeInput;
@@ -30,8 +31,9 @@ public partial class ItemDetailPane : ScrollContainer
         _typeInput.TypeSelected  += _ => Save();
         _isUniqueInput.Toggled   += _ => Save();
         _descInput.TextChanged   += () => Save();
-        _notes.TextChanged += () => Save();
-        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.TextChanged   += () => Save();
+        _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete Item");
         AddChild(_confirmDialog);

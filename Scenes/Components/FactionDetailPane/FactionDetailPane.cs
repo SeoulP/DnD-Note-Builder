@@ -51,8 +51,9 @@ public partial class FactionDetailPane : ScrollContainer
         _typeInput.TextChanged += _ => Save();
         _descInput.TextChanged += () => Save();
         _goalsInput.TextChanged        += () => Save();
-        _notes.TextChanged += () => Save();
-        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.TextChanged   += () => Save();
+        _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete Faction");
         AddChild(_confirmDialog);

@@ -56,8 +56,9 @@ public partial class NpcDetailPane : ScrollContainer
         _statusInput.TypeSelected       += _ => Save();
         _relationshipInput.TypeSelected += _ => Save();
         _descInput.TextChanged          += () => Save();
-        _notes.TextChanged += () => Save();
-        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.TextChanged   += () => Save();
+        _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete NPC");
         AddChild(_confirmDialog);

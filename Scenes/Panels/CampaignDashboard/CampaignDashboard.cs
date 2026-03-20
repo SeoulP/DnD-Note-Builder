@@ -417,9 +417,17 @@ public partial class CampaignDashboard : Control
                 if (session == null) return;
                 var sesPane = _sessionDetailPaneScene.Instantiate<SessionDetailPane>();
                 AddDetailPane(sesPane);
-                sesPane.NavigateTo  += ShowDetailPane;
-                sesPane.NameChanged += OnNameChanged;
-                sesPane.Deleted     += OnEntityDeleted;
+                sesPane.NavigateTo    += ShowDetailPane;
+                sesPane.NameChanged   += OnNameChanged;
+                sesPane.Deleted       += OnEntityDeleted;
+                sesPane.EntityCreated += (type, _) =>
+                {
+                    if (type == "npc")      LoadNpcs();
+                    if (type == "faction")  LoadFactions();
+                    if (type == "location") LoadLocations();
+                    if (type == "item")     LoadItems();
+                    if (type == "quest")    LoadQuests();
+                };
                 sesPane.Load(session);
                 break;
 
@@ -428,9 +436,17 @@ public partial class CampaignDashboard : Control
                 if (item == null) return;
                 var itemPane = _itemDetailPaneScene.Instantiate<ItemDetailPane>();
                 AddDetailPane(itemPane);
-                itemPane.NavigateTo  += ShowDetailPane;
-                itemPane.NameChanged += OnNameChanged;
-                itemPane.Deleted     += OnEntityDeleted;
+                itemPane.NavigateTo    += ShowDetailPane;
+                itemPane.NameChanged   += OnNameChanged;
+                itemPane.Deleted       += OnEntityDeleted;
+                itemPane.EntityCreated += (type, _) =>
+                {
+                    if (type == "npc")      LoadNpcs();
+                    if (type == "faction")  LoadFactions();
+                    if (type == "location") LoadLocations();
+                    if (type == "item")     LoadItems();
+                    if (type == "quest")    LoadQuests();
+                };
                 itemPane.Load(item);
                 break;
 
@@ -439,9 +455,17 @@ public partial class CampaignDashboard : Control
                 if (quest == null) return;
                 var questPane = _questDetailPaneScene.Instantiate<QuestDetailPane>();
                 AddDetailPane(questPane);
-                questPane.NavigateTo  += ShowDetailPane;
-                questPane.NameChanged += OnNameChanged;
-                questPane.Deleted     += OnEntityDeleted;
+                questPane.NavigateTo    += ShowDetailPane;
+                questPane.NameChanged   += OnNameChanged;
+                questPane.Deleted       += OnEntityDeleted;
+                questPane.EntityCreated += (type, _) =>
+                {
+                    if (type == "npc")      LoadNpcs();
+                    if (type == "faction")  LoadFactions();
+                    if (type == "location") LoadLocations();
+                    if (type == "item")     LoadItems();
+                    if (type == "quest")    LoadQuests();
+                };
                 questPane.Load(quest);
                 break;
         }

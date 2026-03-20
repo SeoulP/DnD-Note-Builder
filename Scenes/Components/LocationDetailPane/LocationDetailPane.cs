@@ -43,8 +43,9 @@ public partial class LocationDetailPane : ScrollContainer
         _nameInput.FocusEntered += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _typeInput.TextChanged  += _ => Save();
         _descInput.TextChanged  += () => Save();
-        _notes.TextChanged += () => Save();
-        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.TextChanged   += () => Save();
+        _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
 
         _factionSelect.TypeSelected += id => _addFactionButton.Disabled = (id == -1);
         _factionSelect.TypeCreated  += id => EmitSignal(SignalName.EntityCreated, "faction", id);

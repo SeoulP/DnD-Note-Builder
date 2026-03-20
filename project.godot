@@ -24,13 +24,13 @@ ThemeManager="*res://Core/ThemeManager.cs"
 
 project/assembly_name="DndBuilder"
 
-[physics]
-
-3d/physics_engine="Jolt Physics"
-
 [gui]
 
 theme/custom="res://theme.tres"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
 
 [rendering]
 

@@ -10,6 +10,7 @@ public partial class WikiNotes : VBoxContainer
 {
     [Signal] public delegate void TextChangedEventHandler();
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
+    [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] public string PlaceholderText
     {
@@ -27,6 +28,8 @@ public partial class WikiNotes : VBoxContainer
     private PanelContainer _acPanel;
     private VBoxContainer  _acList;
     private int            _acSelectedIndex = -1;
+
+    private bool           _stubCreated;
 
     private static readonly StyleBoxFlat AcSelectedBox = MakeAcSelectedBox();
     private static StyleBoxFlat MakeAcSelectedBox()
@@ -224,6 +227,20 @@ public override void _ExitTree()
         if (openIdx < 0) { HideAutocomplete(); return; }
 
         string query = before[(openIdx + 2)..];
+
+        // Stub trigger fires when the user closes the bracket: [[+NPC]]
+        if (query.EndsWith("]]"))
+        {
+            string inner    = query[..^2];
+            string stubType = DetectStubTrigger(inner);
+            if (stubType != null)
+            {
+                HideAutocomplete();
+                OpenStubModal(stubType, openIdx, col);
+                return;
+            }
+        }
+
         if (query.Contains("]]") || query.Contains("[[")) { HideAutocomplete(); return; }
 
         var matches = GetEntityMatches(query);
@@ -423,8 +440,107 @@ public override void _ExitTree()
         foreach (var x in _db.Factions.GetAll(_campaignId))  Add(x.Name,  "Faction");
         foreach (var x in _db.Locations.GetAll(_campaignId)) Add(x.Name,  "Location");
         foreach (var x in _db.Sessions.GetAll(_campaignId))  Add(x.Title, "Session");
+        foreach (var x in _db.Items.GetAll(_campaignId))     Add(x.Name,  "Item");
+        foreach (var x in _db.Quests.GetAll(_campaignId))    Add(x.Name,  "Quest");
 
         return results;
+    }
+
+    // ── stub creation ─────────────────────────────────────────────────────────
+
+    private static readonly System.Collections.Generic.Dictionary<string, string> StubTriggers =
+        new(System.StringComparer.OrdinalIgnoreCase)
+        {
+            { "+NPC",      "npc"      },
+            { "+Location", "location" },
+            { "+Item",     "item"     },
+            { "+Faction",  "faction"  },
+            { "+Quest",    "quest"    },
+        };
+
+    private string DetectStubTrigger(string query)
+        => StubTriggers.TryGetValue(query, out string entityType) ? entityType : null;
+
+    private void OpenStubModal(string entityType, int openIdx, int caretCol)
+    {
+        int    line      = _input.GetCaretLine();
+        var    caretRect = _input.GetRectAtLineColumn(line, _input.GetCaretColumn());
+        var    screenPos = _input.GlobalPosition + caretRect.Position + new Vector2(0, caretRect.Size.Y);
+
+        _stubCreated = false;
+
+        var popup     = new PopupPanel();
+        var vbox      = new VBoxContainer();
+        vbox.AddThemeConstantOverride("separation", 6);
+        vbox.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+
+        var nameInput = new LineEdit
+        {
+            PlaceholderText     = "Name...",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            CaretBlink          = true,
+        };
+        var addBtn = new Button { Text = "+ Create" };
+
+        System.Action doCreate = () =>
+        {
+            string name = nameInput.Text.Trim();
+            if (string.IsNullOrEmpty(name)) return;
+
+            int newId = CreateStub(entityType, name);
+            _stubCreated = true;
+
+            string currentLine = _input.GetLine(line);
+            int closeIdx  = currentLine.IndexOf("]]", openIdx, System.StringComparison.Ordinal);
+            int replaceEnd = closeIdx >= 0 ? closeIdx + 2 : caretCol;
+            _input.SetLine(line, currentLine[..openIdx] + $"[[{name}]]" + currentLine[replaceEnd..]);
+            _input.SetCaretColumn(openIdx + 2 + name.Length + 2);
+
+            popup.Hide();
+            _input.GrabFocus();
+
+            if (newId > 0)
+                EmitSignal(SignalName.EntityCreated, entityType, newId);
+        };
+
+        addBtn.Pressed          += doCreate;
+        nameInput.TextSubmitted += _ => doCreate();
+
+        vbox.AddChild(nameInput);
+        vbox.AddChild(addBtn);
+        popup.AddChild(vbox);
+
+        popup.PopupHide += () =>
+        {
+            popup.QueueFree();
+            if (!_stubCreated)
+            {
+                string currentLine = _input.GetLine(line);
+                int closeIdx  = currentLine.IndexOf("]]", openIdx, System.StringComparison.Ordinal);
+                int replaceEnd = closeIdx >= 0 ? closeIdx + 2 : caretCol;
+                _input.SetLine(line, currentLine[..openIdx] + currentLine[replaceEnd..]);
+                _input.SetCaretColumn(openIdx);
+            }
+            _input.GrabFocus();
+        };
+
+        AddChild(popup);
+        popup.Popup(new Rect2I((int)screenPos.X, (int)screenPos.Y, 220, 70));
+        nameInput.CallDeferred(LineEdit.MethodName.GrabFocus);
+    }
+
+    private int CreateStub(string entityType, string name)
+    {
+        if (_db == null) return 0;
+        return entityType switch
+        {
+            "npc"      => _db.Npcs.Add(new DndBuilder.Core.Models.Npc      { CampaignId = _campaignId, Name = name }),
+            "location" => _db.Locations.Add(new DndBuilder.Core.Models.Location { CampaignId = _campaignId, Name = name }),
+            "item"     => _db.Items.Add(new DndBuilder.Core.Models.Item    { CampaignId = _campaignId, Name = name }),
+            "faction"  => _db.Factions.Add(new DndBuilder.Core.Models.Faction  { CampaignId = _campaignId, Name = name }),
+            "quest"    => _db.Quests.Add(new DndBuilder.Core.Models.Quest  { CampaignId = _campaignId, Name = name }),
+            _          => 0,
+        };
     }
 
     // ── render ────────────────────────────────────────────────────────────────

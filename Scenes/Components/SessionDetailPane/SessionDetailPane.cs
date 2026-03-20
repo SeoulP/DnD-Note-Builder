@@ -11,6 +11,7 @@ public partial class SessionDetailPane : ScrollContainer
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
+    [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private Label         _numberLabel;
     [Export] private LineEdit      _titleInput;
@@ -27,8 +28,9 @@ public partial class SessionDetailPane : ScrollContainer
         _titleInput.FocusExited    += () => { if (_titleInput.Text == "") _titleInput.Text = "New Session"; };
         _titleInput.FocusEntered   += () => _titleInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _playedOnInput.TextChanged += _ => Save();
-        _notes.TextChanged += () => Save();
-        _notes.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.TextChanged   += () => Save();
+        _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        _notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
 
         _confirmDialog = DialogHelper.Make("Delete Session");
         AddChild(_confirmDialog);

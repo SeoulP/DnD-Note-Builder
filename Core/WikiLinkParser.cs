@@ -33,6 +33,8 @@ public static class WikiLinkParser
         foreach (var x in db.Factions.GetAll(campaignId))  d[x.Name.ToLowerInvariant()]  = $"faction:{x.Id}";
         foreach (var x in db.Locations.GetAll(campaignId)) d[x.Name.ToLowerInvariant()]  = $"location:{x.Id}";
         foreach (var x in db.Sessions.GetAll(campaignId))  d[x.Title.ToLowerInvariant()] = $"session:{x.Id}";
+        foreach (var x in db.Items.GetAll(campaignId))     d[x.Name.ToLowerInvariant()]  = $"item:{x.Id}";
+        foreach (var x in db.Quests.GetAll(campaignId))    d[x.Name.ToLowerInvariant()]  = $"quest:{x.Id}";
         return d;
     }
 }
