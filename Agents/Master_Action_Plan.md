@@ -36,7 +36,7 @@
 | U4 | TypeOptionButton — auto-select newly added type | UX | Medium | ✅ |
 | U5 | WikiNotes — bullet point continuation on Enter | UX | Low | ⬜ |
 | F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
-| F2 | Per-tab back/forward navigation | Feature | Medium | ⬜ |
+| F2 | Per-tab back/forward navigation | Feature | Medium | ✅ |
 | F3 | Session related-links panel (wiki panel, third column) | Feature | Medium | ⬜ |
 | F4 | NPC detail pane — full field audit (HomeLocationId, FirstSeenSession, Personality) | Feature | Medium | 🔶 |
 | F5 | Campaign Settings screen — manage seeded types | Feature | Medium | ⬜ |

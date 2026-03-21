@@ -7,8 +7,10 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/SessionDetailPane/session_detail_pane.tscn" id="4_sesdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ItemDetailPane/item_detail_pane.tscn" id="5_itemdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/QuestDetailPane/quest_detail_pane.tscn" id="6_questdet"]
+[ext_resource type="Texture2D" uid="uid://daj28u7pdj06j" path="res://Scenes/Icons/Left Arrow.svg" id="7_leftarrow"]
+[ext_resource type="Texture2D" uid="uid://lah0ysxhtina" path="res://Scenes/Icons/Right Arrow.svg" id="8_rightarrow"]
 
-[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_addQuestsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_questsContainer", "_detailPanel", "_paneContainer", "_tabList", "_tabScroll")]
+[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_addQuestsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_questsContainer", "_detailPanel", "_paneContainer", "_tabList", "_tabScroll", "_backButton", "_forwardButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,6 +34,8 @@ _detailPanel = NodePath("DetailPanel")
 _paneContainer = NodePath("DetailPanel/PaneContainer")
 _tabList = NodePath("DetailPanel/TabRow/TabScroll/TabList")
 _tabScroll = NodePath("DetailPanel/TabRow/TabScroll")
+_backButton = NodePath("DetailPanel/TabRow/BackButton")
+_forwardButton = NodePath("DetailPanel/TabRow/ForwardButton")
 _npcDetailPaneScene = ExtResource("1_npcdet")
 _factionDetailPaneScene = ExtResource("2_facdet")
 _locationDetailPaneScene = ExtResource("3_locdet")
@@ -146,24 +150,43 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 0
 
-[node name="TabRow" type="HBoxContainer" parent="DetailPanel"]
-layout_mode = 2
+[node name="TabRow" type="HBoxContainer" parent="DetailPanel" unique_id=854320322]
 custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="TabScroll" type="ScrollContainer" parent="DetailPanel/TabRow"]
+[node name="BackButton" type="Button" parent="DetailPanel/TabRow" unique_id=111111201]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("7_leftarrow")
+flat = true
+expand_icon = true
+
+[node name="ForwardButton" type="Button" parent="DetailPanel/TabRow" unique_id=111111202]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("8_rightarrow")
+flat = true
+expand_icon = true
+
+[node name="NavSpacer" type="Control" parent="DetailPanel/TabRow" unique_id=111111203]
+layout_mode = 2
+custom_minimum_size = Vector2(8, 0)
+
+[node name="TabScroll" type="ScrollContainer" parent="DetailPanel/TabRow" unique_id=1507393735]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 36)
-vertical_scroll_mode = 0
 horizontal_scroll_mode = 3
+vertical_scroll_mode = 0
 
-[node name="TabList" type="HBoxContainer" parent="DetailPanel/TabRow/TabScroll"]
+[node name="TabList" type="HBoxContainer" parent="DetailPanel/TabRow/TabScroll" unique_id=423296805]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-
-[node name="PaneContainer" type="Control" parent="DetailPanel"]
+[node name="PaneContainer" type="Control" parent="DetailPanel" unique_id=1972770366]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

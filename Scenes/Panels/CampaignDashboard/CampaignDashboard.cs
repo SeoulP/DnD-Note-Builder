@@ -29,10 +29,15 @@ public partial class CampaignDashboard : Control
     [Export] private Control         _paneContainer;
     [Export] private HBoxContainer   _tabList;
     [Export] private ScrollContainer _tabScroll;
+    [Export] private Button          _backButton;
+    [Export] private Button          _forwardButton;
     private Control     _addTabWidget;
     private StyleBoxFlat _addTabInactiveSb;
     private StyleBoxFlat _addTabHoverSb;
     private StyleBoxFlat _addTabActiveSb;
+
+    private StyleBoxFlat _backNormalSb,  _backHoverSb,  _backPressedSb,  _backDisabledSb;
+    private StyleBoxFlat _fwdNormalSb,   _fwdHoverSb,   _fwdPressedSb,   _fwdDisabledSb;
 
     private TabEntry _dragTab;
     private bool     _dragging;
@@ -62,6 +67,7 @@ public partial class CampaignDashboard : Control
         public StyleBoxFlat InactiveSb;
         public StyleBoxFlat HoverSb;
         public StyleBoxFlat DeleteSb;
+        public TabHistory   History    = new();
     }
 
     private readonly List<TabEntry> _tabs      = new();
@@ -141,6 +147,28 @@ public partial class CampaignDashboard : Control
             ShowDetailPane("quest", id);
         };
 
+        if (_backButton != null && _forwardButton != null)
+            InitNavButtonStyles();
+
+        if (_backButton != null)
+            _backButton.Pressed += () =>
+            {
+                if (_activeTab < 0 || _activeTab >= _tabs.Count) return;
+                var tab = _tabs[_activeTab];
+                if (!tab.History.CanGoBack) return;
+                var (type, id) = tab.History.Back();
+                LoadIntoTab(_activeTab, type, id, pushHistory: false);
+            };
+        if (_forwardButton != null)
+            _forwardButton.Pressed += () =>
+            {
+                if (_activeTab < 0 || _activeTab >= _tabs.Count) return;
+                var tab = _tabs[_activeTab];
+                if (!tab.History.CanGoForward) return;
+                var (type, id) = tab.History.Forward();
+                LoadIntoTab(_activeTab, type, id, pushHistory: false);
+            };
+
         _addTabWidget = BuildAddTabWidget();
         ThemeManager.Instance.ThemeChanged += OnTabThemeChanged;
 
@@ -171,6 +199,7 @@ public partial class CampaignDashboard : Control
         foreach (var tab in _tabs) { tab.Pane?.QueueFree(); tab.Widget?.QueueFree(); }
         _tabs.Clear();
         _activeTab = -1;
+        RefreshNavButtons();
     }
 
     public void ReloadSidebar() => LoadAll();
@@ -541,7 +570,7 @@ public partial class CampaignDashboard : Control
 
     // ── tab management ────────────────────────────────────────────────────────
 
-    private void LoadIntoTab(int index, string entityType, int entityId)
+    private void LoadIntoTab(int index, string entityType, int entityId, bool pushHistory = true)
     {
         var tab = _tabs[index];
         if (tab.Pane != null && IsInstanceValid(tab.Pane)) { tab.Pane.Visible = false; tab.Pane.QueueFree(); }
@@ -556,6 +585,7 @@ public partial class CampaignDashboard : Control
         if (tab.NameLabel != null && IsInstanceValid(tab.NameLabel))
             tab.NameLabel.Text = label;
         UpdateTabSwatch(tab);
+        if (pushHistory) tab.History.Push(entityType, entityId);
         ActivateTab(index);
     }
 
@@ -564,6 +594,7 @@ public partial class CampaignDashboard : Control
         var (pane, label, load) = InstantiatePane(entityType, entityId);
         if (pane == null) return;
         var tab = new TabEntry { EntityType = entityType, EntityId = entityId, Label = label, Pane = pane };
+        tab.History.Push(entityType, entityId);
         _paneContainer.AddChild(pane);
         load();
         _tabs.Add(tab);
@@ -594,7 +625,43 @@ public partial class CampaignDashboard : Control
                 w.AddThemeStyleboxOverride("panel", active ? _tabs[i].ActiveSb : _tabs[i].InactiveSb);
         }
         CallDeferred(nameof(DoScrollToActiveTab));
+        RefreshNavButtons();
         SaveTabs();
+    }
+
+    private void RefreshNavButtons()
+    {
+        if (_backButton == null || _forwardButton == null) return;
+        if (_activeTab < 0 || _activeTab >= _tabs.Count)
+        {
+            _backButton.Disabled = _forwardButton.Disabled = true;
+            return;
+        }
+        var h = _tabs[_activeTab].History;
+        _backButton.Disabled    = !h.CanGoBack;
+        _forwardButton.Disabled = !h.CanGoForward;
+    }
+
+    public override void _UnhandledInput(InputEvent e)
+    {
+        if (_activeTab < 0 || _activeTab >= _tabs.Count) return;
+        var tab = _tabs[_activeTab];
+
+        if (e is InputEventKey { Pressed: true, Echo: false } key)
+        {
+            if (key.AltPressed && key.Keycode == Key.Left && tab.History.CanGoBack)
+            {
+                var (type, id) = tab.History.Back();
+                LoadIntoTab(_activeTab, type, id, pushHistory: false);
+                AcceptEvent();
+            }
+            else if (key.AltPressed && key.Keycode == Key.Right && tab.History.CanGoForward)
+            {
+                var (type, id) = tab.History.Forward();
+                LoadIntoTab(_activeTab, type, id, pushHistory: false);
+                AcceptEvent();
+            }
+        }
     }
 
     private void CloseTab(int index)
@@ -641,6 +708,7 @@ public partial class CampaignDashboard : Control
                 var (pane, label, load) = InstantiatePane(type, id);
                 if (pane == null) continue;
                 var tab = new TabEntry { EntityType = type, EntityId = id, Label = label, Pane = pane, IsPinned = pinned };
+                tab.History.Push(type, id);
                 _paneContainer.AddChild(pane);
                 load();
                 _tabs.Add(tab);
@@ -874,6 +942,26 @@ public partial class CampaignDashboard : Control
 
     public override void _Input(InputEvent e)
     {
+        // Mouse thumb buttons — handled here (not _UnhandledInput) because GUI controls consume mouse events first
+        if (e is InputEventMouseButton { Pressed: true } mb && _activeTab >= 0 && _activeTab < _tabs.Count)
+        {
+            var navTab = _tabs[_activeTab];
+            if (mb.ButtonIndex == MouseButton.Xbutton1 && navTab.History.CanGoBack)
+            {
+                var (type, id) = navTab.History.Back();
+                LoadIntoTab(_activeTab, type, id, pushHistory: false);
+                AcceptEvent();
+                return;
+            }
+            if (mb.ButtonIndex == MouseButton.Xbutton2 && navTab.History.CanGoForward)
+            {
+                var (type, id) = navTab.History.Forward();
+                LoadIntoTab(_activeTab, type, id, pushHistory: false);
+                AcceptEvent();
+                return;
+            }
+        }
+
         if (_dragTab == null) return;
 
         if (e is InputEventMouseMotion motion)
@@ -988,6 +1076,58 @@ public partial class CampaignDashboard : Control
             tab.InactiveSb.BgColor = TabInactiveBg;
             tab.HoverSb.BgColor    = TabHoverBg;
         }
+
+        if (_backNormalSb == null) return;
+        var p     = ThemeManager.Instance.Current;
+        var dimBg = p.NavBar; dimBg.A *= 0.4f;
+
+        _backNormalSb.BgColor   = p.NavBar;    _fwdNormalSb.BgColor   = p.NavBar;
+        _backHoverSb.BgColor    = p.Component; _fwdHoverSb.BgColor    = p.Component;
+        _backPressedSb.BgColor  = p.Hover;     _fwdPressedSb.BgColor  = p.Hover;
+        _backDisabledSb.BgColor = dimBg;        _fwdDisabledSb.BgColor = dimBg;
+    }
+
+    private void InitNavButtonStyles()
+    {
+        var p     = ThemeManager.Instance.Current;
+        var dimBg = p.NavBar; dimBg.A *= 0.4f;
+
+        _backNormalSb   = MakeNavBtnBox(p.NavBar,    roundLeft: true,  roundRight: false);
+        _backHoverSb    = MakeNavBtnBox(p.Component, roundLeft: true,  roundRight: false);
+        _backPressedSb  = MakeNavBtnBox(p.Hover,     roundLeft: true,  roundRight: false);
+        _backDisabledSb = MakeNavBtnBox(dimBg,        roundLeft: true,  roundRight: false);
+        _fwdNormalSb    = MakeNavBtnBox(p.NavBar,    roundLeft: false, roundRight: true);
+        _fwdHoverSb     = MakeNavBtnBox(p.Component, roundLeft: false, roundRight: true);
+        _fwdPressedSb   = MakeNavBtnBox(p.Hover,     roundLeft: false, roundRight: true);
+        _fwdDisabledSb  = MakeNavBtnBox(dimBg,        roundLeft: false, roundRight: true);
+
+        _backButton.Flat        = false;
+        _backButton.TooltipText = "Go back (Alt+←)";
+        _backButton.AddThemeStyleboxOverride("normal",   _backNormalSb);
+        _backButton.AddThemeStyleboxOverride("hover",    _backHoverSb);
+        _backButton.AddThemeStyleboxOverride("pressed",  _backPressedSb);
+        _backButton.AddThemeStyleboxOverride("disabled", _backDisabledSb);
+        _backButton.AddThemeStyleboxOverride("focus",    _backNormalSb);
+
+        _forwardButton.Flat        = false;
+        _forwardButton.TooltipText = "Go forward (Alt+→)";
+        _forwardButton.AddThemeStyleboxOverride("normal",   _fwdNormalSb);
+        _forwardButton.AddThemeStyleboxOverride("hover",    _fwdHoverSb);
+        _forwardButton.AddThemeStyleboxOverride("pressed",  _fwdPressedSb);
+        _forwardButton.AddThemeStyleboxOverride("disabled", _fwdDisabledSb);
+        _forwardButton.AddThemeStyleboxOverride("focus",    _fwdNormalSb);
+    }
+
+    private static StyleBoxFlat MakeNavBtnBox(Color bg, bool roundLeft, bool roundRight)
+    {
+        const int r = 4;
+        var sb = new StyleBoxFlat { BgColor = bg, BorderColor = Colors.Transparent, DrawCenter = true };
+        sb.BorderWidthTop = sb.BorderWidthBottom = sb.BorderWidthLeft = sb.BorderWidthRight = 0;
+        sb.CornerRadiusTopLeft     = sb.CornerRadiusBottomLeft     = roundLeft  ? r : 0;
+        sb.CornerRadiusTopRight    = sb.CornerRadiusBottomRight    = roundRight ? r : 0;
+        sb.ContentMarginLeft = sb.ContentMarginRight = 6;
+        sb.ContentMarginTop  = sb.ContentMarginBottom = 4;
+        return sb;
     }
 
     private static StyleBoxFlat MakeTabBox(Color bg)
