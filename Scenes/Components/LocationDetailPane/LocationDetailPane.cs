@@ -208,7 +208,14 @@ public partial class LocationDetailPane : ScrollContainer
         foreach (Node child in _parentLocationContainer.GetChildren())
             child.QueueFree();
 
-        if (!_location.ParentLocationId.HasValue) return;
+        if (!_location.ParentLocationId.HasValue)
+        {
+            var none = new Label { Text = "No Parent" };
+            none.AddThemeColorOverride("font_color", ThemeManager.Instance.Current.FontPlaceholder);
+            none.AddThemeConstantOverride("margin_left", 6);
+            _parentLocationContainer.AddChild(none);
+            return;
+        }
 
         var parent = _db.Locations.Get(_location.ParentLocationId.Value);
         if (parent == null) return;

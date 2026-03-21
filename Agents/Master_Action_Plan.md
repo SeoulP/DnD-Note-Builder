@@ -47,8 +47,8 @@
 | F10 | Image export/import in `.dndx` packages | Feature | Medium | ⬜ |
 | F11 | NPC–Location relationship | Design | Medium | 🚫 |
 | F12 | Session detail pane — significant redesign | Design | High | 🔶 |
-| F13 | Tab system for the detail pane | Design | Planned | ⬜ |
-| F14 | Remember last opened entity per campaign | Feature | Medium | ⬜ |
+| F13 | Tab system for the detail pane | Design | Planned | ✅ |
+| F14 | Remember last opened entity per campaign | Feature | Medium | ✅ |
 | F15 | NPC–NPC relationships — directionality display | Feature | Medium | ⬜ |
 | F16 | Call SeedDefaults on campaign load (+ add God/Worship seeds) | Schema | Medium | ⬜ |
 | F17 | WikiNotes — Items and Quests included in WikiLink autocomplete | Feature | High | ✅ |
@@ -404,48 +404,15 @@ The current pane has: number label, title, played-on date, wiki notes, image car
 
 ---
 
-### F13 — Tab System for the Detail Pane
+### F13 — Tab System for the Detail Pane ✅
 
-**Behaviour:**
-- One tab per record; strict deduplication — navigating to an open record switches to its tab
-- Navigation priority: existing tab → current unpinned tab → next unpinned tab → new tab
-- Pinned tabs skipped by navigation
-
-**Tab bar:**
-- Scrolls horizontally; auto-scrolls to keep active tab visible
-- `+` button fixed at end for explicit new tab creation
-- Middle-click or hover-× to close
-
-**Files:** New `TabBar` component. Integration into `CampaignDashboard` — detail panel becomes tab-managed.
-
-> The per-tab history (F2) is implemented now against the existing single-pane architecture and migrates naturally when tabs land.
+*(See Completed Work Log)*
 
 ---
 
-### F14 — Remember Last Opened Entity Per Campaign
+### F14 — Remember Last Opened Entity Per Campaign ✅
 
-When reopening a campaign, restore the last viewed entity (type + id) so the detail pane is shown immediately rather than landing on a bare sidebar.
-
-`SettingsRepository` already has a generic `Get(key, default)` / `Set(key, value)` backed by the `app_settings` table. No schema changes needed.
-
-**Implementation — `CampaignDashboard.cs`:**
-
-Write on every navigation:
-```csharp
-// Inside ShowDetailPane / NavigateToInternal, after loading the pane:
-_db.Settings.Set($"last_entity_type_{_campaignId}", entityType);
-_db.Settings.Set($"last_entity_id_{_campaignId}", entityId.ToString());
-```
-
-Read in `SetCampaign()` after `LoadAll()`:
-```csharp
-string lastType = _db.Settings.Get($"last_entity_type_{_campaignId}");
-string lastIdStr = _db.Settings.Get($"last_entity_id_{_campaignId}");
-if (!string.IsNullOrEmpty(lastType) && int.TryParse(lastIdStr, out int lastId))
-    ShowDetailPane(lastType, lastId);
-```
-
-Per-campaign keys (`last_entity_type_42`) mean each campaign remembers independently.
+*(See Completed Work Log — superseded by full tab restoration via "Remember Tabs" setting)*
 
 ---
 
@@ -660,24 +627,23 @@ These will reach existing campaigns automatically once F16 is wired in.
 ## Implementation Order
 
 ### Short-term
-1. **F14 — Remember last opened entity** — two `Settings.Get/Set` calls; no schema changes.
-2. **F16 — Call SeedDefaults on campaign load** — trivial wiring; ships the God/Worship seeds too.
-3. **F15 — NPC relationship directionality** — new component + two additive migrations; design settled. Do before more relationships are entered.
-4. **F3 — Session related-links panel** — no schema changes.
+1. **F16 — Call SeedDefaults on campaign load** — trivial wiring; ships the God/Worship seeds too.
+2. **F15 — NPC relationship directionality** — new component + two additive migrations; design settled. Do before more relationships are entered.
+3. **F3 — Session related-links panel** — no schema changes.
+4. **F2 — Per-tab back/forward navigation** — builds on existing tab system; `TabHistory` helper + back/forward buttons.
 
 ### Medium-term
-8. **F4 — NPC pane: Home Location field** — small addition, finish the partial work.
-9. **F1 — Standardize image save location** — prerequisite for F10.
-10. **F5 — Bulk type management screen** — convenience, not blocking anything.
-11. **F8 — Players section** — basic party overview.
-12. **F2 — Back/forward navigation** — largest navigation change; do after simpler fixes are stable.
+5. **F4 — NPC pane: Home Location field** — small addition, finish the partial work.
+6. **F1 — Standardize image save location** — prerequisite for F10.
+7. **F5 — Bulk type management screen** — convenience, not blocking anything.
+8. **F8 — Players section** — basic party overview.
 
 ### Planned / Larger scope
-12. **F9 — PC abilities / class features** — new table, greenfield.
-13. **F12 + F13 — Session redesign + Tab system** — plan together.
-14. **F10 — Image export/import** — requires F1.
-15. **F7 — Campaign cover image** — one enum entry; trivial but low priority.
-16. **U5 — Bullet point continuation** — nice to have; defer until session redesign work.
+9. **F9 — PC abilities / class features** — new table, greenfield.
+10. **F12 — Session redesign** — entity tagging, inline stub creation, wiki hover preview.
+11. **F10 — Image export/import** — requires F1.
+12. **F7 — Campaign cover image** — one enum entry; trivial but low priority.
+13. **U5 — Bullet point continuation** — nice to have; defer until session redesign work.
 
 ### Blocked / No decision
 - **F11 — NPC–Location relationship** — revisit later; design TBD.
@@ -718,6 +684,14 @@ These will reach existing campaigns automatically once F16 is wired in.
 | All six detail panes | Wire `_notes.EntityCreated` → `EmitSignal(EntityCreated)`; add `EntityCreated` signal declaration where missing | F18 |
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | Wire `EntityCreated` for sesPane, itemPane, questPane | F18 |
 | `Scenes/Components/WikiNotes/wiki_notes.tscn` | Add `StubHint` label footnote | F18 |
+| `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | Full tab system: `TabEntry`, `BuildTabWidget`, `BuildAddTabWidget`, `OpenTab`, `CloseTab`, `SwitchTab`, `SaveTabs`, `RestoreTabs`, `OnTabThemeChanged`, drag-and-drop reorder, right-click context menu, `_Input` override for drag; removed `NewTabButton` | F13 |
+| `Scenes/Panels/CampaignDashboard/CampaignDashboard.tscn` | Remove `NewTabButton`; `horizontal_scroll_mode = 3` on `TabScroll`; `TabRow` min height 36 | F13 |
+| `Core/ThemeManager.cs` | `DeleteHoverColor` changed to dark crimson `Color(0.55f, 0.12f, 0.12f)` | F13 |
+| `Scenes/Components/NavBar/NavBar.cs` | "Remember Tabs" checkable menu item (id=5); `HideOnCheckableItemSelection = false`; persisted via `Settings.Set("remember_tabs", ...)` | F13, F14 |
+| `Scenes/Components/EntityRow/EntityRow.cs` | `_deleteHoverBox` fallback updated to `ThemeManager.DeleteHoverColor` | F13 |
+| `Scenes/Components/TypeOptionButton/TypeOptionButton.cs` | `_deleteHoverBox` fallback updated to `ThemeManager.DeleteHoverColor` | F13 |
+| `Scenes/Components/LocationDetailPane/LocationDetailPane.cs` | `LoadParentRow()`: show muted "No Parent" label when `ParentLocationId` is null | F13 |
+| `Agents/Project_Standards.md` | Added "Theming Conventions" section (ThemeManager palette, DeleteHoverColor, ThemeChanged pattern, theme.tres styleboxes, hardcoded colour rules) | F13 |
 
 ---
 
@@ -782,6 +756,10 @@ All items below are done and require no further action unless noted.
 
 ### UX Polish (2026-03-20)
 - ✅ U4 — TypeOptionButton auto-select on add: `AutoSelectOnAdd = true` added before `Setup()` on all type dropdowns — `_speciesInput`, `_statusInput`, `_relationshipInput`, `_roleSelect`, `_relTypeSelect` (NPC); `_typeInput` (Item); `_statusInput` (Quest); `_roleSelect`, `_relFactionTypeSelect` (Faction); `_roleSelect` (Location). Entity-picker dropdowns already had it.
+
+### Tab system (2026-03-20)
+- ✅ F13 — Full tab system for the detail pane. `TabEntry` class with `ActionBtn` (combined pin/close), color swatch, per-tab `StyleBoxFlat` refs for live theme updates. `BuildTabWidget` + `BuildAddTabWidget` (mini-tab `+` at end of list). Navigation priority: existing tab → unpinned current → unpinned other → new tab. Right-click context menu: Close, Close All, Close All to Right, Pin/Unpin. Drag-and-drop reorder with ghost preview (`ZIndex=100` root-level control). Tab scrollbar hidden (`horizontal_scroll_mode = 3`). All tab colors sourced from `ThemeManager`; `OnTabThemeChanged` mutates `StyleBoxFlat.BgColor` in-place for live theme switching. `DeleteHoverColor` = dark crimson `Color(0.55f, 0.12f, 0.12f)` applied app-wide (tabs, EntityRow, TypeOptionButton).
+- ✅ F14 — "Remember Tabs" setting. Full tab state (type, id, pinned, active index) serialized to JSON and persisted per-campaign via `app_settings`. `SaveTabs()` on every navigation; `RestoreTabs()` at end of `_Ready()`. Toggled via checkable Settings menu item; `HideOnCheckableItemSelection = false` keeps menu open on toggle.
 
 ### WikiNotes improvements (2026-03-20)
 - ✅ F17 — Items and Quests added to `[[` autocomplete (`WikiNotes.GetEntityMatches()`) and to link rendering (`WikiLinkParser.BuildLookup()`). All six entity types now suggest and render as navigable gold links.

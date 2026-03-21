@@ -23,8 +23,8 @@ public partial class EntityRow : PanelContainer
 
     public override void _Ready()
     {
-        _rowHoverBox    = GetThemeStylebox("row_hover",    "DndBuilder") as StyleBoxFlat ?? MakeBox(new Color(0.35f, 0.50f, 0.70f));
-        _deleteHoverBox = GetThemeStylebox("delete_hover", "DndBuilder") as StyleBoxFlat ?? MakeBox(new Color(0.76f, 0.46f, 0.54f));
+        _rowHoverBox    = GetThemeStylebox("row_hover",    "DndBuilder") as StyleBoxFlat ?? MakeBox(ThemeManager.Instance.Current.Hover);
+        _deleteHoverBox = GetThemeStylebox("delete_hover", "DndBuilder") as StyleBoxFlat ?? MakeBox(ThemeManager.DeleteHoverColor);
 
         MouseDefaultCursorShape = CursorShape.PointingHand;
         SizeFlagsHorizontal = SizeFlags.ExpandFill;

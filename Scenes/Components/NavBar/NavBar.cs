@@ -41,6 +41,10 @@ public partial class NavBar : PanelContainer
         popup.AddItem("Export Campaign Data...", 2);
         popup.AddItem("Import Campaign Data...", 3);
         popup.AddSeparator();
+        popup.HideOnCheckableItemSelection = false;
+        popup.AddCheckItem("Remember Tabs",      5);
+        popup.SetItemChecked(popup.GetItemIndex(5), _db.Settings.Get("remember_tabs", "false") == "true");
+        popup.AddSeparator();
         popup.AddItem("Appearance...",           4);
         popup.SetItemTooltip(0, "Copy the entire database file to a location you choose. Backs up all campaigns and their data.");
         popup.SetItemTooltip(1, "Replace the entire database with a previously backed-up file. Overwrites all current data.");
@@ -185,6 +189,13 @@ public partial class NavBar : PanelContainer
             case 2: OpenExportCampaignModal();  break;
             case 3: OpenImportCampaignDialog(); break;
             case 4: OpenAppearancePopup();      break;
+            case 5:
+                var p    = _settingsButton.GetPopup();
+                int idx  = p.GetItemIndex(5);
+                bool now = !p.IsItemChecked(idx);
+                p.SetItemChecked(idx, now);
+                _db.Settings.Set("remember_tabs", now ? "true" : "false");
+                break;
         }
     }
 

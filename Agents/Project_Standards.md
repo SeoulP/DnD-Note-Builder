@@ -183,6 +183,38 @@ The sidebar is user-configurable per campaign. Each section (Factions, Locations
 
 ---
 
+## Theming Conventions
+
+All appearance-related values (colours, hover states, backgrounds) must go through `ThemeManager`. Never hardcode colours for UI elements.
+
+### ThemeManager
+
+- Autoloaded singleton at `/root/ThemeManager` — use `ThemeManager.Instance`
+- `ThemeManager.Instance.Current` exposes a `ThemePalette` with these named colours:
+  - `Background` — app background / carousel bg
+  - `NavBar` — navbar and inactive tab backgrounds
+  - `Component` — inputs, popups, hover tab backgrounds
+  - `Hover` — active tab backgrounds, row hover accents
+  - `Focus` — focus ring border (Violet 700, always)
+  - `FontColor` — primary text
+  - `FontPlaceholder` — muted / placeholder text
+- `ThemeManager.DeleteHoverColor` — Dark crimson (`Color(0.55, 0.12, 0.12)`). Use this for **all** destructive hover states (delete buttons, close-tab red, anything that signals data removal). It is theme-independent by design.
+- Subscribe to `ThemeManager.Instance.ThemeChanged` to update any inline `StyleBoxFlat` instances that are not part of `theme.tres`. Mutate `.BgColor` in-place rather than replacing the object.
+
+### theme.tres
+
+- `row_hover` / `DndBuilder` — set by ThemeManager to `Current.Hover`
+- `delete_hover` / `DndBuilder` — set by ThemeManager to `DeleteHoverColor`
+- Components that use `GetThemeStylebox("row_hover"/"delete_hover", "DndBuilder")` automatically receive the correct colour without subscribing to `ThemeChanged`.
+
+### Rules
+
+- Do not hardcode `Color(r, g, b)` literals for any UI element that should react to theme changes.
+- Do not use a custom red/danger colour — always use `ThemeManager.DeleteHoverColor`.
+- Fallback colours in `??` expressions must also use `ThemeManager` values, not arbitrary literals.
+
+---
+
 ## Tab System Conventions
 
 The detail pane supports multiple open records simultaneously as tabs.

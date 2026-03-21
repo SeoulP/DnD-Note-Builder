@@ -192,8 +192,8 @@ public partial class TypeOptionButton : Button
         foreach (Node child in vbox.GetChildren())
             child.QueueFree();
 
-        var rowHoverBox    = GetThemeStylebox("row_hover",    "DndBuilder") as StyleBoxFlat ?? MakeHoverBox(new Color(0.35f, 0.50f, 0.70f));
-        var deleteHoverBox = GetThemeStylebox("delete_hover", "DndBuilder") as StyleBoxFlat ?? MakeHoverBox(new Color(0.76f, 0.46f, 0.54f));
+        var rowHoverBox    = GetThemeStylebox("row_hover",    "DndBuilder") as StyleBoxFlat ?? MakeHoverBox(ThemeManager.Instance.Current.Hover);
+        var deleteHoverBox = GetThemeStylebox("delete_hover", "DndBuilder") as StyleBoxFlat ?? MakeHoverBox(ThemeManager.DeleteHoverColor);
 
         // "— None —" row
         var noneBtn = MakeRowButton(NoneText);

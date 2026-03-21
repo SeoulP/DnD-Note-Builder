@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/ItemDetailPane/item_detail_pane.tscn" id="5_itemdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/QuestDetailPane/quest_detail_pane.tscn" id="6_questdet"]
 
-[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_addQuestsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_questsContainer", "_detailPanel")]
+[node name="CampaignDashboard" type="Control" unique_id=1846083544 node_paths=PackedStringArray("_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_addQuestsButton", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_questsContainer", "_detailPanel", "_paneContainer", "_tabList", "_tabScroll")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,6 +29,9 @@ _sessionsContainer = NodePath("ScrollContainer/VBoxContainer/SessionsPanel/VBoxC
 _itemsContainer = NodePath("ScrollContainer/VBoxContainer/ItemsPanel/VBoxContainer")
 _questsContainer = NodePath("ScrollContainer/VBoxContainer/QuestsPanel/VBoxContainer")
 _detailPanel = NodePath("DetailPanel")
+_paneContainer = NodePath("DetailPanel/PaneContainer")
+_tabList = NodePath("DetailPanel/TabRow/TabScroll/TabList")
+_tabScroll = NodePath("DetailPanel/TabRow/TabScroll")
 _npcDetailPaneScene = ExtResource("1_npcdet")
 _factionDetailPaneScene = ExtResource("2_facdet")
 _locationDetailPaneScene = ExtResource("3_locdet")
@@ -133,7 +136,7 @@ layout_mode = 2
 layout_mode = 2
 text = "New +"
 
-[node name="DetailPanel" type="Control" parent="." unique_id=712217800]
+[node name="DetailPanel" type="VBoxContainer" parent="." unique_id=712217800]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -141,3 +144,26 @@ anchor_bottom = 1.0
 offset_left = 250.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TabRow" type="HBoxContainer" parent="DetailPanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 36)
+theme_override_constants/separation = 0
+
+[node name="TabScroll" type="ScrollContainer" parent="DetailPanel/TabRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 36)
+vertical_scroll_mode = 0
+horizontal_scroll_mode = 3
+
+[node name="TabList" type="HBoxContainer" parent="DetailPanel/TabRow/TabScroll"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+
+[node name="PaneContainer" type="Control" parent="DetailPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

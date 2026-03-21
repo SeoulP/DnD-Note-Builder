@@ -30,8 +30,8 @@ public partial class ThemeManager : Node
     private static readonly Color LightFont        = H("#1e293b");
     private static readonly Color LightPlaceholder = H("#94a3b8");
 
-    // Rose 500 — delete hover is always a danger signal, independent of theme.
-    public static readonly Color DeleteHoverColor = H("#f43f5e");
+    // Dark crimson — delete hover is always a danger signal, independent of theme.
+    public static readonly Color DeleteHoverColor = new Color(0.55f, 0.12f, 0.12f);
 
     // ── runtime state ─────────────────────────────────────────────────────────
 
