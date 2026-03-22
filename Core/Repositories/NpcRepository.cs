@@ -70,6 +70,16 @@ namespace DndBuilder.Core.Repositories
             )";
             cmd.ExecuteNonQuery();
 
+            // Migration: add to_type_id to character_relationships (per-side independent relationship type)
+            var hasToTypeId = _conn.CreateCommand();
+            hasToTypeId.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_relationships') WHERE name = 'to_type_id'";
+            if ((long)hasToTypeId.ExecuteScalar() == 0)
+            {
+                var alter = _conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE character_relationships ADD COLUMN to_type_id INTEGER REFERENCES character_relationship_types(id) ON DELETE SET NULL";
+                alter.ExecuteNonQuery();
+            }
+
             // Migration: add role_id to existing character_factions tables
             var hasRoleId = _conn.CreateCommand();
             hasRoleId.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_factions') WHERE name = 'role_id'";
@@ -224,7 +234,7 @@ namespace DndBuilder.Core.Repositories
         {
             var list = new List<CharacterRelationship>();
             var cmd  = _conn.CreateCommand();
-            cmd.CommandText = "SELECT character_id, related_character_id, relationship_type_id FROM character_relationships WHERE character_id = @cid OR related_character_id = @cid";
+            cmd.CommandText = "SELECT character_id, related_character_id, relationship_type_id FROM character_relationships WHERE character_id = @cid";
             cmd.Parameters.AddWithValue("@cid", characterId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -247,14 +257,12 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        public void RemoveRelationship(int charAId, int charBId)
+        public void RemoveRelationship(int characterId, int relatedCharacterId)
         {
             var cmd = _conn.CreateCommand();
-            cmd.CommandText = @"DELETE FROM character_relationships
-                                WHERE (character_id = @a AND related_character_id = @b)
-                                   OR (character_id = @b AND related_character_id = @a)";
-            cmd.Parameters.AddWithValue("@a", charAId);
-            cmd.Parameters.AddWithValue("@b", charBId);
+            cmd.CommandText = "DELETE FROM character_relationships WHERE character_id = @cid AND related_character_id = @rcid";
+            cmd.Parameters.AddWithValue("@cid",  characterId);
+            cmd.Parameters.AddWithValue("@rcid", relatedCharacterId);
             cmd.ExecuteNonQuery();
         }
 

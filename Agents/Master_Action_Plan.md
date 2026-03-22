@@ -49,7 +49,7 @@
 | F12 | Session detail pane — significant redesign | Design | High | 🔶 |
 | F13 | Tab system for the detail pane | Design | Planned | ✅ |
 | F14 | Remember last opened entity per campaign | Feature | Medium | ✅ |
-| F15 | NPC–NPC relationships — directionality display | Feature | Medium | ⬜ |
+| F15 | NPC–NPC relationships — directionality display | Feature | Medium | ✅ |
 | F16 | Call SeedDefaults on campaign load (+ add God/Worship seeds) | Schema | Medium | ⬜ |
 | F17 | WikiNotes — Items and Quests included in WikiLink autocomplete | Feature | High | ✅ |
 | F18 | WikiNotes — stub creation via `[[+NoteType]]` syntax | Feature | High | ✅ |
@@ -362,167 +362,9 @@ The current pane has: number label, title, played-on date, wiki notes, image car
 
 ---
 
-### F15 — NPC–NPC Relationships: Directionality Display
+### F15 — NPC–NPC Relationships: Directionality Display ✅
 
-**Design settled.** Full spec below.
-
-#### Schema changes (additive only)
-
-**`character_relationship_types`** — add nullable `reverse_label` column:
-```sql
-ALTER TABLE character_relationship_types ADD COLUMN reverse_label TEXT;
-```
-Migration guard pattern (same as all other additive columns):
-```csharp
-// In CharacterRelationshipTypeRepository.Migrate():
-var hasReverse = _conn.CreateCommand();
-hasReverse.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_relationship_types') WHERE name = 'reverse_label'";
-if ((long)hasReverse.ExecuteScalar() == 0)
-{
-    var alter = _conn.CreateCommand();
-    alter.CommandText = "ALTER TABLE character_relationship_types ADD COLUMN reverse_label TEXT";
-    alter.ExecuteNonQuery();
-}
-```
-
-**`character_relationships`** — add `is_reversed` boolean:
-```sql
-ALTER TABLE character_relationships ADD COLUMN is_reversed INTEGER NOT NULL DEFAULT 0;
-```
-Same migration guard pattern. `DEFAULT 0` means all existing rows are treated as forward — correct, since they were all stored from the `character_id` perspective.
-
-#### Model changes
-
-**`CharacterRelationshipType.cs`:**
-```csharp
-public string? ReverseLabel { get; set; }  // null = symmetric (use Name for both sides)
-```
-
-**`CharacterRelationship.cs`:**
-```csharp
-public bool IsReversed { get; set; }
-```
-
-#### Repository changes
-
-**`CharacterRelationshipTypeRepository`** — add `reverse_label` to all SELECT, INSERT, UPDATE queries. Add to `Map()`:
-```csharp
-ReverseLabel = reader.IsDBNull(4) ? null : reader.GetString(4),
-```
-
-**`NpcRepository.GetRelationships()`** — add `is_reversed` to SELECT and Map():
-```csharp
-cmd.CommandText = "SELECT character_id, related_character_id, relationship_type_id, is_reversed FROM character_relationships WHERE character_id = @cid OR related_character_id = @cid";
-// ...
-IsReversed = reader.GetInt32(3) == 1,
-```
-
-**`NpcRepository.AddRelationship()`** — add `is_reversed` parameter:
-```csharp
-public void AddRelationship(int characterId, int relatedCharacterId, int? typeId, bool isReversed)
-{
-    var cmd = _conn.CreateCommand();
-    cmd.CommandText = "INSERT OR IGNORE INTO character_relationships (character_id, related_character_id, relationship_type_id, is_reversed) VALUES (@cid, @rcid, @tid, @rev)";
-    cmd.Parameters.AddWithValue("@cid",  characterId);
-    cmd.Parameters.AddWithValue("@rcid", relatedCharacterId);
-    cmd.Parameters.AddWithValue("@tid",  typeId.HasValue ? typeId.Value : DBNull.Value);
-    cmd.Parameters.AddWithValue("@rev",  isReversed ? 1 : 0);
-    cmd.ExecuteNonQuery();
-}
-```
-
-#### New component: `RelationshipTypeOptionButton`
-
-A new component that extends or mirrors `TypeOptionButton` but handles the two-column relationship type list. Not a subclass of `TypeOptionButton` (Godot partial classes make inheritance awkward) — a standalone component that shares the same visual conventions.
-
-**Signals:**
-```csharp
-[Signal] public delegate void TypeSelectedEventHandler(int id, bool isReversed);
-[Signal] public delegate void TypeCreatedEventHandler(int id);
-[Signal] public delegate void PopupClosedEventHandler();
-```
-
-**List rows — two columns per row:**
-
-Each type generates **one row** in the list with two interactive halves:
-
-```
-[ Friend of       ] ↔ [ Friend of       ]
-[ Master of       ] ↔ [ Slave of        ]
-[ Mentor of       ] ↔ [ Student of      ]
-[ Acquainted with ] ↔ [ Acquainted with ]
-```
-
-- Left button: selects the type with `isReversed = false`
-- Right button: selects the type with `isReversed = true`
-- If `ReverseLabel` is null, right column displays `Name` (mirrored)
-- The `↔` separator is a non-interactive `Label`
-- Hover/delete behaviour identical to `TypeOptionButton` — the whole row highlights, `×` appears on hover
-
-**Add form — side by side:**
-```
-[ Forward label...  ] ↔ [ Reverse label (optional)... ] [ + Add ]
-```
-Both are `LineEdit`. Submitting with only the forward label filled creates a symmetric type (null `ReverseLabel`). Pressing Enter in either field submits.
-
-**`AutoSelectOnAdd` behaviour:** When a new type is created, emit `TypeSelected(id, isReversed: false)` and close — user picks direction from the list if they want the reverse.
-
-#### Display logic in `NpcDetailPane.LoadRelRows()`
-
-Replace the current `typeNames` dictionary lookup with a helper that accounts for direction:
-
-```csharp
-// Build type lookup including reverse labels
-var types = new Dictionary<int, CharacterRelationshipType>();
-foreach (var t in _db.CharacterRelationshipTypes.GetAll(_npc.CampaignId))
-    types[t.Id] = t;
-
-// In the foreach loop:
-string label = "";
-if (rel.RelationshipTypeId.HasValue && types.TryGetValue(rel.RelationshipTypeId.Value, out var relType))
-{
-    bool useReverse = rel.IsReversed && !string.IsNullOrEmpty(relType.ReverseLabel);
-    label = useReverse ? relType.ReverseLabel : relType.Name;
-}
-// Row text: "{otherNpcName}, {label} {thisNpcName}" when label non-empty
-//           "{otherNpcName}" when label empty
-string otherName = npcNames.TryGetValue(capturedOther, out var on) ? on : "Unknown";
-var row = new EntityRow
-{
-    Text = string.IsNullOrEmpty(label) ? otherName : $"{otherName}, {label} {_npc.Name}"
-};
-```
-
-Note the display format change: previously `"{A}, {type} {B}"` — now always `"{other}, {label} {thisNpc}"` so both sides read naturally. "Iarno, Slave of Sildar" on Sildar's pane; "Sildar, Master of Iarno" on Iarno's pane.
-
-#### `NpcDetailPane` wiring changes
-
-Replace `_relTypeSelect` (`TypeOptionButton`) with `_relTypeSelect` (`RelationshipTypeOptionButton`). Update `OnAddRelPressed()`:
-
-```csharp
-private void OnAddRelPressed()
-{
-    if (!_relNpcSelect.SelectedId.HasValue) return;
-    _db.Npcs.AddRelationship(_npc.Id, _relNpcSelect.SelectedId.Value, _relTypeSelect.SelectedId, _relTypeSelect.IsReversed);
-    _npc.Relationships = _db.Npcs.GetRelationships(_npc.Id);
-    LoadRelRows();
-}
-```
-
-Add `public bool IsReversed { get; private set; }` to `RelationshipTypeOptionButton`, set when `TypeSelected` fires.
-
-#### Files
-
-| File | Change |
-|------|--------|
-| `Core/Models/CharacterRelationshipType.cs` | Add `ReverseLabel` property |
-| `Core/Models/CharacterRelationship.cs` | Add `IsReversed` property |
-| `Core/Repositories/CharacterRelationshipTypeRepository.cs` | Migration guard for `reverse_label`; add to all queries |
-| `Core/Repositories/NpcRepository.cs` | Migration guard for `is_reversed`; update `GetRelationships`, `AddRelationship` |
-| `Scenes/Components/RelationshipTypeOptionButton/RelationshipTypeOptionButton.cs` | **New** — two-column type picker |
-| `Scenes/Components/RelationshipTypeOptionButton/relationship_type_option_button.tscn` | **New** |
-| `Scenes/Components/NpcDetailPane/NpcDetailPane.cs` | Swap `_relTypeSelect` type; update `LoadRelRows()`, `OnAddRelPressed()` |
-| `Scenes/Components/NpcDetailPane/npc_detail_pane.tscn` | Swap node type for `_relTypeSelect` |
+*(See Completed Work Log)*
 
 ---
 
@@ -706,6 +548,9 @@ All items below are done and require no further action unless noted.
 ### Tab system (2026-03-20)
 - ✅ F13 — Full tab system for the detail pane. `TabEntry` class with `ActionBtn` (combined pin/close), color swatch, per-tab `StyleBoxFlat` refs for live theme updates. `BuildTabWidget` + `BuildAddTabWidget` (mini-tab `+` at end of list). Navigation priority: existing tab → unpinned current → unpinned other → new tab. Right-click context menu: Close, Close All, Close All to Right, Pin/Unpin. Drag-and-drop reorder with ghost preview (`ZIndex=100` root-level control). Tab scrollbar hidden (`horizontal_scroll_mode = 3`). All tab colors sourced from `ThemeManager`; `OnTabThemeChanged` mutates `StyleBoxFlat.BgColor` in-place for live theme switching. `DeleteHoverColor` = dark crimson `Color(0.55f, 0.12f, 0.12f)` applied app-wide (tabs, EntityRow, TypeOptionButton).
 - ✅ F14 — "Remember Tabs" setting. Full tab state (type, id, pinned, active index) serialized to JSON and persisted per-campaign via `app_settings`. `SaveTabs()` on every navigation; `RestoreTabs()` at end of `_Ready()`. Toggled via checkable Settings menu item; `HideOnCheckableItemSelection = false` keeps menu open on toggle.
+
+### NPC Relationships (2026-03-22)
+- ✅ F15 — NPC–NPC relationship directionality. Relationships are now **one-directional and independent per NPC**: each NPC manages their own rows (`WHERE character_id = @cid` only). Jorge adds "Master of Harold" from his pane; Harold separately adds "Friend of Jorge" from his pane — two unrelated DB rows. Schema: migration guard adds `to_type_id` column (unused, kept for additive-only rule); `relationship_type_id` remains the single type field. `RemoveRelationship` deletes only the specific directional row. Display always reads `"{currentNpc}, {type} {otherNpc}"`. NPC picker filter checks `RelatedCharacterId` only (not both directions). `RelationshipTypeOptionButton` component was built then abandoned in favour of keeping the standard `TypeOptionButton`. `TypeOptionButton` hover-×-disappear bug fixed: `delBtn.MouseExited` now resets `Modulate` to transparent.
 
 ### UX Polish (2026-03-22)
 - ✅ U5 — WikiNotes bullet continuation: `- ` prefix on a line auto-continues on Enter (new `- ` line inserted). Enter on an empty `- ` body removes the prefix. `OnInputKey` early-return guard relaxed — `HandleBulletContinuation()` now fires when autocomplete is not visible; autocomplete-only keys (Escape, Up, Down, Tab) guard themselves individually.

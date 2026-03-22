@@ -48,6 +48,15 @@ namespace DndBuilder.Core.Repositories
                 alter.CommandText = "ALTER TABLE character_relationship_types ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
             }
+
+            var hasReverseLabel = _conn.CreateCommand();
+            hasReverseLabel.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_relationship_types') WHERE name = 'reverse_label'";
+            if ((long)hasReverseLabel.ExecuteScalar() == 0)
+            {
+                var alter = _conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE character_relationship_types ADD COLUMN reverse_label TEXT";
+                alter.ExecuteNonQuery();
+            }
         }
 
         public void SeedDefaults(int campaignId)

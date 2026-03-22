@@ -147,7 +147,7 @@ public partial class NpcDetailPane : ScrollContainer
         _relNpcSelect.AutoSelectOnAdd = true;
         _relNpcSelect.Setup(
             () => _db.Npcs.GetAll(npc.CampaignId)
-                      .Where(n => n.Id != _npc.Id && !_npc.Relationships.Any(r => r.CharacterId == n.Id || r.RelatedCharacterId == n.Id))
+                      .Where(n => n.Id != _npc.Id && !_npc.Relationships.Any(r => r.RelatedCharacterId == n.Id))
                       .Select(n => (n.Id, n.Name))
                       .ToList(),
             name =>
@@ -236,21 +236,21 @@ public partial class NpcDetailPane : ScrollContainer
         foreach (var t in _db.CharacterRelationshipTypes.GetAll(_npc.CampaignId))
             typeNames[t.Id] = t.Name;
 
-        var allNpcs  = _db.Npcs.GetAll(_npc.CampaignId);
         var npcNames = new Dictionary<int, string>();
-        foreach (var n in allNpcs) npcNames[n.Id] = n.Name;
+        foreach (var n in _db.Npcs.GetAll(_npc.CampaignId))
+            npcNames[n.Id] = n.Name;
 
         foreach (var rel in _npc.Relationships)
         {
-            int    capturedA    = rel.CharacterId;
-            int    capturedB    = rel.RelatedCharacterId;
-            int    capturedOther = rel.CharacterId == _npc.Id ? rel.RelatedCharacterId : rel.CharacterId;
-            string nameA    = npcNames.TryGetValue(rel.CharacterId,         out var na) ? na : "Unknown";
-            string nameB    = npcNames.TryGetValue(rel.RelatedCharacterId,  out var nb) ? nb : "Unknown";
-            string typeName = rel.RelationshipTypeId.HasValue && typeNames.TryGetValue(rel.RelationshipTypeId.Value, out var tn) ? tn : "";
+            int capturedA     = rel.CharacterId;
+            int capturedB     = rel.RelatedCharacterId;
 
-            var row = new EntityRow { Text = string.IsNullOrEmpty(typeName) ? $"{nameA}, {nameB}" : $"{nameA}, {typeName} {nameB}" };
-            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "npc", capturedOther);
+            string label     = rel.RelationshipTypeId.HasValue && typeNames.TryGetValue(rel.RelationshipTypeId.Value, out var tn) ? tn : "";
+            string otherName = npcNames.TryGetValue(rel.RelatedCharacterId, out var on) ? on : "Unknown";
+            string rowText   = string.IsNullOrEmpty(label) ? otherName : $"{_npc.Name}, {label} {otherName}";
+
+            var row = new EntityRow { Text = rowText };
+            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "npc", capturedB);
             row.DeletePressed   += () =>
             {
                 _db.Npcs.RemoveRelationship(capturedA, capturedB);
@@ -266,9 +266,7 @@ public partial class NpcDetailPane : ScrollContainer
     private void OnAddRelPressed()
     {
         if (!_relNpcSelect.SelectedId.HasValue) return;
-        int  relatedId = _relNpcSelect.SelectedId.Value;
-        int? typeId    = _relTypeSelect.SelectedId;
-        _db.Npcs.AddRelationship(_npc.Id, relatedId, typeId);
+        _db.Npcs.AddRelationship(_npc.Id, _relNpcSelect.SelectedId.Value, _relTypeSelect.SelectedId);
         _npc.Relationships = _db.Npcs.GetRelationships(_npc.Id);
         LoadRelRows();
     }

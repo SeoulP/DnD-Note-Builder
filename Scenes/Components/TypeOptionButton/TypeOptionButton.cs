@@ -242,7 +242,7 @@ public partial class TypeOptionButton : Button
                 nameBtn.MouseEntered += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", rowHoverBox); };
                 nameBtn.MouseExited  += () => { delBtn.Modulate = new Color(1, 1, 1, 0); panel.RemoveThemeStyleboxOverride("panel"); };
                 delBtn.MouseEntered  += () => { delBtn.Modulate = Colors.White; panel.AddThemeStyleboxOverride("panel", deleteHoverBox); };
-                delBtn.MouseExited   += () => panel.RemoveThemeStyleboxOverride("panel");
+                delBtn.MouseExited   += () => { delBtn.Modulate = new Color(1, 1, 1, 0); panel.RemoveThemeStyleboxOverride("panel"); };
                 row.AddChild(delBtn);
             }
             else
