@@ -230,6 +230,7 @@ public partial class CampaignDashboard : Control
             var btn = MakeSidebarButton(npc.Name, NpcColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("npc", id);
+            WireCtrlClick(btn, "npc", id);
             _npcsContainer.AddChild(btn);
         }
     }
@@ -243,6 +244,7 @@ public partial class CampaignDashboard : Control
             var btn = MakeSidebarButton(faction.Name, FactionColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("faction", id);
+            WireCtrlClick(btn, "faction", id);
             _factionsContainer.AddChild(btn);
         }
     }
@@ -298,6 +300,7 @@ public partial class CampaignDashboard : Control
                 ApplyButtonStyle(btn, LocationColor, roundLeft: false);
                 btn.SetMeta("id", id);
                 btn.Pressed += () => ShowDetailPane("location", id);
+                WireCtrlClick(btn, "location", id);
 
                 hbox.AddChild(toggleBtn);
                 hbox.AddChild(btn);
@@ -312,6 +315,7 @@ public partial class CampaignDashboard : Control
                 btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
                 btn.SetMeta("id", id);
                 btn.Pressed += () => ShowDetailPane("location", id);
+                WireCtrlClick(btn, "location", id);
                 _locationsContainer.AddChild(btn);
             }
             else
@@ -326,6 +330,7 @@ public partial class CampaignDashboard : Control
                 btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
                 btn.SetMeta("id", id);
                 btn.Pressed += () => ShowDetailPane("location", id);
+                WireCtrlClick(btn, "location", id);
                 hbox.AddChild(btn);
 
                 _locationsContainer.AddChild(hbox);
@@ -342,6 +347,7 @@ public partial class CampaignDashboard : Control
             var btn = MakeSidebarButton(string.IsNullOrEmpty(session.Title) ? "Untitled Session" : session.Title, SessionColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("session", id);
+            WireCtrlClick(btn, "session", id);
             _sessionsContainer.AddChild(btn);
         }
     }
@@ -355,6 +361,7 @@ public partial class CampaignDashboard : Control
             var btn = MakeSidebarButton(item.Name, ItemColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("item", id);
+            WireCtrlClick(btn, "item", id);
             _itemsContainer.AddChild(btn);
         }
     }
@@ -368,6 +375,7 @@ public partial class CampaignDashboard : Control
             var btn = MakeSidebarButton(quest.Name, QuestColor);
             btn.SetMeta("id", id);
             btn.Pressed += () => ShowDetailPane("quest", id);
+            WireCtrlClick(btn, "quest", id);
             _questsContainer.AddChild(btn);
         }
     }
@@ -447,12 +455,28 @@ public partial class CampaignDashboard : Control
         if (_activeTab >= 0 && _activeTab < _tabs.Count && !_tabs[_activeTab].IsPinned)
         { LoadIntoTab(_activeTab, entityType, entityId); return; }
 
-        // 3. Any other unpinned tab → reuse it
-        int unpinned = _tabs.FindIndex(t => !t.IsPinned);
-        if (unpinned >= 0) { LoadIntoTab(unpinned, entityType, entityId); return; }
-
-        // 4. Open a new tab
+        // 3. Active tab is pinned → always open a new tab (never clobber other tabs)
         OpenNewTab(entityType, entityId);
+    }
+
+    private void ShowDetailPaneInNewTab(string entityType, int entityId)
+    {
+        int existing = _tabs.FindIndex(t => t.EntityType == entityType && t.EntityId == entityId);
+        if (existing >= 0) { ActivateTab(existing); return; }
+        OpenNewTab(entityType, entityId);
+    }
+
+    // Adds a Ctrl+click handler to a sidebar button that opens in a new tab instead of reusing.
+    private void WireCtrlClick(Button btn, string entityType, int entityId)
+    {
+        btn.GuiInput += (InputEvent e) =>
+        {
+            if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mb && mb.CtrlPressed)
+            {
+                btn.AcceptEvent();
+                ShowDetailPaneInNewTab(entityType, entityId);
+            }
+        };
     }
 
     // Returns (pane, label, loadAction). Call AddChild BEFORE invoking loadAction — _Ready() must run first.
@@ -766,13 +790,15 @@ public partial class CampaignDashboard : Control
         if (btn == null) return;
         if (tab.IsPinned)
         {
-            btn.Text = "◆";
-            btn.Modulate = Colors.White;
+            btn.Text        = "◆";
+            btn.Modulate    = Colors.White;
+            btn.TooltipText = "Pinned — unpin to close\nShift+middle-click to force close";
         }
         else
         {
-            btn.Text = "×";
-            btn.Modulate = hovering ? Colors.White : Colors.Transparent;
+            btn.Text        = "×";
+            btn.Modulate    = hovering ? Colors.White : Colors.Transparent;
+            btn.TooltipText = "";
         }
     }
 
@@ -909,7 +935,7 @@ public partial class CampaignDashboard : Control
                     _dragging       = false;
                 }
                 else if (mb.ButtonIndex == MouseButton.Middle && mb.Pressed)
-                    { if (!tab.IsPinned) { int i = _tabs.IndexOf(tab); if (i >= 0) CloseTab(i); } }
+                    { if (!tab.IsPinned || mb.ShiftPressed) { int i = _tabs.IndexOf(tab); if (i >= 0) CloseTab(i); } }
                 else if (mb.ButtonIndex == MouseButton.Right)
                 {
                     int i = _tabs.IndexOf(tab);

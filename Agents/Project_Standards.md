@@ -230,8 +230,7 @@ When navigating to a record (via sidebar, wiki link, entity row, or + button):
 
 1. If the record is already open in any tab → switch to that tab
 2. Else if the current tab is unpinned → load into the current tab
-3. Else if another unpinned tab exists → load into the next unpinned tab
-4. Else → open a new tab
+3. Else → open a new tab (never clobber another tab when the active one is pinned)
 
 ### What Triggers Tab Navigation
 

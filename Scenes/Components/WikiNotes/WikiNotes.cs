@@ -365,37 +365,78 @@ public override void _ExitTree()
 
     private void OnInputKey(InputEvent e)
     {
-        if (_acPanel == null || !IsInstanceValid(_acPanel)) return;
         if (e is not InputEventKey { Pressed: true } key) return;
 
-        int count = _acList?.GetChildCount() ?? 0;
+        bool acVisible = _acPanel != null && IsInstanceValid(_acPanel) && _acPanel.Visible;
+        int  count     = _acList?.GetChildCount() ?? 0;
 
         switch (key.Keycode)
         {
             case Key.Escape:
+                if (!acVisible) return;
                 HideAutocomplete();
                 _input.AcceptEvent();
                 break;
 
             case Key.Down:
+                if (!acVisible) return;
                 _acSelectedIndex = (_acSelectedIndex + 1) % count;
                 UpdateRowHighlight();
                 _input.AcceptEvent();
                 break;
 
             case Key.Up:
+                if (!acVisible) return;
                 _acSelectedIndex = (_acSelectedIndex - 1 + count) % count;
                 UpdateRowHighlight();
                 _input.AcceptEvent();
                 break;
 
             case Key.Tab:
-            case Key.Enter:
-            case Key.KpEnter:
+                if (!acVisible) return;
                 ConfirmSelection();
                 _input.AcceptEvent();
                 break;
+
+            case Key.Enter:
+            case Key.KpEnter:
+                if (acVisible)
+                {
+                    ConfirmSelection();
+                    _input.AcceptEvent();
+                    break;
+                }
+                if (HandleBulletContinuation())
+                    _input.AcceptEvent();
+                break;
         }
+    }
+
+    private bool HandleBulletContinuation()
+    {
+        int    line     = _input.GetCaretLine();
+        string lineText = _input.GetLine(line);
+
+        if (!lineText.StartsWith("- ")) return false;
+
+        string body = lineText[2..];
+
+        if (string.IsNullOrEmpty(body))
+        {
+            // Empty bullet — remove the prefix and return to normal text
+            _input.SetLine(line, "");
+            _input.SetCaretColumn(0);
+        }
+        else
+        {
+            // Continue the list on a new line
+            int col = _input.GetCaretColumn();
+            _input.SetLine(line, lineText[..col]);
+            _input.InsertLineAt(line + 1, "- ");
+            _input.SetCaretLine(line + 1);
+            _input.SetCaretColumn(2);
+        }
+        return true;
     }
 
     private void ConfirmSelection()

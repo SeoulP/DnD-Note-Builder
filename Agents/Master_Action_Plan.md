@@ -34,7 +34,7 @@
 | U2 | EntityRow hover — show pointer cursor | UX | Low | ✅ |
 | U3 | Background colour — project-wide Godot Theme | UX | Low | ✅ |
 | U4 | TypeOptionButton — auto-select newly added type | UX | Medium | ✅ |
-| U5 | WikiNotes — bullet point continuation on Enter | UX | Low | ⬜ |
+| U5 | WikiNotes — bullet point continuation on Enter | UX | Low | ✅ |
 | F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
 | F2 | Per-tab back/forward navigation | Feature | Medium | ✅ |
 | F3 | Session related-links panel (wiki panel, third column) | Feature | Medium | ⬜ |
@@ -88,63 +88,9 @@
 
 ---
 
-### U5 — WikiNotes: Bullet Point Continuation
+### U5 — WikiNotes: Bullet Point Continuation ✅
 
-Typing `- ` (dash + space) at the start of a line should initiate a bullet list. Pressing Enter should continue the list on the next line. Pressing Enter on an empty bullet body (i.e. `- ` with nothing after it) should remove the bullet prefix and return to normal text.
-
-**Applies to:** the `TextEdit` (`_input`) inside `WikiNotes.cs`, and by extension any WikiNotes instance — including WikiLink reference panels.
-
-**Implementation — `WikiNotes.cs`, `OnInputKey()`:**
-
-The handler already intercepts `InputEventKey` for autocomplete navigation. Extend it to intercept `Key.Enter` / `Key.KpEnter` when the autocomplete panel is not visible:
-
-```csharp
-case Key.Enter:
-case Key.KpEnter:
-    if (_acPanel != null && IsInstanceValid(_acPanel) && _acPanel.Visible)
-    {
-        ConfirmSelection();
-        _input.AcceptEvent();
-        break;
-    }
-    if (HandleBulletContinuation())
-        _input.AcceptEvent();
-    break;
-```
-
-**Add `HandleBulletContinuation()`:**
-
-```csharp
-private bool HandleBulletContinuation()
-{
-    int    line     = _input.GetCaretLine();
-    string lineText = _input.GetLine(line);
-
-    // Only act if this line starts a bullet
-    if (!lineText.StartsWith("- ")) return false;
-
-    string body = lineText[2..]; // everything after "- "
-
-    if (string.IsNullOrEmpty(body))
-    {
-        // Empty bullet — remove the prefix and return to normal text
-        _input.SetLine(line, "");
-        _input.SetCaretColumn(0);
-    }
-    else
-    {
-        // Continue the list on a new line
-        int col = _input.GetCaretColumn();
-        _input.SetLine(line, lineText[..col]);
-        _input.InsertLineAt(line + 1, "- ");
-        _input.SetCaretLine(line + 1);
-        _input.SetCaretColumn(2);
-    }
-    return true;
-}
-```
-
-> The existing `OnInputKey` guard (`if (_acPanel == null || !IsInstanceValid(_acPanel)) return;`) must be relaxed — the bullet handler should fire even when there is no active autocomplete panel. Restructure the early return accordingly.
+*(See Completed Work Log)*
 
 ---
 
@@ -760,6 +706,9 @@ All items below are done and require no further action unless noted.
 ### Tab system (2026-03-20)
 - ✅ F13 — Full tab system for the detail pane. `TabEntry` class with `ActionBtn` (combined pin/close), color swatch, per-tab `StyleBoxFlat` refs for live theme updates. `BuildTabWidget` + `BuildAddTabWidget` (mini-tab `+` at end of list). Navigation priority: existing tab → unpinned current → unpinned other → new tab. Right-click context menu: Close, Close All, Close All to Right, Pin/Unpin. Drag-and-drop reorder with ghost preview (`ZIndex=100` root-level control). Tab scrollbar hidden (`horizontal_scroll_mode = 3`). All tab colors sourced from `ThemeManager`; `OnTabThemeChanged` mutates `StyleBoxFlat.BgColor` in-place for live theme switching. `DeleteHoverColor` = dark crimson `Color(0.55f, 0.12f, 0.12f)` applied app-wide (tabs, EntityRow, TypeOptionButton).
 - ✅ F14 — "Remember Tabs" setting. Full tab state (type, id, pinned, active index) serialized to JSON and persisted per-campaign via `app_settings`. `SaveTabs()` on every navigation; `RestoreTabs()` at end of `_Ready()`. Toggled via checkable Settings menu item; `HideOnCheckableItemSelection = false` keeps menu open on toggle.
+
+### UX Polish (2026-03-22)
+- ✅ U5 — WikiNotes bullet continuation: `- ` prefix on a line auto-continues on Enter (new `- ` line inserted). Enter on an empty `- ` body removes the prefix. `OnInputKey` early-return guard relaxed — `HandleBulletContinuation()` now fires when autocomplete is not visible; autocomplete-only keys (Escape, Up, Down, Tab) guard themselves individually.
 
 ### WikiNotes improvements (2026-03-20)
 - ✅ F17 — Items and Quests added to `[[` autocomplete (`WikiNotes.GetEntityMatches()`) and to link rendering (`WikiLinkParser.BuildLookup()`). All six entity types now suggest and render as navigable gold links.
