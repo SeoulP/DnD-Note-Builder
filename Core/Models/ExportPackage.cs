@@ -26,5 +26,8 @@ namespace DndBuilder.Core.Models
         public List<Session>  Sessions  { get; set; } = new();
         public List<Item>     Items     { get; set; } = new();
         public List<Quest>    Quests    { get; set; } = new();
+
+        // Images (base64-encoded file bytes, keyed to entity by OldEntityId + EntityType)
+        public List<EntityImageExport> Images { get; set; } = new();
     }
 }

@@ -188,6 +188,7 @@ public partial class CampaignDashboard : Control
 
         GetNode<LineEdit>("ScrollContainer/VBoxContainer/SearchInput").TextChanged += FilterSidebar;
 
+        if (_campaignId > 0) _db.MigrateLegacyImagePaths(_campaignId);
         LoadAll();
         RestoreTabs();
     }

@@ -54,6 +54,15 @@ namespace DndBuilder.Core.Repositories
             return (int)(long)cmd.ExecuteScalar();
         }
 
+        public void UpdatePath(int id, string newPath)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "UPDATE entity_images SET path = @path WHERE id = @id";
+            cmd.Parameters.AddWithValue("@path", newPath);
+            cmd.Parameters.AddWithValue("@id",   id);
+            cmd.ExecuteNonQuery();
+        }
+
         public void Delete(int id)
         {
             var cmd = _conn.CreateCommand();

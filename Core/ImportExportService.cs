@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using DndBuilder.Core.Models;
 
@@ -36,6 +38,8 @@ namespace DndBuilder.Core
         public HashSet<int> ItemIds     { get; set; } = new();
         public bool        AllQuests    { get; set; }
         public HashSet<int> QuestIds    { get; set; } = new();
+
+        public bool IncludeImages { get; set; } = true;
     }
 
     public static class ImportExportService
@@ -95,6 +99,38 @@ namespace DndBuilder.Core
                 var all = db.Quests.GetAll(campaignId);
                 foreach (var q in all) q.History = db.QuestHistory.GetAll(q.Id);
                 pkg.Quests = sel.AllQuests ? all : all.Where(q => sel.QuestIds.Contains(q.Id)).ToList();
+            }
+
+            // ── Images: gather for all exported entities ──────────────────────
+            if (!sel.IncludeImages) return pkg;
+            var exportedIds = new Dictionary<EntityType, IEnumerable<int>>
+            {
+                [EntityType.Faction]  = pkg.Factions .Select(f => f.Id),
+                [EntityType.Npc]      = pkg.Npcs     .Select(n => n.Id),
+                [EntityType.Location] = pkg.Locations.Select(l => l.Id),
+                [EntityType.Session]  = pkg.Sessions .Select(s => s.Id),
+                [EntityType.Item]     = pkg.Items    .Select(i => i.Id),
+                [EntityType.Quest]    = pkg.Quests   .Select(q => q.Id),
+            };
+            string appDir = Path.GetDirectoryName(db.DbPath);
+            foreach (var (entityType, ids) in exportedIds)
+            {
+                foreach (var entityId in ids)
+                {
+                    foreach (var img in db.EntityImages.GetAll(entityType, entityId))
+                    {
+                        string absPath = ResolveToAbsolute(img.Path, appDir);
+                        if (!File.Exists(absPath)) continue;
+                        pkg.Images.Add(new EntityImageExport
+                        {
+                            EntityType  = entityType,
+                            OldEntityId = entityId,
+                            Extension   = Path.GetExtension(absPath),
+                            DataBase64  = Convert.ToBase64String(File.ReadAllBytes(absPath)),
+                            SortOrder   = img.SortOrder,
+                        });
+                    }
+                }
             }
 
             return pkg;
@@ -238,9 +274,10 @@ namespace DndBuilder.Core
             }
 
             // ── Step 6: items ─────────────────────────────────────────────────
+            var itemMap = new Dictionary<int, int>();
             foreach (var item in GetEntities(pkg.Items, sel.AllItems, sel.ItemIds))
             {
-                db.Items.Add(new Item
+                itemMap[item.Id] = db.Items.Add(new Item
                 {
                     CampaignId  = campaignId,
                     Name        = item.Name,
@@ -252,6 +289,7 @@ namespace DndBuilder.Core
             }
 
             // ── Step 7: quests (depends on quest_statuses, locations, npcs) ──
+            var questMap = new Dictionary<int, int>();
             foreach (var quest in GetEntities(pkg.Quests, sel.AllQuests, sel.QuestIds))
             {
                 var newQuestId = db.Quests.Add(new Quest
@@ -265,6 +303,7 @@ namespace DndBuilder.Core
                     QuestGiverId = Remap(quest.QuestGiverId, npcMap),
                     LocationId   = Remap(quest.LocationId,   locationMap),
                 });
+                questMap[quest.Id] = newQuestId;
                 foreach (var h in quest.History)
                 {
                     db.QuestHistory.Add(new QuestHistory
@@ -275,6 +314,68 @@ namespace DndBuilder.Core
                     });
                 }
             }
+
+            // ── Step 8: images ────────────────────────────────────────────────
+            if (pkg.Images.Count > 0)
+            {
+                var entityMaps = new Dictionary<EntityType, Dictionary<int, int>>
+                {
+                    [EntityType.Faction]  = factionMap,
+                    [EntityType.Location] = locationMap,
+                    [EntityType.Session]  = sessionMap,
+                    [EntityType.Npc]      = npcMap,
+                    [EntityType.Item]     = itemMap,
+                    [EntityType.Quest]    = questMap,
+                };
+
+                string imgAppDir = Path.GetDirectoryName(db.DbPath);
+                var campaign = db.Campaigns.Get(campaignId);
+                string subDir = db.ImgDir;
+                if (campaign != null)
+                {
+                    subDir = Path.Combine(db.ImgDir, SanitizeFolderName(campaign.Name));
+                    Directory.CreateDirectory(subDir);
+                }
+
+                foreach (var img in pkg.Images)
+                {
+                    if (!entityMaps.TryGetValue(img.EntityType, out var map)) continue;
+                    if (!map.TryGetValue(img.OldEntityId, out var newEntityId)) continue;
+                    if (string.IsNullOrEmpty(img.DataBase64)) continue;
+
+                    byte[] bytes = Convert.FromBase64String(img.DataBase64);
+                    string ext   = string.IsNullOrEmpty(img.Extension) ? ".png" : img.Extension;
+                    string dest  = Path.Combine(subDir, Guid.NewGuid().ToString("N") + ext);
+                    File.WriteAllBytes(dest, bytes);
+
+                    db.EntityImages.Add(new EntityImage
+                    {
+                        EntityType = img.EntityType,
+                        EntityId   = newEntityId,
+                        Path       = Path.GetRelativePath(imgAppDir, dest).Replace('\\', '/'),
+                        SortOrder  = img.SortOrder,
+                    });
+                }
+            }
+        }
+
+        // Resolves a stored path to absolute. Relative paths (new-style) are combined
+        // with appDir. Absolute paths (legacy) are returned unchanged.
+        private static string ResolveToAbsolute(string storedPath, string appDir)
+        {
+            if (string.IsNullOrEmpty(storedPath)) return storedPath;
+            if (Path.IsPathRooted(storedPath)) return storedPath;
+            return Path.Combine(appDir, storedPath.Replace('/', Path.DirectorySeparatorChar));
+        }
+
+        private static string SanitizeFolderName(string name)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+            var chars   = name.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+                if (Array.IndexOf(invalid, chars[i]) >= 0)
+                    chars[i] = '_';
+            return new string(chars).Trim();
         }
 
         // ─── Helpers ─────────────────────────────────────────────────────────

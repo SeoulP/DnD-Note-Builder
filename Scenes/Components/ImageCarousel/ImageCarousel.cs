@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using DndBuilder.Core.Models;
@@ -17,6 +18,7 @@ public partial class ImageCarousel : Control
     private DatabaseService   _db;
     private EntityType        _entityType;
     private int               _entityId;
+    private int               _campaignId;
     private List<EntityImage> _images = new();
     private int               _index    = 0;
     private bool              _hovering = false;
@@ -154,11 +156,12 @@ public partial class ImageCarousel : Control
 
     // ── public API ────────────────────────────────────────────────────────────
 
-    public void Setup(EntityType entityType, int entityId, DatabaseService db)
+    public void Setup(EntityType entityType, int entityId, DatabaseService db, int campaignId = 0)
     {
         _db         = db;
         _entityType = entityType;
         _entityId   = entityId;
+        _campaignId = campaignId;
         _index      = 0;
         _images     = _db.EntityImages.GetAll(entityType, entityId);
         Refresh();
@@ -213,7 +216,7 @@ public partial class ImageCarousel : Control
 
         _index         = Mathf.Clamp(_index, 0, _images.Count - 1);
         _counter.Text  = $"{_index + 1} / {_images.Count}";
-        _image.Texture = LoadTexture(_images[_index].Path);
+        _image.Texture = LoadTexture(ResolveToAbsolute(_images[_index].Path));
         UpdateDeleteVisibility();
     }
 
@@ -222,7 +225,15 @@ public partial class ImageCarousel : Control
         var scene = GD.Load<PackedScene>(LightboxPath);
         if (scene == null) return;
         var lightbox = scene.Instantiate<ImageLightbox>();
-        lightbox.Setup(_images, _index);
+        var resolvedImages = _images.ConvertAll(img => new EntityImage
+        {
+            Id         = img.Id,
+            EntityType = img.EntityType,
+            EntityId   = img.EntityId,
+            Path       = ResolveToAbsolute(img.Path),
+            SortOrder  = img.SortOrder,
+        });
+        lightbox.Setup(resolvedImages, _index);
         GetViewport().GuiReleaseFocus();
         GetTree().Root.AddChild(lightbox);
     }
@@ -255,25 +266,76 @@ public partial class ImageCarousel : Control
     private void DeleteCurrentImage()
     {
         if (_db == null || _images.Count == 0) return;
-        _db.EntityImages.Delete(_images[_index].Id);
+        var img = _images[_index];
+        _db.EntityImages.Delete(img.Id);
+        // Only delete the file if it lives inside the managed img/ folder
+        var absPath = ResolveToAbsolute(img.Path);
+        if (!string.IsNullOrEmpty(absPath) &&
+            absPath.StartsWith(_db.ImgDir, StringComparison.OrdinalIgnoreCase) &&
+            File.Exists(absPath))
+        {
+            File.Delete(absPath);
+        }
         _images.RemoveAt(_index);
         _index = Mathf.Clamp(_index, 0, Mathf.Max(0, _images.Count - 1));
         Refresh();
     }
 
-    private void AddImage(string path)
+    private void AddImage(string sourcePath)
     {
+        string destPath = CopyToImgDir(sourcePath);
         var img = new EntityImage
         {
             EntityType = _entityType,
             EntityId   = _entityId,
-            Path       = path,
+            Path       = destPath,
             SortOrder  = _images.Count,
         };
         img.Id = _db.EntityImages.Add(img);
         _images.Add(img);
         _index = _images.Count - 1;
         Refresh();
+    }
+
+    // Resolves a stored path to an absolute path.
+    // New images are stored as relative (e.g. "img/Campaign/abc.png"); legacy images
+    // may be absolute — those are returned unchanged for backwards compatibility.
+    private string ResolveToAbsolute(string storedPath)
+    {
+        if (string.IsNullOrEmpty(storedPath)) return storedPath;
+        if (Path.IsPathRooted(storedPath)) return storedPath;
+        return Path.Combine(Path.GetDirectoryName(_db.DbPath),
+            storedPath.Replace('/', Path.DirectorySeparatorChar));
+    }
+
+    private string CopyToImgDir(string sourcePath)
+    {
+        string appDir = Path.GetDirectoryName(_db.DbPath);
+        string subDir = _db.ImgDir;
+        if (_campaignId > 0)
+        {
+            var campaign = _db.Campaigns.Get(_campaignId);
+            if (campaign != null)
+            {
+                string safeName = SanitizeFolderName(campaign.Name);
+                subDir = Path.Combine(_db.ImgDir, safeName);
+                Directory.CreateDirectory(subDir);
+            }
+        }
+        string ext  = Path.GetExtension(sourcePath);
+        string dest = Path.Combine(subDir, Guid.NewGuid().ToString("N") + ext);
+        File.Copy(sourcePath, dest, overwrite: false);
+        return Path.GetRelativePath(appDir, dest).Replace('\\', '/');
+    }
+
+    private static string SanitizeFolderName(string name)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var chars   = name.ToCharArray();
+        for (int i = 0; i < chars.Length; i++)
+            if (Array.IndexOf(invalid, chars[i]) >= 0)
+                chars[i] = '_';
+        return new string(chars).Trim();
     }
 
     private static ImageTexture LoadTexture(string path)

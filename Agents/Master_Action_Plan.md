@@ -35,7 +35,7 @@
 | U3 | Background colour — project-wide Godot Theme | UX | Low | ✅ |
 | U4 | TypeOptionButton — auto-select newly added type | UX | Medium | ✅ |
 | U5 | WikiNotes — bullet point continuation on Enter | UX | Low | ✅ |
-| F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
+| F1 | Standardize image save location to `imgs/` folder | Feature | High | ✅ |
 | F2 | Per-tab back/forward navigation | Feature | Medium | ✅ |
 | F3 | Session related-links panel (wiki panel, third column) | Feature | Medium | ✅ |
 | F4 | NPC detail pane — full field audit (HomeLocationId, FirstSeenSession, Personality) | Feature | Medium | 🔶 |
@@ -44,7 +44,7 @@
 | F7 | Campaign cover image | Feature | Low | ⬜ |
 | F8 | Players section — party overview | Feature | Medium | ⬜ |
 | F9 | PC abilities / class features | Feature | High | ⬜ |
-| F10 | Image export/import in `.dndx` packages | Feature | Medium | ⬜ |
+| F10 | Image export/import in `.dndx` packages | Feature | Medium | ✅ |
 | F11 | NPC–Location relationship | Design | Medium | 🚫 |
 | F12 | Session detail pane — significant redesign | Design | High | 🔶 |
 | F13 | Tab system for the detail pane | Design | Planned | ✅ |
@@ -96,33 +96,9 @@
 
 ## Features
 
-### F1 — Standardize Image Save Location to `imgs/` Folder
+### F1 — Standardize Image Save Location to `imgs/` Folder ✅
 
-Currently `entity_images.path` stores whatever absolute path the user picked. This is machine-specific, breaks on migration, and blocks image export (F10).
-
-**Plan:** When the user picks or drops an image, copy it into a managed folder before recording the path:
-```
-OS.GetUserDataDir()/imgs/<entity_type>/<entity_id>/<original_filename>
-```
-Store only the relative path (e.g. `imgs/npc/42/portrait.png`) in the DB. On load, resolve to absolute using `OS.GetUserDataDir()`.
-
-**Backwards compatibility:** If a stored path starts with `/` or a drive letter, treat it as a legacy absolute path — do not break existing images.
-
-**Files:**
-- `ImageCarousel.cs` — copy file to managed path on pick/drop; store relative path
-- `EntityImageRepository.cs` — no schema change; path convention only
-- All image display code — resolve relative paths before loading texture
-
-**Folder structure:**
-```
-%APPDATA%/Godot/app_userdata/dnd-builder/
-  campaign.db
-  imgs/
-    npc/42/portrait.png
-    location/7/map.jpg
-```
-
-> **Prerequisite for F10 (image export/import).**
+*(See Completed Work Log)*
 
 ---
 
@@ -263,18 +239,9 @@ Add `Campaign` to the `EntityType` enum in `EntityType.cs`. Everything else (`En
 
 ---
 
-### F10 — Image Export/Import in `.dndx` Packages
+### F10 — Image Export/Import in `.dndx` Packages ✅
 
-**Dependency: F1 must be complete first.** Without a managed `imgs/` folder there is no reliable way to find image files during export.
-
-**Approach:** Embed images as base64 in the JSON. Each exported entity image becomes a record in `ExportPackage.Images`:
-- `EntityType`, `OldEntityId`, `Filename`, `Data` (base64 bytes)
-
-On import: decode base64 → write file to `imgs/<entity_type>/<new_entity_id>/<filename>` → insert `entity_images` row with remapped entity ID.
-
-**Files:** `ExportPackage.cs`, `ImportExportService.BuildPackage()`, `ImportExportService.ApplyPackage()`, `ImportExportModal.cs` (optional "Include Images" checkbox).
-
-**Alternative (deferred):** Package `.dndx` as a `.zip` containing `data.json` + `imgs/` folder. More efficient for large images but requires a zip library. Defer unless base64 file sizes become a problem.
+*(See Completed Work Log)*
 
 ---
 
@@ -382,20 +349,16 @@ These will reach existing campaigns automatically once F16 is wired in.
 
 ### Short-term
 1. **F16 — Call SeedDefaults on campaign load** — trivial wiring; ships the God/Worship seeds too.
-2. **F2 — Per-tab back/forward navigation** — builds on existing tab system; `TabHistory` helper + back/forward buttons.
+2. **F4 — NPC pane: Home Location field** — small addition, finish the partial work.
 
 ### Medium-term
-5. **F4 — NPC pane: Home Location field** — small addition, finish the partial work.
-6. **F1 — Standardize image save location** — prerequisite for F10.
-7. **F5 — Bulk type management screen** — convenience, not blocking anything.
-8. **F8 — Players section** — basic party overview.
+3. **F5 — Bulk type management screen** — convenience, not blocking anything.
+4. **F8 — Players section** — basic party overview.
 
 ### Planned / Larger scope
-9. **F9 — PC abilities / class features** — new table, greenfield.
-10. **F12 — Session redesign** — entity tagging, inline stub creation, wiki hover preview.
-11. **F10 — Image export/import** — requires F1.
-12. **F7 — Campaign cover image** — one enum entry; trivial but low priority.
-13. **U5 — Bullet point continuation** — nice to have; defer until session redesign work.
+5. **F9 — PC abilities / class features** — new table, greenfield.
+6. **F12 — Session redesign** — entity tagging, inline stub creation, wiki hover preview.
+7. **F7 — Campaign cover image** — one enum entry; trivial but low priority.
 
 ### Blocked / No decision
 - **F11 — NPC–Location relationship** — revisit later; design TBD.
@@ -423,7 +386,19 @@ These will reach existing campaigns automatically once F16 is wired in.
 | `Scenes/App.cs` | `_Input` override — release focus when clicking outside active control | U3 |
 | `NpcDetailPane.cs`, `ItemDetailPane.cs`, `QuestDetailPane.cs`, `FactionDetailPane.cs`, `LocationDetailPane.cs` | Add `AutoSelectOnAdd = true` before each type dropdown `Setup()` call | U4 |
 | `Scenes/Components/WikiNotes/WikiNotes.cs` | Add `HandleBulletContinuation()`; extend `OnInputKey` Enter handler; relax early-return guard | U5 |
-| `Scenes/Components/ImageCarousel/ImageCarousel.cs` | Copy image to managed path on add; store relative path | F1 |
+| `Core/DatabaseService.cs` | Added `ImgDir` property; `_Ready()` uses exe dir for exported builds; added `Disconnect()` method | F1 |
+| `Scenes/Components/ImageCarousel/ImageCarousel.cs` | `CopyToImgDir()` copies to `img/{campaignName}/` with GUID name; `DeleteCurrentImage()` removes file from disk; `Setup()` accepts `campaignId`; `_campaignId` field | F1 |
+| `Core/Models/EntityImageExport.cs` | **New** — `EntityImageExport` model for base64-embedded images in export packages | F10 |
+| `Core/Models/ExportPackage.cs` | Added `List<EntityImageExport> Images` | F10 |
+| `Core/ImportExportService.cs` | `BuildPackage()` gathers + base64-encodes images; `ApplyPackage()` Step 8 writes images, added `itemMap`/`questMap`; `SanitizeFolderName()` helper | F10 |
+| `Scenes/Modals/ImportExportModal/ImportExportModal.cs` | `_includeImagesCheckbox` field; Include Images row in `BuildSections()`; `sel.IncludeImages` in `GatherSelection()` | F10 |
+| `Scenes/Components/NavBar/NavBar.cs` | `OpenBackupDialog()` replaced with popup Window + Include Images checkbox; WAL-safe zip backup with `Disconnect()`/`Reconnect()`; `-wal`/`-shm` sidecars included; restore accepts `.zip` or `.db`; both modals use `PopupCenteredClamped` | F1, F10 |
+| All six detail panes | Pass `entity.CampaignId` as 4th arg to `_imageCarousel.Setup()` | F1 |
+| `Core/Repositories/EntityImageRepository.cs` | Added `UpdatePath(int id, string newPath)` | F1 |
+| `Core/DatabaseService.cs` | Added `MigrateLegacyImagePaths(campaignId)` + `SanitizeFolderName()` helper; `SqliteConnection.ClearAllPools()` in `Disconnect()` | F1 |
+| `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | `MigrateLegacyImagePaths` call moved to `_Ready()` (after `_db` is initialized); removed from `SetCampaign()` | F1 |
+| `Scenes/Components/ImageCarousel/ImageCarousel.cs` | `CopyToImgDir()` returns relative path; `ResolveToAbsolute()` instance method added; `Refresh()`, `DeleteCurrentImage()`, `OpenLightbox()` all use resolved paths | F1 |
+| `Core/ImportExportService.cs` | `ResolveToAbsolute(path, appDir)` static helper; `BuildPackage()` resolves before reading bytes; `ApplyPackage()` Step 8 stores relative path | F10 |
 | `Scenes/Components/TabHistory.cs` | **New** — `TabHistory` helper class | F2 |
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | Add history, back/forward buttons, `NavigateToInternal`, `_UnhandledInput`, `RefreshNavButtons()` | F2 |
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.tscn` | Add `←` / `→` buttons; wire exports | F2 |
@@ -515,6 +490,12 @@ All items below are done and require no further action unless noted.
 
 ### NPC Relationships (2026-03-22)
 - ✅ F15 — NPC–NPC relationship directionality. Relationships are now **one-directional and independent per NPC**: each NPC manages their own rows (`WHERE character_id = @cid` only). Jorge adds "Master of Harold" from his pane; Harold separately adds "Friend of Jorge" from his pane — two unrelated DB rows. Schema: migration guard adds `to_type_id` column (unused, kept for additive-only rule); `relationship_type_id` remains the single type field. `RemoveRelationship` deletes only the specific directional row. Display always reads `"{currentNpc}, {type} {otherNpc}"`. NPC picker filter checks `RelatedCharacterId` only (not both directions). `RelationshipTypeOptionButton` component was built then abandoned in favour of keeping the standard `TypeOptionButton`. `TypeOptionButton` hover-×-disappear bug fixed: `delBtn.MouseExited` now resets `Modulate` to transparent.
+
+### Image standardization + Backup/Restore + Export/Import images (2026-03-22)
+- ✅ F1 — Images now copied to a managed `img/{campaignName}/` folder next to the executable (editor builds use `OS.GetUserDataDir()`). GUID filenames prevent collisions. `CopyToImgDir()` in `ImageCarousel.cs` handles the copy; returns a **relative path** (`img/{campaign}/abc.png`) stored in DB. `ResolveToAbsolute()` in `ImageCarousel` converts relative → absolute at load time; legacy absolute paths pass through unchanged for backwards compatibility. Lightbox receives pre-resolved paths. `DatabaseService` exposes `ImgDir` property. Deleting an image from the carousel also deletes the file from disk if it lives inside `ImgDir`.
+- ✅ Legacy image path migration — `DatabaseService.MigrateLegacyImagePaths(campaignId)` runs on every campaign open (called from `CampaignDashboard._Ready()`). For each entity image with an absolute path: copies the file to `img/{campaignName}/` with a GUID name, updates the DB record to the new relative path. Missing files are skipped silently. Fully idempotent — no-ops on rows that are already relative. `EntityImageRepository.UpdatePath(id, newPath)` added to support this.
+- ✅ Backup with images — `NavBar.OpenBackupDialog()` replaced with a programmatic `Window` popup (mirrors Export flow). Includes an "Include Images" checkbox. Backup creates a `.zip` via `System.IO.Compression.ZipFile`: `campaign.db` + `-wal`/`-shm` sidecars (if present) + entire `img/` folder recursively (if opted in). Restore accepts `.zip` (extracts all entries preserving relative paths) or legacy `.db` (file copy). `File.Delete` before zip creation prevents `ZipArchiveMode.Create` from throwing on existing file. `SqliteConnection.ClearAllPools()` added to `Disconnect()` — required to flush the connection pool and release the file handle before backup or restore can access `campaign.db`. Without this, `CreateEntryFromFile` throws `IOException: file in use`.
+- ✅ F10 — Image export/import in `.dndx` packages. `EntityImageExport` model (`EntityType`, `OldEntityId`, `Extension`, `DataBase64`, `SortOrder`). `ExportPackage.Images` list. `BuildPackage()` resolves stored paths to absolute before reading bytes. `ApplyPackage()` writes decoded bytes to `img/{campaignName}/` and stores a relative path in DB. `itemMap` and `questMap` added to `ApplyPackage()` for complete entity coverage. `ImportExportModal` shows "Include Images" checkbox (export: always; import: only if package contains images, shows count). All detail panes updated to pass `campaignId` as 4th arg to `_imageCarousel.Setup()`.
 
 ### Session Related-Links Panel (2026-03-22)
 - ✅ F3 — Session related-links panel. `RefreshRelatedLinks()` parses all `[[...]]` links from session notes, deduplicates in order of first appearance, and builds a name→(type, id) lookup across all six entity types. Links are grouped into collapsible sections (▼/▶ toggle, showing count) in fixed type order: NPCs → Factions → Locations → Sessions → Items → Quests → Not Found. Resolved links render as flat gold buttons (`#d4aa70`) with pointing-hand cursor and emit `NavigateTo` on press. Unresolved links render as grey disabled buttons (arrow cursor). All buttons have `StyleBoxEmpty` padding stripped so height matches font size, with `TextOverrunBehavior.TrimEllipsis` overflow protection. Items are indented 24px under their section header via a `MarginContainer`. Panel is hidden when no links are present. Fires live on every `_notes.TextChanged`; skips rebuild if the set of link names is unchanged.

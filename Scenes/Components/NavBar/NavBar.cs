@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text.Json;
 using DndBuilder.Core;
 using DndBuilder.Core.Models;
@@ -46,8 +47,8 @@ public partial class NavBar : PanelContainer
         popup.SetItemChecked(popup.GetItemIndex(5), _db.Settings.Get("remember_tabs", "false") == "true");
         popup.AddSeparator();
         popup.AddItem("Appearance...",           4);
-        popup.SetItemTooltip(0, "Copy the entire database file to a location you choose. Backs up all campaigns and their data.");
-        popup.SetItemTooltip(1, "Replace the entire database with a previously backed-up file. Overwrites all current data.");
+        popup.SetItemTooltip(0, "Save a .zip containing the database and all images. Backs up all campaigns and their data.");
+        popup.SetItemTooltip(1, "Restore from a .zip backup (or legacy .db file). Overwrites all current data.");
         popup.SetItemTooltip(3, "Selectively export NPCs, Locations, Factions, Sessions, Items, and types from this campaign to a .dndx file.");
         popup.SetItemTooltip(4, "Import entities and types from a .dndx file into this campaign.");
         popup.IdPressed += OnMenuItemPressed;
@@ -203,29 +204,122 @@ public partial class NavBar : PanelContainer
 
     private void OpenBackupDialog()
     {
-        DisplayServer.FileDialogShow(
-            "Backup Database",
-            OS.GetSystemDir(OS.SystemDir.Documents),
-            "campaign_backup.db",
-            false,
-            DisplayServer.FileDialogMode.SaveFile,
-            new[] { "*.db ; SQLite Database" },
-            Callable.From((bool ok, string[] paths, long _) =>
-            {
-                if (ok && paths.Length > 0)
-                    File.Copy(_db.DbPath, paths[0], overwrite: true);
-            }));
+        var win = new Window
+        {
+            Title            = "Backup",
+            InitialPosition  = Window.WindowInitialPosition.CenterMainWindowScreen,
+            Unresizable      = true,
+            Transient        = true,
+            Exclusive        = true,
+        };
+
+        var vbox = new VBoxContainer();
+        vbox.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        vbox.AddThemeConstantOverride("separation", 8);
+
+        var margin = new MarginContainer();
+        margin.SizeFlagsVertical = SizeFlags.ExpandFill;
+        margin.AddThemeConstantOverride("margin_left",   12);
+        margin.AddThemeConstantOverride("margin_right",  12);
+        margin.AddThemeConstantOverride("margin_top",    12);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
+
+        var includeImages = new CheckBox { Text = "Include Images", ButtonPressed = true };
+        margin.AddChild(includeImages);
+        vbox.AddChild(margin);
+        vbox.AddChild(new HSeparator());
+
+        var footer = new HBoxContainer();
+        footer.AddThemeConstantOverride("separation", 8);
+        var footerMargin = new MarginContainer();
+        footerMargin.AddThemeConstantOverride("margin_left",   12);
+        footerMargin.AddThemeConstantOverride("margin_right",  12);
+        footerMargin.AddThemeConstantOverride("margin_bottom", 12);
+        var cancelBtn = new Button { Text = "Cancel", CustomMinimumSize = new Vector2(80, 0) };
+        var spacer    = new Control { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        var backupBtn = new Button { Text = "Backup", CustomMinimumSize = new Vector2(120, 0) };
+        footer.AddChild(cancelBtn);
+        footer.AddChild(spacer);
+        footer.AddChild(backupBtn);
+        footerMargin.AddChild(footer);
+        vbox.AddChild(footerMargin);
+
+        win.AddChild(vbox);
+        AddChild(win);
+        win.PopupCenteredClamped(new Vector2I(320, 120));
+
+        cancelBtn.Pressed    += () => win.QueueFree();
+        win.CloseRequested   += () => win.QueueFree();
+        backupBtn.Pressed    += () =>
+        {
+            bool withImages = includeImages.ButtonPressed;
+            win.QueueFree();
+            DisplayServer.FileDialogShow(
+                "Backup",
+                OS.GetSystemDir(OS.SystemDir.Documents),
+                "campaign_backup.zip",
+                false,
+                DisplayServer.FileDialogMode.SaveFile,
+                new[] { "*.zip ; Backup Archive" },
+                Callable.From((bool ok, string[] paths, long _) =>
+                {
+                    if (!ok || paths.Length == 0) return;
+                    string logPath = Path.Combine(Path.GetDirectoryName(_db.DbPath), "backup_debug.log");
+                    _db.Disconnect();
+                    try
+                    {
+                        var log = new System.Text.StringBuilder();
+                        log.AppendLine($"[{DateTime.Now}] Backup started");
+                        log.AppendLine($"  dest    = {paths[0]}");
+                        log.AppendLine($"  DbPath  = {_db.DbPath}  exists={File.Exists(_db.DbPath)}");
+                        log.AppendLine($"  ImgDir  = {_db.ImgDir}  exists={Directory.Exists(_db.ImgDir)}");
+
+                        if (File.Exists(paths[0])) File.Delete(paths[0]);
+                        log.AppendLine("  ZipFile.Open...");
+                        using var zip = ZipFile.Open(paths[0], ZipArchiveMode.Create);
+                        log.AppendLine("  Adding campaign.db...");
+                        zip.CreateEntryFromFile(_db.DbPath, "campaign.db");
+                        foreach (var ext in new[] { "-wal", "-shm" })
+                        {
+                            var sidecar = _db.DbPath + ext;
+                            if (File.Exists(sidecar))
+                                zip.CreateEntryFromFile(sidecar, "campaign.db" + ext);
+                        }
+                        if (withImages && Directory.Exists(_db.ImgDir))
+                        {
+                            foreach (var file in Directory.GetFiles(_db.ImgDir, "*", SearchOption.AllDirectories))
+                            {
+                                string entryName = "img/" + Path.GetRelativePath(_db.ImgDir, file).Replace('\\', '/');
+                                log.AppendLine($"  Adding {entryName}...");
+                                zip.CreateEntryFromFile(file, entryName);
+                            }
+                        }
+                        log.AppendLine("  Done.");
+                        File.WriteAllText(logPath, log.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        string msg = $"[{DateTime.Now}] FAILED: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}";
+                        File.WriteAllText(logPath, msg);
+                        OS.Alert($"Backup failed:\n{ex.Message}", "Backup Error");
+                    }
+                    finally
+                    {
+                        _db.Reconnect();
+                    }
+                }));
+        };
     }
 
     private void OpenRestoreDialog()
     {
         DisplayServer.FileDialogShow(
-            "Restore Database",
+            "Restore",
             OS.GetSystemDir(OS.SystemDir.Documents),
             "",
             false,
             DisplayServer.FileDialogMode.OpenFile,
-            new[] { "*.db ; SQLite Database" },
+            new[] { "*.zip,*.db ; Backup Files" },
             Callable.From((bool ok, string[] paths, long _) =>
             {
                 if (!ok || paths.Length == 0) return;
@@ -237,8 +331,30 @@ public partial class NavBar : PanelContainer
     private void DoRestore()
     {
         if (string.IsNullOrEmpty(_pendingRestorePath)) return;
-        File.Copy(_pendingRestorePath, _db.DbPath, overwrite: true);
-        _db.Reconnect();
+        string appDir = Path.GetDirectoryName(_db.DbPath);
+
+        if (Path.GetExtension(_pendingRestorePath).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            _db.Disconnect();
+            using (var zip = ZipFile.OpenRead(_pendingRestorePath))
+            {
+                foreach (var entry in zip.Entries)
+                {
+                    if (string.IsNullOrEmpty(entry.Name)) continue; // directory entry
+                    string dest = Path.Combine(appDir, entry.FullName.Replace('/', Path.DirectorySeparatorChar));
+                    Directory.CreateDirectory(Path.GetDirectoryName(dest));
+                    entry.ExtractToFile(dest, overwrite: true);
+                }
+            }
+            _db.Reconnect();
+        }
+        else
+        {
+            // Legacy .db restore
+            File.Copy(_pendingRestorePath, _db.DbPath, overwrite: true);
+            _db.Reconnect();
+        }
+
         EmitSignal(SignalName.DatabaseRestored);
         _pendingRestorePath = "";
     }
@@ -266,7 +382,7 @@ public partial class NavBar : PanelContainer
                         WriteExportFile(paths[0], sel);
                 }));
         };
-        modal.PopupCentered();
+        modal.PopupCenteredClamped(new Vector2I(480, 300), 0.85f);
     }
 
     private void OpenImportCampaignDialog()
@@ -310,6 +426,6 @@ public partial class NavBar : PanelContainer
             ImportExportService.ApplyPackage(_campaignId.Value, pkg, sel, _db);
             EmitSignal(SignalName.CampaignDataImported);
         };
-        modal.PopupCentered();
+        modal.PopupCenteredClamped(new Vector2I(480, 300), 0.85f);
     }
 }

@@ -126,7 +126,7 @@ public partial class LocationDetailPane : ScrollContainer
             id   => _db.LocationFactionRoles.Delete(id));
         _roleSelect.SelectById(null);
 
-        _imageCarousel?.Setup(EntityType.Location, location.Id, _db);
+        _imageCarousel?.Setup(EntityType.Location, location.Id, _db, location.CampaignId);
 
         _parentLocationSelect.NoneText          = "No parent (top-level)";
         _parentLocationSelect.AutoSelectOnAdd   = true;

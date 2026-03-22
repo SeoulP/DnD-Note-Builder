@@ -122,7 +122,7 @@ public partial class NpcDetailPane : ScrollContainer
             id   => _db.NpcFactionRoles.Delete(id));
         _roleSelect.SelectById(null);
 
-        _imageCarousel?.Setup(EntityType.Npc, npc.Id, _db);
+        _imageCarousel?.Setup(EntityType.Npc, npc.Id, _db, npc.CampaignId);
 
         _nameInput.Text       = string.IsNullOrEmpty(npc.Name) ? "New NPC" : npc.Name;
         _occupationInput.Text = npc.Occupation;

@@ -78,7 +78,7 @@ public partial class QuestDetailPane : ScrollContainer
             null, null);
         _locationInput.SelectById(quest.LocationId);
 
-        _imageCarousel?.Setup(EntityType.Quest, quest.Id, _db);
+        _imageCarousel?.Setup(EntityType.Quest, quest.Id, _db, quest.CampaignId);
 
         _nameInput.Text  = string.IsNullOrEmpty(quest.Name) ? "New Quest" : quest.Name;
         _rewardInput.Text = quest.Reward;

@@ -24,6 +24,7 @@ public partial class ImportExportModal : Window
 
     // Checkbox bookkeeping for cascade logic
     private CheckBox                           _selectAllCheckbox;
+    private CheckBox                           _includeImagesCheckbox;
     private readonly List<SectionState>        _sections = new();
     private bool                               _updating;
 
@@ -71,6 +72,18 @@ public partial class ImportExportModal : Window
         _selectAllCheckbox.Toggled += OnSelectAllToggled;
         _sectionsContainer.AddChild(_selectAllCheckbox);
         _sectionsContainer.AddChild(new HSeparator());
+
+        // Include Images checkbox — export: always shown; import: only if package has images
+        bool showImages = _mode == Mode.Export || (_importPackage?.Images.Count > 0);
+        if (showImages)
+        {
+            string label = _mode == Mode.Export
+                ? "Include Images"
+                : $"Include Images ({_importPackage.Images.Count})";
+            _includeImagesCheckbox = new CheckBox { Text = label, ButtonPressed = true };
+            _sectionsContainer.AddChild(_includeImagesCheckbox);
+            _sectionsContainer.AddChild(new HSeparator());
+        }
 
         // Types section
         BuildTypesSection();
@@ -256,6 +269,7 @@ public partial class ImportExportModal : Window
             }
         }
 
+        sel.IncludeImages = _includeImagesCheckbox?.ButtonPressed ?? false;
         return sel;
     }
 

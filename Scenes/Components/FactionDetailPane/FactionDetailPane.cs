@@ -76,7 +76,7 @@ public partial class FactionDetailPane : ScrollContainer
     {
         _faction = faction;
 
-        _imageCarousel?.Setup(EntityType.Faction, faction.Id, _db);
+        _imageCarousel?.Setup(EntityType.Faction, faction.Id, _db, faction.CampaignId);
 
         _nameInput.Text = string.IsNullOrEmpty(faction.Name) ? "New Faction" : faction.Name;
         _typeInput.Text = faction.Type;

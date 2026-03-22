@@ -56,7 +56,7 @@ public partial class ItemDetailPane : ScrollContainer
             id   => _db.ItemTypes.Delete(id));
         _typeInput.SelectById(item.TypeId);
 
-        _imageCarousel?.Setup(EntityType.Item, item.Id, _db);
+        _imageCarousel?.Setup(EntityType.Item, item.Id, _db, item.CampaignId);
 
         _nameInput.Text              = string.IsNullOrEmpty(item.Name) ? "New Item" : item.Name;
         _isUniqueInput.ButtonPressed = item.IsUnique;

@@ -1,0 +1,9 @@
+[3/22/2026 3:32:07 PM] FAILED: IOException: The process cannot access the file 'C:\Users\Seoul\Desktop\Game Development\Exported Games\DnD Builder\campaign.db' because it is being used by another process.
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, Boolean useAsync)
+   at System.IO.Compression.ZipFileExtensions.DoCreateEntryFromFile(ZipArchive destination, String sourceFileName, String entryName, Nullable`1 compressionLevel)
+   at System.IO.Compression.ZipFileExtensions.CreateEntryFromFile(ZipArchive destination, String sourceFileName, String entryName)
+   at NavBar.<>c__DisplayClass17_1.<OpenBackupDialog>b__3(Boolean ok, String[] paths, Int64 _) in C:\Users\Seoul\Desktop\Game Development\WIP Games\Godot\dnd-builder\Scenes\Components\NavBar\NavBar.cs:line 281

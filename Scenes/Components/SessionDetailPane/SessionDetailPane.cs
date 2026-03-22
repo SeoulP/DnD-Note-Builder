@@ -61,7 +61,7 @@ public partial class SessionDetailPane : ScrollContainer
     {
         _session = session;
 
-        _imageCarousel?.Setup(EntityType.Session, session.Id, _db);
+        _imageCarousel?.Setup(EntityType.Session, session.Id, _db, session.CampaignId);
 
         _numberLabel.Text   = $"Session #{session.Number:D3}";
         _titleInput.Text    = string.IsNullOrEmpty(session.Title) ? "New Session" : session.Title;

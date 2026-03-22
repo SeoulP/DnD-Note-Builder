@@ -28,10 +28,16 @@ public partial class DatabaseService : Node
     public SettingsRepository             Settings              { get; private set; }
 
     public string DbPath { get; private set; }
+    public string ImgDir { get; private set; }
 
     public override void _Ready()
     {
-        DbPath = OS.GetUserDataDir() + "/campaign.db";
+        string appDir = OS.HasFeature("editor")
+            ? OS.GetUserDataDir()
+            : System.IO.Path.GetDirectoryName(OS.GetExecutablePath());
+        DbPath = System.IO.Path.Combine(appDir, "campaign.db");
+        ImgDir = System.IO.Path.Combine(appDir, "img");
+        System.IO.Directory.CreateDirectory(ImgDir);
         InitConnection();
     }
 
@@ -39,6 +45,13 @@ public partial class DatabaseService : Node
     {
         _conn?.Close();
         InitConnection();
+    }
+
+    public void Disconnect()
+    {
+        _conn?.Close();
+        SqliteConnection.ClearAllPools(); // flush connection pool so the file lock is actually released
+        _conn = null;
     }
 
     private void InitConnection()
@@ -129,6 +142,60 @@ public partial class DatabaseService : Node
 
         foreach (var (id, path) in rows)
             EntityImages.MigrateLegacyPortrait(EntityType.Npc, id, path);
+    }
+
+    /// <summary>
+    /// On campaign open: copies any legacy absolute-path images into the managed
+    /// img/{campaignName}/ folder and updates the DB to relative paths.
+    /// Idempotent — skips rows that are already relative.
+    /// </summary>
+    public void MigrateLegacyImagePaths(int campaignId)
+    {
+        string appDir     = System.IO.Path.GetDirectoryName(DbPath);
+        var    campaign   = Campaigns.Get(campaignId);
+        string subDir     = campaign != null
+            ? System.IO.Path.Combine(ImgDir, SanitizeFolderName(campaign.Name))
+            : ImgDir;
+
+        var entityGroups = new System.Collections.Generic.Dictionary<DndBuilder.Core.Models.EntityType, System.Collections.Generic.IEnumerable<int>>
+        {
+            [DndBuilder.Core.Models.EntityType.Faction]  = Factions .GetAll(campaignId).ConvertAll(f => f.Id),
+            [DndBuilder.Core.Models.EntityType.Npc]      = Npcs     .GetAll(campaignId).ConvertAll(n => n.Id),
+            [DndBuilder.Core.Models.EntityType.Location] = Locations.GetAll(campaignId).ConvertAll(l => l.Id),
+            [DndBuilder.Core.Models.EntityType.Session]  = Sessions .GetAll(campaignId).ConvertAll(s => s.Id),
+            [DndBuilder.Core.Models.EntityType.Item]     = Items    .GetAll(campaignId).ConvertAll(i => i.Id),
+            [DndBuilder.Core.Models.EntityType.Quest]    = Quests   .GetAll(campaignId).ConvertAll(q => q.Id),
+        };
+
+        foreach (var (entityType, ids) in entityGroups)
+        {
+            foreach (var entityId in ids)
+            {
+                foreach (var img in EntityImages.GetAll(entityType, entityId))
+                {
+                    if (!System.IO.Path.IsPathRooted(img.Path)) continue; // already relative
+                    if (!System.IO.File.Exists(img.Path)) continue;       // file missing — skip silently
+
+                    System.IO.Directory.CreateDirectory(subDir);
+                    string ext     = System.IO.Path.GetExtension(img.Path);
+                    string dest    = System.IO.Path.Combine(subDir, System.Guid.NewGuid().ToString("N") + ext);
+                    System.IO.File.Copy(img.Path, dest, overwrite: false);
+
+                    string relPath = System.IO.Path.GetRelativePath(appDir, dest).Replace('\\', '/');
+                    EntityImages.UpdatePath(img.Id, relPath);
+                }
+            }
+        }
+    }
+
+    private static string SanitizeFolderName(string name)
+    {
+        var invalid = System.IO.Path.GetInvalidFileNameChars();
+        var chars   = name.ToCharArray();
+        for (int i = 0; i < chars.Length; i++)
+            if (System.Array.IndexOf(invalid, chars[i]) >= 0)
+                chars[i] = '_';
+        return new string(chars).Trim();
     }
 
     public override void _ExitTree()
