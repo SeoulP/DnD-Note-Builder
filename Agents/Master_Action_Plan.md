@@ -37,7 +37,7 @@
 | U5 | WikiNotes — bullet point continuation on Enter | UX | Low | ✅ |
 | F1 | Standardize image save location to `imgs/` folder | Feature | High | ⬜ |
 | F2 | Per-tab back/forward navigation | Feature | Medium | ✅ |
-| F3 | Session related-links panel (wiki panel, third column) | Feature | Medium | ⬜ |
+| F3 | Session related-links panel (wiki panel, third column) | Feature | Medium | ✅ |
 | F4 | NPC detail pane — full field audit (HomeLocationId, FirstSeenSession, Personality) | Feature | Medium | 🔶 |
 | F5 | Campaign Settings screen — manage seeded types | Feature | Medium | ⬜ |
 | F6 | Nested locations in sidebar | Feature | Low | ✅ |
@@ -181,43 +181,9 @@ public override void _UnhandledInput(InputEvent e)
 
 ---
 
-### F3 — Session Related-Links Panel
+### F3 — Session Related-Links Panel ✅
 
-In `session_detail_pane.tscn`, the `CarouselColumn` (`VBoxContainer`) on the right is the wiki panel. Below the `ImageCarousel`, add a `RelatedLinksContainer` (`VBoxContainer`) that displays all `[[WikiLink]]` names found in the session notes as clickable navigation buttons.
-
-**`SessionDetailPane.cs` — add:**
-```csharp
-private List<(string Name, string EntityType, int EntityId)> ParseSessionLinks()
-{
-    var results = new List<(string, string, int)>();
-    if (_session == null || _db == null) return results;
-    var lookup = BuildReverseLookup(_session.CampaignId);
-    var matches = Regex.Matches(_session.Notes ?? "", @"\[\[([^\]]+)\]\]");
-    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-    foreach (Match m in matches)
-    {
-        string name = m.Groups[1].Value;
-        if (!seen.Add(name)) continue;
-        if (lookup.TryGetValue(name.ToLowerInvariant(), out var entry))
-            results.Add((name, entry.EntityType, entry.EntityId));
-    }
-    return results;
-}
-
-private Dictionary<string, (string EntityType, int EntityId)> BuildReverseLookup(int campaignId)
-{
-    var d = new Dictionary<string, (string, int)>();
-    foreach (var x in _db.Npcs.GetAll(campaignId))      d[x.Name.ToLowerInvariant()]  = ("npc",      x.Id);
-    foreach (var x in _db.Factions.GetAll(campaignId))  d[x.Name.ToLowerInvariant()]  = ("faction",  x.Id);
-    foreach (var x in _db.Locations.GetAll(campaignId)) d[x.Name.ToLowerInvariant()]  = ("location", x.Id);
-    foreach (var x in _db.Sessions.GetAll(campaignId))  d[x.Title.ToLowerInvariant()] = ("session",  x.Id);
-    return d;
-}
-```
-
-Call `RefreshRelatedLinks()` at end of `Load()` and on `_notes.TextChanged`.
-
-**`session_detail_pane.tscn`:** Add `RelatedLinksContainer` VBoxContainer under `CarouselColumn`, after `ImageCarousel`. Remove or reposition `CarouselSpacer`. Wire export.
+*(See Completed Work Log)*
 
 ---
 
@@ -416,9 +382,7 @@ These will reach existing campaigns automatically once F16 is wired in.
 
 ### Short-term
 1. **F16 — Call SeedDefaults on campaign load** — trivial wiring; ships the God/Worship seeds too.
-2. **F15 — NPC relationship directionality** — new component + two additive migrations; design settled. Do before more relationships are entered.
-3. **F3 — Session related-links panel** — no schema changes.
-4. **F2 — Per-tab back/forward navigation** — builds on existing tab system; `TabHistory` helper + back/forward buttons.
+2. **F2 — Per-tab back/forward navigation** — builds on existing tab system; `TabHistory` helper + back/forward buttons.
 
 ### Medium-term
 5. **F4 — NPC pane: Home Location field** — small addition, finish the partial work.
@@ -463,8 +427,8 @@ These will reach existing campaigns automatically once F16 is wired in.
 | `Scenes/Components/TabHistory.cs` | **New** — `TabHistory` helper class | F2 |
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.cs` | Add history, back/forward buttons, `NavigateToInternal`, `_UnhandledInput`, `RefreshNavButtons()` | F2 |
 | `Scenes/Panels/CampaignDashboard/CampaignDashboard.tscn` | Add `←` / `→` buttons; wire exports | F2 |
-| `Scenes/Components/SessionDetailPane/SessionDetailPane.cs` | Add `ParseSessionLinks()`, `BuildReverseLookup()`, `RefreshRelatedLinks()`; update `_notes.TextChanged` | F3 |
-| `Scenes/Components/SessionDetailPane/session_detail_pane.tscn` | Add `RelatedLinksContainer` under `CarouselColumn`; remove/reposition `CarouselSpacer` | F3 |
+| `Scenes/Components/SessionDetailPane/SessionDetailPane.cs` | Add `RefreshRelatedLinks()`, `BuildLinkSection()`, `StripButtonPadding()`; update `_notes.TextChanged` | F3 |
+| `Scenes/Components/SessionDetailPane/session_detail_pane.tscn` | Add `RelatedLinks` VBoxContainer under `CarouselColumn` between `ImageCarousel` and `CarouselSpacer`; wire `_relatedLinksContainer` export | F3 |
 | `Scenes/Components/NpcDetailPane/NpcDetailPane.cs` + `.tscn` | Add HomeLocationId, FirstSeenSession, verify Personality | F4 |
 | `Core/Repositories/*RelationshipTypeRepository.cs` et al. | Add check-and-insert on campaign load for new seeds | F16 |
 | `Scenes/Components/WikiNotes/WikiNotes.cs` | Add Items + Quests to `GetEntityMatches()`; add `EntityCreated` signal; add `DetectStubTrigger()`, `OpenStubModal()`, `CreateStub()`; extend `CheckAutocomplete()` | F17, F18 |
@@ -551,6 +515,9 @@ All items below are done and require no further action unless noted.
 
 ### NPC Relationships (2026-03-22)
 - ✅ F15 — NPC–NPC relationship directionality. Relationships are now **one-directional and independent per NPC**: each NPC manages their own rows (`WHERE character_id = @cid` only). Jorge adds "Master of Harold" from his pane; Harold separately adds "Friend of Jorge" from his pane — two unrelated DB rows. Schema: migration guard adds `to_type_id` column (unused, kept for additive-only rule); `relationship_type_id` remains the single type field. `RemoveRelationship` deletes only the specific directional row. Display always reads `"{currentNpc}, {type} {otherNpc}"`. NPC picker filter checks `RelatedCharacterId` only (not both directions). `RelationshipTypeOptionButton` component was built then abandoned in favour of keeping the standard `TypeOptionButton`. `TypeOptionButton` hover-×-disappear bug fixed: `delBtn.MouseExited` now resets `Modulate` to transparent.
+
+### Session Related-Links Panel (2026-03-22)
+- ✅ F3 — Session related-links panel. `RefreshRelatedLinks()` parses all `[[...]]` links from session notes, deduplicates in order of first appearance, and builds a name→(type, id) lookup across all six entity types. Links are grouped into collapsible sections (▼/▶ toggle, showing count) in fixed type order: NPCs → Factions → Locations → Sessions → Items → Quests → Not Found. Resolved links render as flat gold buttons (`#d4aa70`) with pointing-hand cursor and emit `NavigateTo` on press. Unresolved links render as grey disabled buttons (arrow cursor). All buttons have `StyleBoxEmpty` padding stripped so height matches font size, with `TextOverrunBehavior.TrimEllipsis` overflow protection. Items are indented 24px under their section header via a `MarginContainer`. Panel is hidden when no links are present. Fires live on every `_notes.TextChanged`; skips rebuild if the set of link names is unchanged.
 
 ### UX Polish (2026-03-22)
 - ✅ U5 — WikiNotes bullet continuation: `- ` prefix on a line auto-continues on Enter (new `- ` line inserted). Enter on an empty `- ` body removes the prefix. `OnInputKey` early-return guard relaxed — `HandleBulletContinuation()` now fires when autocomplete is not visible; autocomplete-only keys (Escape, Up, Down, Tab) guard themselves individually.
