@@ -39,6 +39,14 @@ namespace DndBuilder.Core
         public bool        AllQuests    { get; set; }
         public HashSet<int> QuestIds    { get; set; } = new();
 
+        // System entities
+        public bool        AllClasses     { get; set; }
+        public HashSet<int> ClassIds      { get; set; } = new();
+        public bool        AllSubclasses  { get; set; }
+        public HashSet<int> SubclassIds   { get; set; } = new();
+        public bool        AllSubspecies  { get; set; }
+        public HashSet<int> SubspeciesIds { get; set; } = new();
+
         public bool IncludeImages { get; set; } = true;
     }
 
@@ -101,16 +109,40 @@ namespace DndBuilder.Core
                 pkg.Quests = sel.AllQuests ? all : all.Where(q => sel.QuestIds.Contains(q.Id)).ToList();
             }
 
+            // ── System entities ───────────────────────────────────────────────
+            if (sel.AllClasses || sel.ClassIds.Count > 0)
+            {
+                var all = db.Classes.GetAll(campaignId);
+                pkg.Classes = sel.AllClasses ? all : all.Where(c => sel.ClassIds.Contains(c.Id)).ToList();
+                foreach (var c in pkg.Classes) c.Subclasses = new List<Models.Subclass>(); // export flat
+            }
+
+            if (sel.AllSubclasses || sel.SubclassIds.Count > 0)
+            {
+                var all = db.Classes.GetAllSubclasses(campaignId);
+                pkg.Subclasses = sel.AllSubclasses ? all : all.Where(s => sel.SubclassIds.Contains(s.Id)).ToList();
+            }
+
+            if (sel.AllSubspecies || sel.SubspeciesIds.Count > 0)
+            {
+                var all = db.Subspecies.GetAll(campaignId);
+                pkg.Subspecies = sel.AllSubspecies ? all : all.Where(s => sel.SubspeciesIds.Contains(s.Id)).ToList();
+            }
+
             // ── Images: gather for all exported entities ──────────────────────
             if (!sel.IncludeImages) return pkg;
             var exportedIds = new Dictionary<EntityType, IEnumerable<int>>
             {
-                [EntityType.Faction]  = pkg.Factions .Select(f => f.Id),
-                [EntityType.Npc]      = pkg.Npcs     .Select(n => n.Id),
-                [EntityType.Location] = pkg.Locations.Select(l => l.Id),
-                [EntityType.Session]  = pkg.Sessions .Select(s => s.Id),
-                [EntityType.Item]     = pkg.Items    .Select(i => i.Id),
-                [EntityType.Quest]    = pkg.Quests   .Select(q => q.Id),
+                [EntityType.Faction]    = pkg.Factions  .Select(f => f.Id),
+                [EntityType.Npc]        = pkg.Npcs      .Select(n => n.Id),
+                [EntityType.Location]   = pkg.Locations .Select(l => l.Id),
+                [EntityType.Session]    = pkg.Sessions  .Select(s => s.Id),
+                [EntityType.Item]       = pkg.Items     .Select(i => i.Id),
+                [EntityType.Quest]      = pkg.Quests    .Select(q => q.Id),
+                [EntityType.Class]      = pkg.Classes   .Select(c => c.Id),
+                [EntityType.Subclass]   = pkg.Subclasses.Select(s => s.Id),
+                [EntityType.Species]    = pkg.Species   .Select(s => s.Id),
+                [EntityType.Subspecies] = pkg.Subspecies.Select(s => s.Id),
             };
             string appDir = Path.GetDirectoryName(db.DbPath);
             foreach (var (entityType, ids) in exportedIds)
@@ -155,6 +187,67 @@ namespace DndBuilder.Core
             var facRelTypeMap = ImportTypes(pkg.FactionRelationshipTypes,  sel.AllTypes || sel.FactionRelationshipTypes,   campaignId, db.FactionRelationshipTypes.GetAll(campaignId),  (t, cid) => db.FactionRelationshipTypes.Add(new FactionRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var itemTypeMap      = ImportTypes(pkg.ItemTypes,      sel.AllTypes || sel.ItemTypes,      campaignId, db.ItemTypes.GetAll(campaignId),      (t, cid) => db.ItemTypes.Add(new ItemType           { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var questStatusMap   = ImportTypes(pkg.QuestStatuses,  sel.AllTypes || sel.QuestStatuses,  campaignId, db.QuestStatuses.GetAll(campaignId),  (t, cid) => db.QuestStatuses.Add(new QuestStatus   { CampaignId = cid, Name = t.Name, Description = t.Description }));
+
+            // ── Step 1b: classes ──────────────────────────────────────────────
+            var classMap = new Dictionary<int, int>();
+            foreach (var cls in GetEntities(pkg.Classes, sel.AllClasses, sel.ClassIds))
+            {
+                // Check if a class with this name already exists in the campaign
+                var existing = db.Classes.GetAll(campaignId).FirstOrDefault(c => c.Name == cls.Name);
+                if (existing != null)
+                    classMap[cls.Id] = existing.Id;
+                else
+                    classMap[cls.Id] = db.Classes.Add(new Models.Class
+                    {
+                        CampaignId          = campaignId,
+                        Name                = cls.Name,
+                        Description         = cls.Description,
+                        Notes               = cls.Notes,
+                        SortOrder           = cls.SortOrder,
+                        SubclassUnlockLevel = cls.SubclassUnlockLevel,
+                    });
+            }
+
+            // ── Step 1c: subclasses ───────────────────────────────────────────
+            var subclassMap = new Dictionary<int, int>();
+            foreach (var sub in GetEntities(pkg.Subclasses, sel.AllSubclasses, sel.SubclassIds))
+            {
+                if (!classMap.TryGetValue(sub.ClassId, out var newClassId)) continue; // orphan — skip
+                var existingSubs = db.Classes.GetSubclassesForClass(newClassId);
+                var existingSub  = existingSubs.FirstOrDefault(s => s.Name == sub.Name);
+                if (existingSub != null)
+                    subclassMap[sub.Id] = existingSub.Id;
+                else
+                    subclassMap[sub.Id] = db.Classes.AddSubclass(new Models.Subclass
+                    {
+                        CampaignId  = campaignId,
+                        ClassId     = newClassId,
+                        Name        = sub.Name,
+                        Description = sub.Description,
+                        Notes       = sub.Notes,
+                        SortOrder   = sub.SortOrder,
+                    });
+            }
+
+            // ── Step 1d: subspecies ───────────────────────────────────────────
+            var subspeciesMap = new Dictionary<int, int>();
+            foreach (var ssub in GetEntities(pkg.Subspecies, sel.AllSubspecies, sel.SubspeciesIds))
+            {
+                if (!speciesMap.TryGetValue(ssub.SpeciesId, out var newSpeciesId)) continue; // orphan — skip
+                var existingSsubs = db.Subspecies.GetAllForSpecies(newSpeciesId);
+                var existingSsub  = existingSsubs.FirstOrDefault(s => s.Name == ssub.Name);
+                if (existingSsub != null)
+                    subspeciesMap[ssub.Id] = existingSsub.Id;
+                else
+                    subspeciesMap[ssub.Id] = db.Subspecies.Add(new Models.Subspecies
+                    {
+                        CampaignId  = campaignId,
+                        SpeciesId   = newSpeciesId,
+                        Name        = ssub.Name,
+                        Description = ssub.Description,
+                        Notes       = ssub.Notes,
+                    });
+            }
 
             // ── Step 2: factions (no FK dependencies on other entities) ───────
             var factionMap = new Dictionary<int, int>();
@@ -320,12 +413,16 @@ namespace DndBuilder.Core
             {
                 var entityMaps = new Dictionary<EntityType, Dictionary<int, int>>
                 {
-                    [EntityType.Faction]  = factionMap,
-                    [EntityType.Location] = locationMap,
-                    [EntityType.Session]  = sessionMap,
-                    [EntityType.Npc]      = npcMap,
-                    [EntityType.Item]     = itemMap,
-                    [EntityType.Quest]    = questMap,
+                    [EntityType.Faction]    = factionMap,
+                    [EntityType.Location]   = locationMap,
+                    [EntityType.Session]    = sessionMap,
+                    [EntityType.Npc]        = npcMap,
+                    [EntityType.Item]       = itemMap,
+                    [EntityType.Quest]      = questMap,
+                    [EntityType.Class]      = classMap,
+                    [EntityType.Subclass]   = subclassMap,
+                    [EntityType.Subspecies] = subspeciesMap,
+                    [EntityType.Species]    = speciesMap,
                 };
 
                 string imgAppDir = Path.GetDirectoryName(db.DbPath);

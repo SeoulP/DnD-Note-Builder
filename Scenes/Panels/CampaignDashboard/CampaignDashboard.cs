@@ -9,8 +9,15 @@ public partial class CampaignDashboard : Control
 {
     private int             _campaignId;
     private DatabaseService _db;
+    private string          _currentPanel       = "notes";
     private HashSet<int>    _collapsedLocations = new();
+    private HashSet<int>    _collapsedClasses   = new();
+    private HashSet<int>    _collapsedSpecies   = new();
+    private bool            _classesFirstLoad   = true;
+    private bool            _speciesFirstLoad   = true;
+    private SystemVocabulary _vocab              = SystemVocabulary.Default;
 
+    [Export] private Button _addPartyButton;
     [Export] private Button _addNpcsButton;
     [Export] private Button _addFactionButton;
     [Export] private Button _addLocationsButton;
@@ -18,12 +25,23 @@ public partial class CampaignDashboard : Control
     [Export] private Button _addItemsButton;
     [Export] private Button _addQuestsButton;
 
+    [Export] private VBoxContainer _partyContainer;
     [Export] private VBoxContainer _npcsContainer;
     [Export] private VBoxContainer _factionsContainer;
     [Export] private VBoxContainer _locationsContainer;
     [Export] private VBoxContainer _sessionsContainer;
     [Export] private VBoxContainer _itemsContainer;
     [Export] private VBoxContainer _questsContainer;
+
+    [Export] private Control _notesSidebar;
+    [Export] private Control _systemSidebar;
+
+    [Export] private Button        _addClassesButton;
+    [Export] private Button        _addSpeciesButton;
+    [Export] private Button        _addAbilitiesButton;
+    [Export] private VBoxContainer _classesContainer;
+    [Export] private VBoxContainer _speciesContainer;
+    [Export] private VBoxContainer _abilitiesContainer;
 
     [Export] private Control         _detailPanel;
     [Export] private Control         _paneContainer;
@@ -52,11 +70,23 @@ public partial class CampaignDashboard : Control
     [Export] private PackedScene _sessionDetailPaneScene;
     [Export] private PackedScene _itemDetailPaneScene;
     [Export] private PackedScene _questDetailPaneScene;
+    [Export] private PackedScene _abilityDetailPaneScene;
+    [Export] private PackedScene _classDetailPaneScene;
+    [Export] private PackedScene _subclassDetailPaneScene;
+    [Export] private PackedScene _speciesDetailPaneScene;
+    [Export] private PackedScene _subspeciesDetailPaneScene;
+    [Export] private PackedScene _playerCharacterDetailPaneScene;
+
+    [Signal] public delegate void SidebarPanelChangedEventHandler(string panel);
+
+    private static bool IsSystemEntity(string et) =>
+        et is "class" or "subclass" or "species" or "subspecies" or "ability";
 
     private sealed class TabEntry
     {
         public string       EntityType = "";
         public int          EntityId;
+        public string       Panel      = "notes"; // "notes" or "system"
         public string       Label      = "";
         public bool         IsPinned;
         public Control      Pane;
@@ -100,8 +130,17 @@ public partial class CampaignDashboard : Control
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
+        if (_campaignId > 0)
+            _vocab = SystemVocabulary.For(_db.Campaigns.Get(_campaignId)?.System);
         ApplySidebarWidth();
 
+        _addPartyButton.Pressed += () =>
+        {
+            var pc = new PlayerCharacter { CampaignId = _campaignId, Name = "New Character" };
+            int id = _db.PlayerCharacters.Add(pc);
+            LoadParty();
+            ShowDetailPane("playercharacter", id);
+        };
         _addNpcsButton.Pressed += () =>
         {
             var npc = new Npc { CampaignId = _campaignId, Name = "New NPC" };
@@ -147,6 +186,28 @@ public partial class CampaignDashboard : Control
             ShowDetailPane("quest", id);
         };
 
+        _addClassesButton.Pressed += () =>
+        {
+            var cls = new Class { CampaignId = _campaignId, Name = $"New {_vocab.Class}" };
+            int id = _db.Classes.Add(cls);
+            LoadClasses();
+            ShowDetailPane("class", id);
+        };
+        _addSpeciesButton.Pressed += () =>
+        {
+            var species = new Species { CampaignId = _campaignId, Name = $"New {_vocab.Species}" };
+            int id = _db.Species.Add(species);
+            LoadSpecies();
+            ShowDetailPane("species", id);
+        };
+        _addAbilitiesButton.Pressed += () =>
+        {
+            var ability = new Ability { CampaignId = _campaignId, Name = $"New {_vocab.Ability}" };
+            int id = _db.Abilities.Add(ability);
+            LoadAbilities();
+            ShowDetailPane("ability", id);
+        };
+
         if (_backButton != null && _forwardButton != null)
             InitNavButtonStyles();
 
@@ -172,6 +233,7 @@ public partial class CampaignDashboard : Control
         _addTabWidget = BuildAddTabWidget();
         ThemeManager.Instance.ThemeChanged += OnTabThemeChanged;
 
+        StyleAddButton(_addPartyButton,     PartyColor);
         StyleAddButton(_addNpcsButton,      NpcColor);
         StyleAddButton(_addFactionButton,   FactionColor);
         StyleAddButton(_addLocationsButton, LocationColor);
@@ -179,14 +241,25 @@ public partial class CampaignDashboard : Control
         StyleAddButton(_addItemsButton,     ItemColor);
         StyleAddButton(_addQuestsButton,    QuestColor);
 
-        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NpcsPanel"),                  NpcColor);
-        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/FactionsPanel"),              FactionColor);
-        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), LocationColor);
-        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              SessionColor);
-        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/ItemsPanel"),                 ItemColor);
-        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/QuestsPanel"),                QuestColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/PartyPanel"),                 PartyColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/NpcsPanel"),                  NpcColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/FactionsPanel"),              FactionColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/LocationsFoldableContainer"), LocationColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/SessionsPanel"),              SessionColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/ItemsPanel"),                 ItemColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/QuestsPanel"),                QuestColor);
 
-        GetNode<LineEdit>("ScrollContainer/VBoxContainer/SearchInput").TextChanged += FilterSidebar;
+        StyleAddButton(_addClassesButton,   ClassColor);
+        StyleAddButton(_addSpeciesButton,   SpeciesColor);
+        StyleAddButton(_addAbilitiesButton, AbilityColor);
+
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/ClassesPanel"),   ClassColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/SpeciesPanel"),   SpeciesColor);
+        StyleAccordion(GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/AbilitiesPanel"), AbilityColor);
+        ApplySystemVocabulary();
+
+        GetNode<LineEdit>("ScrollContainer/VBoxContainer/NotesSidebar/SearchInput").TextChanged       += FilterSidebar;
+        GetNode<LineEdit>("ScrollContainer/VBoxContainer/SystemSidebar/SystemSearchInput").TextChanged += FilterSystemSidebar;
 
         if (_campaignId > 0) _db.MigrateLegacyImagePaths(_campaignId);
         LoadAll();
@@ -197,6 +270,10 @@ public partial class CampaignDashboard : Control
     {
         _campaignId = campaignId;
         _collapsedLocations.Clear();
+        _collapsedClasses.Clear();
+        _collapsedSpecies.Clear();
+        _classesFirstLoad = true;
+        _speciesFirstLoad = true;
         foreach (var tab in _tabs) { tab.Pane?.QueueFree(); tab.Widget?.QueueFree(); }
         _tabs.Clear();
         _activeTab = -1;
@@ -207,20 +284,42 @@ public partial class CampaignDashboard : Control
 
     private void LoadAll()
     {
+        LoadParty();
         LoadNpcs();
         LoadFactions();
         LoadLocations();
         LoadSessions();
         LoadItems();
         LoadQuests();
+        LoadClasses();
+        LoadSpecies();
+        LoadAbilities();
     }
 
+    private static readonly Color PartyColor    = new Color(0.82f, 0.69f, 0.63f); // warm terracotta-white
     private static readonly Color NpcColor      = new Color(0.38f, 0.60f, 0.98f); // blue
     private static readonly Color FactionColor  = new Color(0.92f, 0.50f, 0.50f); // red
     private static readonly Color LocationColor = new Color(0.42f, 0.88f, 0.48f); // green
     private static readonly Color SessionColor  = new Color(0.74f, 0.55f, 0.95f); // purple
     private static readonly Color ItemColor     = new Color(0.98f, 0.78f, 0.38f); // amber
     private static readonly Color QuestColor    = new Color(0.92f, 0.52f, 0.88f); // magenta
+    private static readonly Color ClassColor    = new Color(0.98f, 0.55f, 0.18f); // orange
+    private static readonly Color SpeciesColor  = new Color(0.20f, 0.85f, 0.75f); // teal
+    private static readonly Color AbilityColor  = new Color(0.72f, 0.95f, 0.28f); // lime
+
+    private void LoadParty()
+    {
+        ClearItems(_partyContainer, _addPartyButton);
+        foreach (var pc in _db.PlayerCharacters.GetAll(_campaignId))
+        {
+            int id = pc.Id;
+            var btn = MakeSidebarButton(string.IsNullOrEmpty(pc.Name) ? "New Character" : pc.Name, PartyColor);
+            btn.SetMeta("id", id);
+            btn.Pressed += () => ShowDetailPane("playercharacter", id);
+            WireCtrlClick(btn, "playercharacter", id);
+            _partyContainer.AddChild(btn);
+        }
+    }
 
     private void LoadNpcs()
     {
@@ -381,6 +480,150 @@ public partial class CampaignDashboard : Control
         }
     }
 
+    private void LoadClasses()
+    {
+        ClearItems(_classesContainer, _addClassesButton);
+        foreach (var cls in _db.Classes.GetAll(_campaignId))
+        {
+            int  clsId       = cls.Id;
+            var  subclasses  = _db.Classes.GetSubclassesForClass(cls.Id);
+            if (_classesFirstLoad && subclasses.Count > 0)
+                _collapsedClasses.Add(clsId);
+            bool isCollapsed = _collapsedClasses.Contains(cls.Id);
+
+            if (subclasses.Count > 0)
+            {
+                var hbox = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+                hbox.AddThemeConstantOverride("separation", 0);
+
+                var toggleBtn = new Button { Text = isCollapsed ? "▶" : "▼", Flat = false, CustomMinimumSize = new Vector2(24, 0) };
+                ApplyButtonStyle(toggleBtn, ClassColor, roundLeft: true, roundRight: false);
+                toggleBtn.Pressed += () =>
+                {
+                    if (_collapsedClasses.Contains(clsId)) _collapsedClasses.Remove(clsId);
+                    else _collapsedClasses.Add(clsId);
+                    LoadClasses();
+                };
+
+                var btn = new Button { Text = cls.Name, Flat = false, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+                ApplyButtonStyle(btn, ClassColor, roundLeft: false, roundRight: true);
+                btn.SetMeta("id", clsId);
+                btn.Pressed += () => ShowDetailPane("class", clsId);
+                WireCtrlClick(btn, "class", clsId);
+
+                hbox.AddChild(toggleBtn);
+                hbox.AddChild(btn);
+                _classesContainer.AddChild(hbox);
+
+                if (!isCollapsed)
+                {
+                    foreach (var sub in subclasses)
+                    {
+                        int subId = sub.Id;
+                        var subHbox = new HBoxContainer();
+                        subHbox.AddThemeConstantOverride("separation", 0);
+                        subHbox.AddChild(new Control { CustomMinimumSize = new Vector2(14, 0) });
+                        var subBtn = MakeSidebarButton(sub.Name, ClassColor, extraLeft: 24);
+                        subBtn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                        subBtn.SetMeta("id", subId);
+                        subBtn.Pressed += () => ShowDetailPane("subclass", subId);
+                        WireCtrlClick(subBtn, "subclass", subId);
+                        subHbox.AddChild(subBtn);
+                        _classesContainer.AddChild(subHbox);
+                    }
+                }
+            }
+            else
+            {
+                var btn = MakeSidebarButton(cls.Name, ClassColor);
+                btn.SetMeta("id", clsId);
+                btn.Pressed += () => ShowDetailPane("class", clsId);
+                WireCtrlClick(btn, "class", clsId);
+                _classesContainer.AddChild(btn);
+            }
+        }
+        _classesFirstLoad = false;
+    }
+
+    private void LoadSpecies()
+    {
+        ClearItems(_speciesContainer, _addSpeciesButton);
+        foreach (var sp in _db.Species.GetAll(_campaignId))
+        {
+            int  spId        = sp.Id;
+            var  subspecies  = _db.Subspecies.GetAllForSpecies(sp.Id);
+            if (_speciesFirstLoad && subspecies.Count > 0)
+                _collapsedSpecies.Add(spId);
+            bool isCollapsed = _collapsedSpecies.Contains(sp.Id);
+
+            if (subspecies.Count > 0)
+            {
+                var hbox = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+                hbox.AddThemeConstantOverride("separation", 0);
+
+                var toggleBtn = new Button { Text = isCollapsed ? "▶" : "▼", Flat = false, CustomMinimumSize = new Vector2(24, 0) };
+                ApplyButtonStyle(toggleBtn, SpeciesColor, roundLeft: true, roundRight: false);
+                toggleBtn.Pressed += () =>
+                {
+                    if (_collapsedSpecies.Contains(spId)) _collapsedSpecies.Remove(spId);
+                    else _collapsedSpecies.Add(spId);
+                    LoadSpecies();
+                };
+
+                var btn = new Button { Text = sp.Name, Flat = false, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+                ApplyButtonStyle(btn, SpeciesColor, roundLeft: false, roundRight: true);
+                btn.SetMeta("id", spId);
+                btn.Pressed += () => ShowDetailPane("species", spId);
+                WireCtrlClick(btn, "species", spId);
+
+                hbox.AddChild(toggleBtn);
+                hbox.AddChild(btn);
+                _speciesContainer.AddChild(hbox);
+
+                if (!isCollapsed)
+                {
+                    foreach (var sub in subspecies)
+                    {
+                        int subId = sub.Id;
+                        var subHbox = new HBoxContainer();
+                        subHbox.AddThemeConstantOverride("separation", 0);
+                        subHbox.AddChild(new Control { CustomMinimumSize = new Vector2(14, 0) });
+                        var subBtn = MakeSidebarButton(sub.Name, SpeciesColor, extraLeft: 24);
+                        subBtn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                        subBtn.SetMeta("id", subId);
+                        subBtn.Pressed += () => ShowDetailPane("subspecies", subId);
+                        WireCtrlClick(subBtn, "subspecies", subId);
+                        subHbox.AddChild(subBtn);
+                        _speciesContainer.AddChild(subHbox);
+                    }
+                }
+            }
+            else
+            {
+                var btn = MakeSidebarButton(sp.Name, SpeciesColor);
+                btn.SetMeta("id", spId);
+                btn.Pressed += () => ShowDetailPane("species", spId);
+                WireCtrlClick(btn, "species", spId);
+                _speciesContainer.AddChild(btn);
+            }
+        }
+        _speciesFirstLoad = false;
+    }
+
+    private void LoadAbilities()
+    {
+        ClearItems(_abilitiesContainer, _addAbilitiesButton);
+        foreach (var ability in _db.Abilities.GetAll(_campaignId))
+        {
+            int id = ability.Id;
+            var btn = MakeSidebarButton(ability.Name, AbilityColor);
+            btn.SetMeta("id", id);
+            btn.Pressed += () => ShowDetailPane("ability", id);
+            WireCtrlClick(btn, "ability", id);
+            _abilitiesContainer.AddChild(btn);
+        }
+    }
+
     private static readonly Color DarkText = new Color(0.10f, 0.10f, 0.10f);
 
     private static Button MakeSidebarButton(string text, Color color, int extraLeft = 0)
@@ -416,6 +659,13 @@ public partial class CampaignDashboard : Control
     {
         ApplyButtonStyle(btn, baseColor.Darkened(0.25f));
         btn.Alignment = HorizontalAlignment.Left;
+    }
+
+    private void ApplySystemVocabulary()
+    {
+        GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/ClassesPanel")  .Set("title", _vocab.ClassesPlural);
+        GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/SpeciesPanel")  .Set("title", _vocab.SpeciesPlural);
+        GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/AbilitiesPanel").Set("title", _vocab.AbilitiesPlural);
     }
 
     private static void StyleAccordion(Control accordion, Color baseColor)
@@ -489,7 +739,7 @@ public partial class CampaignDashboard : Control
             {
                 var e = _db.Npcs.Get(entityId); if (e == null) return (null, null, null);
                 var p = _npcDetailPaneScene.Instantiate<NpcDetailPane>();
-                p.NavigateTo    += ShowDetailPane; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 p.EntityCreated += (type, _) => { if (type == "faction") LoadFactions(); if (type == "npc") LoadNpcs(); };
                 return (p, string.IsNullOrEmpty(e.Name) ? "New NPC" : e.Name, () => p.Load(e));
             }
@@ -497,7 +747,7 @@ public partial class CampaignDashboard : Control
             {
                 var e = _db.Factions.Get(entityId); if (e == null) return (null, null, null);
                 var p = _factionDetailPaneScene.Instantiate<FactionDetailPane>();
-                p.NavigateTo    += ShowDetailPane; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 p.EntityCreated += (type, _) => { if (type == "npc") LoadNpcs(); if (type == "faction") LoadFactions(); };
                 return (p, string.IsNullOrEmpty(e.Name) ? "New Faction" : e.Name, () => p.Load(e));
             }
@@ -505,7 +755,7 @@ public partial class CampaignDashboard : Control
             {
                 var e = _db.Locations.Get(entityId); if (e == null) return (null, null, null);
                 var p = _locationDetailPaneScene.Instantiate<LocationDetailPane>();
-                p.NavigateTo += ShowDetailPane; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 p.SubLocationAdded      += (_, __) => LoadLocations();
                 p.ParentLocationChanged += _       => LoadLocations();
                 p.EntityCreated         += (type, _) => { if (type == "faction") LoadFactions(); if (type == "location") LoadLocations(); };
@@ -535,6 +785,50 @@ public partial class CampaignDashboard : Control
                 p.EntityCreated += (type, _) => { if (type == "npc") LoadNpcs(); if (type == "faction") LoadFactions(); if (type == "location") LoadLocations(); if (type == "item") LoadItems(); if (type == "quest") LoadQuests(); };
                 return (p, string.IsNullOrEmpty(e.Name) ? "New Quest" : e.Name, () => p.Load(e));
             }
+            case "ability":
+            {
+                var e = _db.Abilities.Get(entityId); if (e == null) return (null, null, null);
+                var p = _abilityDetailPaneScene.Instantiate<AbilityDetailPane>();
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Ability}" : e.Name, () => p.Load(e));
+            }
+            case "class":
+            {
+                var e = _db.Classes.Get(entityId); if (e == null) return (null, null, null);
+                var p = _classDetailPaneScene.Instantiate<ClassDetailPane>();
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                p.SubclassAdded += (_, __) => LoadClasses();
+                return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Class}" : e.Name, () => p.Load(e));
+            }
+            case "subclass":
+            {
+                var e = _db.Classes.GetSubclass(entityId); if (e == null) return (null, null, null);
+                var p = _subclassDetailPaneScene.Instantiate<SubclassDetailPane>();
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Subclass}" : e.Name, () => p.Load(e));
+            }
+            case "species":
+            {
+                var e = _db.Species.Get(entityId); if (e == null) return (null, null, null);
+                var p = _speciesDetailPaneScene.Instantiate<SpeciesDetailPane>();
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                p.SubspeciesAdded += (_, __) => LoadSpecies();
+                return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Species}" : e.Name, () => p.Load(e));
+            }
+            case "subspecies":
+            {
+                var e = _db.Subspecies.Get(entityId); if (e == null) return (null, null, null);
+                var p = _subspeciesDetailPaneScene.Instantiate<SubspeciesDetailPane>();
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Subspecies}" : e.Name, () => p.Load(e));
+            }
+            case "playercharacter":
+            {
+                var e = _db.PlayerCharacters.Get(entityId); if (e == null) return (null, null, null);
+                var p = _playerCharacterDetailPaneScene.Instantiate<PlayerCharacterDetailPane>();
+                p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
+                return (p, string.IsNullOrEmpty(e.Name) ? "New Character" : e.Name, () => p.Load(e));
+            }
             default:
                 return (null, null, null);
         }
@@ -544,12 +838,18 @@ public partial class CampaignDashboard : Control
     {
         switch (entityType)
         {
-            case "npc":      _db.Npcs.Delete(entityId);      LoadNpcs();      break;
-            case "faction":  _db.Factions.Delete(entityId);  LoadFactions();  break;
-            case "location": _db.Locations.Delete(entityId); LoadLocations(); break;
-            case "session":  _db.Sessions.Delete(entityId);  LoadSessions();  break;
-            case "item":     _db.Items.Delete(entityId);     LoadItems();     break;
-            case "quest":    _db.Quests.Delete(entityId);    LoadQuests();    break;
+            case "playercharacter": _db.PlayerCharacters.Delete(entityId); LoadParty();  break;
+            case "npc":        _db.Npcs.Delete(entityId);              LoadNpcs();      break;
+            case "faction":    _db.Factions.Delete(entityId);          LoadFactions();  break;
+            case "location":   _db.Locations.Delete(entityId);         LoadLocations(); break;
+            case "session":    _db.Sessions.Delete(entityId);          LoadSessions();  break;
+            case "item":       _db.Items.Delete(entityId);             LoadItems();     break;
+            case "quest":      _db.Quests.Delete(entityId);            LoadQuests();    break;
+            case "ability":    _db.Abilities.Delete(entityId);         LoadAbilities(); break;
+            case "class":      _db.Classes.Delete(entityId);           LoadClasses();   break;
+            case "subclass":   _db.Classes.DeleteSubclass(entityId);   LoadClasses();   break;
+            case "species":    _db.Species.Delete(entityId);           LoadSpecies();   break;
+            case "subspecies": _db.Subspecies.Delete(entityId);        LoadSpecies();   break;
         }
         for (int i = _tabs.Count - 1; i >= 0; i--)
             if (_tabs[i].EntityType == entityType && _tabs[i].EntityId == entityId)
@@ -560,13 +860,19 @@ public partial class CampaignDashboard : Control
     {
         var container = entityType switch
         {
-            "npc"      => _npcsContainer,
-            "faction"  => _factionsContainer,
-            "location" => _locationsContainer,
-            "session"  => _sessionsContainer,
-            "item"     => _itemsContainer,
-            "quest"    => _questsContainer,
-            _          => null
+            "playercharacter" => _partyContainer,
+            "npc"        => _npcsContainer,
+            "faction"    => _factionsContainer,
+            "location"   => _locationsContainer,
+            "session"    => _sessionsContainer,
+            "item"       => _itemsContainer,
+            "quest"      => _questsContainer,
+            "ability"    => _abilitiesContainer,
+            "class"      => _classesContainer,
+            "subclass"   => _classesContainer,
+            "species"    => _speciesContainer,
+            "subspecies" => _speciesContainer,
+            _            => null
         };
         if (container == null) return;
         foreach (Node child in container.GetChildren())
@@ -603,6 +909,7 @@ public partial class CampaignDashboard : Control
         if (pane == null) return;
         tab.EntityType = entityType;
         tab.EntityId   = entityId;
+        tab.Panel      = IsSystemEntity(entityType) ? "system" : "notes";
         tab.Label      = label;
         tab.Pane       = pane;
         _paneContainer.AddChild(pane);
@@ -618,7 +925,7 @@ public partial class CampaignDashboard : Control
     {
         var (pane, label, load) = InstantiatePane(entityType, entityId);
         if (pane == null) return;
-        var tab = new TabEntry { EntityType = entityType, EntityId = entityId, Label = label, Pane = pane };
+        var tab = new TabEntry { EntityType = entityType, EntityId = entityId, Panel = IsSystemEntity(entityType) ? "system" : "notes", Label = label, Pane = pane };
         tab.History.Push(entityType, entityId);
         _paneContainer.AddChild(pane);
         load();
@@ -629,8 +936,10 @@ public partial class CampaignDashboard : Control
 
     private void OpenEmptyTab()
     {
+        string panel = _currentPanel;
+        string label = panel == "system" ? "System New Tab" : "Notes New Tab";
         var placeholder = new Control();
-        var tab = new TabEntry { Label = "New Tab", Pane = placeholder };
+        var tab = new TabEntry { Label = label, Panel = panel, Pane = placeholder };
         _paneContainer.AddChild(placeholder);
         _tabs.Add(tab);
         BuildTabWidget(tab);
@@ -649,6 +958,14 @@ public partial class CampaignDashboard : Control
             if (w != null && IsInstanceValid(w))
                 w.AddThemeStyleboxOverride("panel", active ? _tabs[i].ActiveSb : _tabs[i].InactiveSb);
         }
+
+        // Auto-switch sidebar to match the activated tab's panel.
+        if (_activeTab >= 0 && _activeTab < _tabs.Count)
+        {
+            string mode = _tabs[_activeTab].Panel;
+            if (mode != _currentPanel) ApplySidebarPanel(mode);
+        }
+
         CallDeferred(nameof(DoScrollToActiveTab));
         RefreshNavButtons();
         SaveTabs();
@@ -732,7 +1049,7 @@ public partial class CampaignDashboard : Control
                 bool pinned = entry.TryGetProperty("pinned", out var pp) && pp.GetBoolean();
                 var (pane, label, load) = InstantiatePane(type, id);
                 if (pane == null) continue;
-                var tab = new TabEntry { EntityType = type, EntityId = id, Label = label, Pane = pane, IsPinned = pinned };
+                var tab = new TabEntry { EntityType = type, EntityId = id, Panel = IsSystemEntity(type) ? "system" : "notes", Label = label, Pane = pane, IsPinned = pinned };
                 tab.History.Push(type, id);
                 _paneContainer.AddChild(pane);
                 load();
@@ -1168,13 +1485,19 @@ public partial class CampaignDashboard : Control
 
     private static Color GetEntityColor(string entityType) => entityType switch
     {
-        "npc"      => NpcColor,
-        "faction"  => FactionColor,
-        "location" => LocationColor,
-        "session"  => SessionColor,
-        "item"     => ItemColor,
-        "quest"    => QuestColor,
-        _          => new Color(0.40f, 0.40f, 0.40f),
+        "playercharacter" => PartyColor,
+        "npc"        => NpcColor,
+        "faction"    => FactionColor,
+        "location"   => LocationColor,
+        "session"    => SessionColor,
+        "item"       => ItemColor,
+        "quest"      => QuestColor,
+        "ability"    => AbilityColor,
+        "class"      => ClassColor,
+        "subclass"   => ClassColor,
+        "species"    => SpeciesColor,
+        "subspecies" => SpeciesColor,
+        _            => new Color(0.40f, 0.40f, 0.40f),
     };
 
     private void DoScrollToActiveTab()
@@ -1198,6 +1521,34 @@ public partial class CampaignDashboard : Control
             if (child != keepButton) child.QueueFree();
     }
 
+    // Called from NavBar button: switch sidebar and ensure a matching tab is shown.
+    public void SetSidebarPanel(string panel)
+    {
+        ApplySidebarPanel(panel);
+
+        // If the current active tab already belongs to this mode, nothing more to do.
+        if (_activeTab >= 0 && _activeTab < _tabs.Count && _tabs[_activeTab].Panel == panel) return;
+
+        // Find the most recently used tab of the desired mode (last in list = most recent).
+        int matchIdx = -1;
+        for (int i = _tabs.Count - 1; i >= 0; i--)
+            if (_tabs[i].Panel == panel) { matchIdx = i; break; }
+
+        if (matchIdx >= 0)
+            ActivateTab(matchIdx);
+        else
+            OpenEmptyTab();
+    }
+
+    // Updates sidebar visibility + _currentPanel + emits signal. No tab switching.
+    private void ApplySidebarPanel(string panel)
+    {
+        _currentPanel          = panel;
+        _notesSidebar.Visible  = (panel == "notes");
+        _systemSidebar.Visible = (panel == "system");
+        EmitSignal(SignalName.SidebarPanelChanged, panel);
+    }
+
     // ── sidebar search ────────────────────────────────────────────────────────
 
     private void FilterSidebar(string query)
@@ -1206,12 +1557,13 @@ public partial class CampaignDashboard : Control
 
         var sections = new (Control Panel, VBoxContainer Items)[]
         {
-            (GetNode<Control>("ScrollContainer/VBoxContainer/NpcsPanel"),                  _npcsContainer),
-            (GetNode<Control>("ScrollContainer/VBoxContainer/FactionsPanel"),              _factionsContainer),
-            (GetNode<Control>("ScrollContainer/VBoxContainer/LocationsFoldableContainer"), _locationsContainer),
-            (GetNode<Control>("ScrollContainer/VBoxContainer/SessionsPanel"),              _sessionsContainer),
-            (GetNode<Control>("ScrollContainer/VBoxContainer/ItemsPanel"),                 _itemsContainer),
-            (GetNode<Control>("ScrollContainer/VBoxContainer/QuestsPanel"),                _questsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/PartyPanel"),                 _partyContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/NpcsPanel"),                  _npcsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/FactionsPanel"),              _factionsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/LocationsFoldableContainer"), _locationsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/SessionsPanel"),              _sessionsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/ItemsPanel"),                 _itemsContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/NotesSidebar/QuestsPanel"),                _questsContainer),
         };
 
         foreach (var (panel, items) in sections)
@@ -1244,6 +1596,59 @@ public partial class CampaignDashboard : Control
                     if (locBtn != null)
                     {
                         bool match = FuzzyMatch(query, locBtn.Text);
+                        hbox.Visible = match;
+                        if (match) hasMatch = true;
+                    }
+                }
+            }
+
+            panel.Visible = hasMatch;
+            if (hasMatch)
+            {
+                panel.Set("folded", false);
+                items.Visible = true;
+            }
+        }
+    }
+
+    private void FilterSystemSidebar(string query)
+    {
+        bool searching = !string.IsNullOrEmpty(query);
+
+        var sections = new (Control Panel, VBoxContainer Items)[]
+        {
+            (GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/ClassesPanel"),   _classesContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/SpeciesPanel"),   _speciesContainer),
+            (GetNode<Control>("ScrollContainer/VBoxContainer/SystemSidebar/AbilitiesPanel"), _abilitiesContainer),
+        };
+
+        foreach (var (panel, items) in sections)
+        {
+            if (!searching)
+            {
+                panel.Visible = true;
+                panel.Set("folded", true);
+                items.Visible = false;
+                foreach (Node child in items.GetChildren())
+                    if (child is Control c) c.Visible = true;
+                continue;
+            }
+
+            bool hasMatch = false;
+            foreach (Node child in items.GetChildren())
+            {
+                if (child is Button btn && btn.HasMeta("id"))
+                {
+                    bool match = FuzzyMatch(query, btn.Text);
+                    btn.Visible = match;
+                    if (match) hasMatch = true;
+                }
+                else if (child is HBoxContainer hbox)
+                {
+                    var mainBtn = hbox.GetChildren().OfType<Button>().FirstOrDefault(b => b.HasMeta("id"));
+                    if (mainBtn != null)
+                    {
+                        bool match = FuzzyMatch(query, mainBtn.Text);
                         hbox.Visible = match;
                         if (match) hasMatch = true;
                     }

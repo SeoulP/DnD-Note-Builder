@@ -88,6 +88,11 @@ public partial class AddCampaignModal : Window
 
         int newId = _databaseService.Campaigns.Add(campaign);
         _databaseService.Species                   .SeedDefaults(newId);
+        _databaseService.Subspecies                .SeedDefaults(newId);
+        _databaseService.Classes                   .SeedDefaults(newId);
+        _databaseService.AbilityTypes              .SeedDefaults(newId);
+        _databaseService.AbilityResourceTypes      .SeedDefaults(newId);
+        _databaseService.Abilities                 .SeedDefaults(newId);
         _databaseService.LocationFactionRoles      .SeedDefaults(newId);
         _databaseService.NpcRelationshipTypes      .SeedDefaults(newId);
         _databaseService.NpcStatuses               .SeedDefaults(newId);
@@ -95,6 +100,7 @@ public partial class AddCampaignModal : Window
         _databaseService.FactionRelationshipTypes  .SeedDefaults(newId);
         _databaseService.CharacterRelationshipTypes.SeedDefaults(newId);
         _databaseService.ItemTypes                 .SeedDefaults(newId);
+        _databaseService.QuestStatuses             .SeedDefaults(newId);
         EmitSignal(SignalName.CampaignCreated, newId);
         Hide();
         ResetForm();

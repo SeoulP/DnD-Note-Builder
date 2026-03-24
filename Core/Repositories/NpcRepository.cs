@@ -70,6 +70,16 @@ namespace DndBuilder.Core.Repositories
             )";
             cmd.ExecuteNonQuery();
 
+            // Migration: add species_text to characters (free-text species, replaces SpeciesId FK in UI)
+            var hasSpeciesText = _conn.CreateCommand();
+            hasSpeciesText.CommandText = "SELECT COUNT(*) FROM pragma_table_info('characters') WHERE name = 'species_text'";
+            if ((long)hasSpeciesText.ExecuteScalar() == 0)
+            {
+                var alter = _conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE characters ADD COLUMN species_text TEXT NOT NULL DEFAULT ''";
+                alter.ExecuteNonQuery();
+            }
+
             // Migration: add to_type_id to character_relationships (per-side independent relationship type)
             var hasToTypeId = _conn.CreateCommand();
             hasToTypeId.CommandText = "SELECT COUNT(*) FROM pragma_table_info('character_relationships') WHERE name = 'to_type_id'";

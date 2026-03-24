@@ -1,6 +1,10 @@
 # Godot 4+ specific ignores
 .godot/
 .Agents/
+
+# D&D copyrighted seed data — export to .dndx before deleting
+Agents/DnD5e_2024_Seed_Data.md
+Agents/PlayersHandbook2024.pdf
 /android/
 .nomedia
 

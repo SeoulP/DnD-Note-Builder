@@ -15,7 +15,13 @@ public partial class App : Control
 		_navBar.BackPressed           += ShowCampaignList;
 		_navBar.DatabaseRestored      += ShowCampaignList;
 		_navBar.CampaignDataImported  += () => _currentDashboard?.ReloadSidebar();
+		_navBar.PanelSwitched         += OnPanelSwitched;
 		ShowCampaignList();
+	}
+
+	private void OnPanelSwitched(string panel)
+	{
+		_currentDashboard?.SetSidebarPanel(panel);
 	}
 
 	private void ShowCampaignList()
@@ -38,9 +44,11 @@ public partial class App : Control
 		_navBar.SetCampaign(campaignId);
 		SetMargins(0, 0, 0, 0);
 		ClearPanel();
+
 		_currentDashboard = _campaignDashboardScene.Instantiate<CampaignDashboard>();
-		_currentDashboard.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		_currentDashboard.SizeFlagsVertical   = SizeFlags.ExpandFill;
+		_currentDashboard.SizeFlagsHorizontal  = SizeFlags.ExpandFill;
+		_currentDashboard.SizeFlagsVertical    = SizeFlags.ExpandFill;
+		_currentDashboard.SidebarPanelChanged += panel => _navBar.SetActivePanel(panel);
 		_currentDashboard.SetCampaign(campaignId);
 		_appPanel.AddChild(_currentDashboard);
 	}

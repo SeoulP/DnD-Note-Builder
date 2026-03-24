@@ -12,12 +12,13 @@ public partial class NpcDetailPane : ScrollContainer
     private bool               _loaded;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
+    [Signal] public delegate void NavigateToNewTabEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
     [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit          _nameInput;
-    [Export] private TypeOptionButton  _speciesInput;
+    [Export] private OptionButton      _speciesInput;
     [Export] private LineEdit          _occupationInput;
     [Export] private LineEdit          _genderInput;
     [Export] private TypeOptionButton  _statusInput;
@@ -52,7 +53,7 @@ public partial class NpcDetailPane : ScrollContainer
         _nameInput.FocusEntered         += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
         _occupationInput.TextChanged    += _ => Save();
         _genderInput.TextChanged        += _ => Save();
-        _speciesInput.TypeSelected      += _ => Save();
+        _speciesInput.ItemSelected      += _ => Save();
         _statusInput.TypeSelected       += _ => Save();
         _relationshipInput.TypeSelected += _ => Save();
         _descInput.TextChanged          += () => Save();
@@ -81,13 +82,11 @@ public partial class NpcDetailPane : ScrollContainer
     {
         _npc = npc;
 
-        _speciesInput.NoneText        = "(unknown)";
-        _speciesInput.AutoSelectOnAdd = true;
-        _speciesInput.Setup(
-            () => _db.Species.GetAll(npc.CampaignId).ConvertAll(s => (s.Id, s.Name)),
-            name => { _db.Species.Add(new Species { CampaignId = npc.CampaignId, Name = name }); },
-            id   => _db.Species.Delete(id));
-        _speciesInput.SelectById(npc.SpeciesId);
+        _speciesInput.Clear();
+        _speciesInput.AddItem("(unknown)", -1);
+        foreach (var sp in _db.Species.GetAll(npc.CampaignId))
+            _speciesInput.AddItem(sp.Name, sp.Id);
+        SelectOptionById(_speciesInput, npc.SpeciesId);
 
         _statusInput.AutoSelectOnAdd = true;
         _statusInput.Setup(
@@ -194,7 +193,8 @@ public partial class NpcDetailPane : ScrollContainer
             string roleName          = nf.RoleId.HasValue && roleNames.TryGetValue(nf.RoleId.Value, out var rn) ? rn : "No role";
 
             var row = new EntityRow { Text = $"{factionName}, {roleName}" };
-            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
+            row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo,       "faction", capturedFactionId);
+            row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "faction", capturedFactionId);
             row.DeletePressed   += () =>
             {
                 _db.Npcs.RemoveFaction(_npc.Id, capturedFactionId);
@@ -250,7 +250,8 @@ public partial class NpcDetailPane : ScrollContainer
             string rowText   = string.IsNullOrEmpty(label) ? otherName : $"{_npc.Name}, {label} {otherName}";
 
             var row = new EntityRow { Text = rowText };
-            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "npc", capturedB);
+            row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo,       "npc", capturedB);
+            row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "npc", capturedB);
             row.DeletePressed   += () =>
             {
                 _db.Npcs.RemoveRelationship(capturedA, capturedB);
@@ -275,7 +276,7 @@ public partial class NpcDetailPane : ScrollContainer
     {
         if (_npc == null) return;
         _npc.Name              = string.IsNullOrEmpty(_nameInput.Text) ? "New NPC" : _nameInput.Text;
-        _npc.SpeciesId         = _speciesInput.SelectedId;
+        _npc.SpeciesId         = GetOptionId(_speciesInput);
         _npc.Occupation        = _occupationInput.Text;
         _npc.Gender            = _genderInput.Text;
         _npc.StatusId          = _statusInput.SelectedId;
@@ -293,6 +294,21 @@ public partial class NpcDetailPane : ScrollContainer
             DialogHelper.Show(_confirmDialog, $"Delete \"{_npc.Name}\"? This cannot be undone.");
             AcceptEvent();
         }
+    }
+
+    private static void SelectOptionById(OptionButton btn, int? id)
+    {
+        if (!id.HasValue) { btn.Select(0); return; }
+        for (int i = 0; i < btn.ItemCount; i++)
+            if (btn.GetItemId(i) == id.Value) { btn.Select(i); return; }
+        btn.Select(0);
+    }
+
+    private static int? GetOptionId(OptionButton btn)
+    {
+        if (btn.Selected < 0) return null;
+        int id = btn.GetItemId(btn.Selected);
+        return id > 0 ? (int?)id : null;
     }
 
 }

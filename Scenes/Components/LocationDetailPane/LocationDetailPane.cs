@@ -11,6 +11,7 @@ public partial class LocationDetailPane : ScrollContainer
     private ConfirmationDialog _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
+    [Signal] public delegate void NavigateToNewTabEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
     [Signal] public delegate void SubLocationAddedEventHandler(int parentLocationId, int newLocationId);
@@ -222,7 +223,8 @@ public partial class LocationDetailPane : ScrollContainer
 
         int parentId = parent.Id;
         var row = new EntityRow { Text = parent.Name };
-        row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "location", parentId);
+        row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo,       "location", parentId);
+        row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "location", parentId);
         row.DeletePressed   += () =>
         {
             _location.ParentLocationId = null;
@@ -243,7 +245,8 @@ public partial class LocationDetailPane : ScrollContainer
         {
             int id  = sub.Id;
             var row = new EntityRow { Text = sub.Name };
-            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "location", id);
+            row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo,       "location", id);
+            row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "location", id);
             row.DeletePressed   += () =>
             {
                 var subloc = _db.Locations.Get(id);
@@ -280,7 +283,8 @@ public partial class LocationDetailPane : ScrollContainer
             string roleName          = lf.RoleId.HasValue && roleNames.TryGetValue(lf.RoleId.Value, out var rn) ? rn : "No role";
 
             var row = new EntityRow { Text = $"{factionName}, {roleName}" };
-            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedFactionId);
+            row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo,       "faction", capturedFactionId);
+            row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "faction", capturedFactionId);
             row.DeletePressed   += () =>
             {
                 _db.Locations.RemoveFaction(_location.Id, capturedFactionId);

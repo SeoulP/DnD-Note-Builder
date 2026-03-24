@@ -11,8 +11,11 @@ public partial class NavBar : PanelContainer
     [Signal] public delegate void BackPressedEventHandler();
     [Signal] public delegate void DatabaseRestoredEventHandler();
     [Signal] public delegate void CampaignDataImportedEventHandler();
+    [Signal] public delegate void PanelSwitchedEventHandler(string panel);
 
     [Export] private Button      _backButton;
+    [Export] private Button      _notesButton;
+    [Export] private Button      _systemButton;
     [Export] private MenuButton  _settingsButton;
     [Export] private PackedScene _importExportModalScene;
 
@@ -20,14 +23,29 @@ public partial class NavBar : PanelContainer
     private int?               _campaignId;
     private ConfirmationDialog _restoreConfirmDialog;
     private string             _pendingRestorePath = "";
+    private string             _activePanel        = "notes";
 
     private StyleBoxFlat _navBarStyle;
+    private StyleBoxFlat _panelActiveSb;
+    private StyleBoxFlat _panelInactiveSb;
 
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
 
-        _backButton.Pressed += () => EmitSignal(SignalName.BackPressed);
+        _backButton.Pressed  += () => EmitSignal(SignalName.BackPressed);
+        _notesButton.Pressed += () => SwitchPanel("notes");
+        _systemButton.Pressed += () => SwitchPanel("system");
+
+        _panelActiveSb   = new StyleBoxFlat { BgColor = ThemeManager.Instance.Current.Hover };
+        _panelActiveSb.SetCornerRadiusAll(4);
+        _panelActiveSb.ContentMarginLeft = _panelActiveSb.ContentMarginRight = 8;
+        _panelActiveSb.ContentMarginTop  = _panelActiveSb.ContentMarginBottom = 4;
+        _panelInactiveSb = new StyleBoxFlat { BgColor = Colors.Transparent };
+        _panelInactiveSb.ContentMarginLeft = _panelInactiveSb.ContentMarginRight = 8;
+        _panelInactiveSb.ContentMarginTop  = _panelInactiveSb.ContentMarginBottom = 4;
+
+        UpdatePanelButtons();
 
         // Restore confirmation
         _restoreConfirmDialog = DialogHelper.Make("Restore Database");
@@ -64,16 +82,58 @@ public partial class NavBar : PanelContainer
     public void SetCampaign(int? campaignId)
     {
         _campaignId = campaignId;
+        bool hasCampaign = campaignId.HasValue;
+
+        _notesButton.Visible  = hasCampaign;
+        _systemButton.Visible = hasCampaign;
+        if (!hasCampaign)
+            _activePanel = "notes";
+        UpdatePanelButtons();
+
         var popup = _settingsButton.GetPopup();
-        popup.SetItemDisabled(popup.GetItemIndex(2), !campaignId.HasValue);
-        popup.SetItemDisabled(popup.GetItemIndex(3), !campaignId.HasValue);
+        popup.SetItemDisabled(popup.GetItemIndex(2), !hasCampaign);
+        popup.SetItemDisabled(popup.GetItemIndex(3), !hasCampaign);
+    }
+
+    private void SwitchPanel(string panel)
+    {
+        _activePanel = panel;
+        UpdatePanelButtons();
+        EmitSignal(SignalName.PanelSwitched, panel);
+    }
+
+    private void UpdatePanelButtons()
+    {
+        ApplyPanelButtonStyle(_notesButton,  _activePanel == "notes");
+        ApplyPanelButtonStyle(_systemButton, _activePanel == "system");
+    }
+
+    private void ApplyPanelButtonStyle(Button btn, bool active)
+    {
+        var sb = active ? _panelActiveSb : _panelInactiveSb;
+        var hoverSb = new StyleBoxFlat { BgColor = active ? ThemeManager.Instance.Current.Hover : ThemeManager.Instance.Current.Component };
+        hoverSb.SetCornerRadiusAll(4);
+        hoverSb.ContentMarginLeft = hoverSb.ContentMarginRight = 8;
+        hoverSb.ContentMarginTop  = hoverSb.ContentMarginBottom = 4;
+        btn.AddThemeStyleboxOverride("normal",   sb);
+        btn.AddThemeStyleboxOverride("hover",    hoverSb);
+        btn.AddThemeStyleboxOverride("pressed",  sb);
+        btn.AddThemeStyleboxOverride("focus",    sb);
+    }
+
+    public void SetActivePanel(string panel)
+    {
+        _activePanel = panel;
+        UpdatePanelButtons();
     }
 
     // ─── Theme ────────────────────────────────────────────────────────────────
 
     private void OnThemeChanged()
     {
-        _navBarStyle.BgColor = ThemeManager.Instance.Current.NavBar;
+        _navBarStyle.BgColor     = ThemeManager.Instance.Current.NavBar;
+        _panelActiveSb.BgColor   = ThemeManager.Instance.Current.Hover;
+        UpdatePanelButtons();
     }
 
     private void OpenAppearancePopup()

@@ -12,6 +12,7 @@ public partial class FactionDetailPane : ScrollContainer
     private bool               _loaded;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
+    [Signal] public delegate void NavigateToNewTabEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
 
@@ -168,7 +169,8 @@ public partial class FactionDetailPane : ScrollContainer
             string roleName      = link?.RoleId.HasValue == true && roleNames.TryGetValue(link.RoleId.Value, out var rn) ? rn : "No role";
 
             var row = new EntityRow { Text = $"{npc.Name}, {roleName}" };
-            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "npc", capturedNpcId);
+            row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo,       "npc", capturedNpcId);
+            row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "npc", capturedNpcId);
             row.DeletePressed   += () =>
             {
                 _db.Npcs.RemoveFaction(capturedNpcId, _faction.Id);
@@ -220,7 +222,8 @@ public partial class FactionDetailPane : ScrollContainer
             string typeName = rel.RelationshipTypeId.HasValue && typeNames.TryGetValue(rel.RelationshipTypeId.Value, out var tn) ? tn : "";
 
             var row = new EntityRow { Text = string.IsNullOrEmpty(typeName) ? $"{nameA}, {nameB}" : $"{nameA}, {typeName} {nameB}" };
-            row.NavigatePressed += () => EmitSignal(SignalName.NavigateTo, "faction", capturedOther);
+            row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo,       "faction", capturedOther);
+            row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "faction", capturedOther);
             row.DeletePressed   += () =>
             {
                 _db.Factions.RemoveRelationship(capturedA, capturedB);

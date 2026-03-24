@@ -91,21 +91,29 @@ public partial class ImportExportModal : Window
         // Entity sections
         if (_mode == Mode.Export)
         {
-            BuildEntitySection("Factions",  _db.Factions.GetAll(_campaignId).Select(f => (f.Id, f.Name)).ToList());
-            BuildEntitySection("NPCs",      _db.Npcs.GetAll(_campaignId).Select(n => (n.Id, n.Name)).ToList());
-            BuildEntitySection("Locations", _db.Locations.GetAll(_campaignId).Select(l => (l.Id, l.Name)).ToList());
-            BuildEntitySection("Sessions",  _db.Sessions.GetAll(_campaignId).Select(s => (s.Id, string.IsNullOrEmpty(s.Title) ? "Untitled Session" : s.Title)).ToList());
-            BuildEntitySection("Items",     _db.Items.GetAll(_campaignId).Select(i => (i.Id, i.Name)).ToList());
-            BuildEntitySection("Quests",    _db.Quests.GetAll(_campaignId).Select(q => (q.Id, q.Name)).ToList());
+            BuildEntitySection("Factions",   _db.Factions.GetAll(_campaignId).Select(f => (f.Id, f.Name)).ToList());
+            BuildEntitySection("NPCs",       _db.Npcs.GetAll(_campaignId).Select(n => (n.Id, n.Name)).ToList());
+            BuildEntitySection("Locations",  _db.Locations.GetAll(_campaignId).Select(l => (l.Id, l.Name)).ToList());
+            BuildEntitySection("Sessions",   _db.Sessions.GetAll(_campaignId).Select(s => (s.Id, string.IsNullOrEmpty(s.Title) ? "Untitled Session" : s.Title)).ToList());
+            BuildEntitySection("Items",      _db.Items.GetAll(_campaignId).Select(i => (i.Id, i.Name)).ToList());
+            BuildEntitySection("Quests",     _db.Quests.GetAll(_campaignId).Select(q => (q.Id, q.Name)).ToList());
+            // System entities
+            BuildEntitySection("Classes",    _db.Classes.GetAll(_campaignId).Select(c => (c.Id, c.Name)).ToList());
+            BuildEntitySection("Subclasses", _db.Classes.GetAllSubclasses(_campaignId).Select(s => (s.Id, s.Name)).ToList());
+            BuildEntitySection("Subspecies", _db.Subspecies.GetAll(_campaignId).Select(s => (s.Id, s.Name)).ToList());
         }
         else // Import — show only what's in the file
         {
-            BuildEntitySection("Factions",  _importPackage.Factions.Select(f => (f.Id, f.Name)).ToList());
-            BuildEntitySection("NPCs",      _importPackage.Npcs.Select(n => (n.Id, n.Name)).ToList());
-            BuildEntitySection("Locations", _importPackage.Locations.Select(l => (l.Id, l.Name)).ToList());
-            BuildEntitySection("Sessions",  _importPackage.Sessions.Select(s => (s.Id, string.IsNullOrEmpty(s.Title) ? "Untitled Session" : s.Title)).ToList());
-            BuildEntitySection("Items",     _importPackage.Items.Select(i => (i.Id, i.Name)).ToList());
-            BuildEntitySection("Quests",    _importPackage.Quests.Select(q => (q.Id, q.Name)).ToList());
+            BuildEntitySection("Factions",   _importPackage.Factions.Select(f => (f.Id, f.Name)).ToList());
+            BuildEntitySection("NPCs",       _importPackage.Npcs.Select(n => (n.Id, n.Name)).ToList());
+            BuildEntitySection("Locations",  _importPackage.Locations.Select(l => (l.Id, l.Name)).ToList());
+            BuildEntitySection("Sessions",   _importPackage.Sessions.Select(s => (s.Id, string.IsNullOrEmpty(s.Title) ? "Untitled Session" : s.Title)).ToList());
+            BuildEntitySection("Items",      _importPackage.Items.Select(i => (i.Id, i.Name)).ToList());
+            BuildEntitySection("Quests",     _importPackage.Quests.Select(q => (q.Id, q.Name)).ToList());
+            // System entities
+            BuildEntitySection("Classes",    _importPackage.Classes.Select(c => (c.Id, c.Name)).ToList());
+            BuildEntitySection("Subclasses", _importPackage.Subclasses.Select(s => (s.Id, s.Name)).ToList());
+            BuildEntitySection("Subspecies", _importPackage.Subspecies.Select(s => (s.Id, s.Name)).ToList());
         }
     }
 
@@ -259,12 +267,15 @@ public partial class ImportExportModal : Window
                 var ids = section.Items.Where(i => i.checkbox.ButtonPressed).Select(i => i.id).ToHashSet();
                 switch (section.Key)
                 {
-                    case "Factions":  sel.AllFactions  = allChecked; sel.FactionIds  = ids; break;
-                    case "NPCs":      sel.AllNpcs      = allChecked; sel.NpcIds      = ids; break;
-                    case "Locations": sel.AllLocations = allChecked; sel.LocationIds = ids; break;
-                    case "Sessions":  sel.AllSessions  = allChecked; sel.SessionIds  = ids; break;
-                    case "Items":     sel.AllItems     = allChecked; sel.ItemIds     = ids; break;
-                    case "Quests":    sel.AllQuests    = allChecked; sel.QuestIds    = ids; break;
+                    case "Factions":   sel.AllFactions   = allChecked; sel.FactionIds    = ids; break;
+                    case "NPCs":       sel.AllNpcs       = allChecked; sel.NpcIds        = ids; break;
+                    case "Locations":  sel.AllLocations  = allChecked; sel.LocationIds   = ids; break;
+                    case "Sessions":   sel.AllSessions   = allChecked; sel.SessionIds    = ids; break;
+                    case "Items":      sel.AllItems      = allChecked; sel.ItemIds       = ids; break;
+                    case "Quests":     sel.AllQuests     = allChecked; sel.QuestIds      = ids; break;
+                    case "Classes":    sel.AllClasses    = allChecked; sel.ClassIds      = ids; break;
+                    case "Subclasses": sel.AllSubclasses = allChecked; sel.SubclassIds   = ids; break;
+                    case "Subspecies": sel.AllSubspecies = allChecked; sel.SubspeciesIds = ids; break;
                 }
             }
         }

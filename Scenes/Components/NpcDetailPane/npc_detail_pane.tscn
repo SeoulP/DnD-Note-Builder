@@ -80,10 +80,9 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Species"
 
-[node name="SpeciesInput" type="Button" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/SpeciesRow" unique_id=1160907093]
+[node name="SpeciesInput" type="OptionButton" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/SpeciesRow" unique_id=1160907093]
 layout_mode = 2
 size_flags_horizontal = 3
-script = ExtResource("3_typeopt")
 
 [node name="GenderRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" unique_id=1577039184]
 layout_mode = 2

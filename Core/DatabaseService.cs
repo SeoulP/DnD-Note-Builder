@@ -26,6 +26,12 @@ public partial class DatabaseService : Node
     public QuestRepository                Quests                { get; private set; }
     public QuestHistoryRepository         QuestHistory          { get; private set; }
     public SettingsRepository             Settings              { get; private set; }
+    public ClassRepository                Classes               { get; private set; }
+    public AbilityRepository              Abilities             { get; private set; }
+    public AbilityTypeRepository          AbilityTypes          { get; private set; }
+    public AbilityResourceTypeRepository  AbilityResourceTypes  { get; private set; }
+    public SubspeciesRepository           Subspecies            { get; private set; }
+    public PlayerCharacterRepository      PlayerCharacters      { get; private set; }
 
     public string DbPath { get; private set; }
     public string ImgDir { get; private set; }
@@ -78,6 +84,12 @@ public partial class DatabaseService : Node
         Quests               = new QuestRepository(_conn);
         QuestHistory         = new QuestHistoryRepository(_conn);
         Settings             = new SettingsRepository(_conn);
+        Classes              = new ClassRepository(_conn);
+        Abilities            = new AbilityRepository(_conn);
+        AbilityTypes         = new AbilityTypeRepository(_conn);
+        AbilityResourceTypes = new AbilityResourceTypeRepository(_conn);
+        Subspecies           = new SubspeciesRepository(_conn);
+        PlayerCharacters     = new PlayerCharacterRepository(_conn);
 
         RunMigrations();
     }
@@ -104,6 +116,13 @@ public partial class DatabaseService : Node
         QuestStatuses       .Migrate();  // references campaigns; must precede Quests
         Quests              .Migrate();  // references campaigns, quest_statuses, characters, locations
         QuestHistory        .Migrate();  // references quests, sessions
+        Classes             .Migrate();  // references campaigns; creates classes + subclasses
+        Subspecies          .Migrate();  // references campaigns, species
+        AbilityTypes        .Migrate();  // references campaigns
+        AbilityResourceTypes.Migrate();  // references campaigns
+        Abilities           .Migrate();  // references campaigns, classes, subclasses, species, subspecies, characters
+        PlayerCharacters    .Migrate();  // additive columns on player_characters; references classes, subclasses, subspecies
+        PlayerCharacters    .MigrateResources();  // character_resources — references ability_resource_types; must run after AbilityResourceTypes
 
         MigrateLegacyPortraits();
 
@@ -116,6 +135,11 @@ public partial class DatabaseService : Node
         foreach (var campaign in Campaigns.GetAll())
         {
             Species             .SeedDefaults(campaign.Id);
+            Subspecies          .SeedDefaults(campaign.Id);
+            Classes             .SeedDefaults(campaign.Id);
+            AbilityTypes        .SeedDefaults(campaign.Id);
+            AbilityResourceTypes.SeedDefaults(campaign.Id);
+            Abilities           .SeedDefaults(campaign.Id);
             LocationFactionRoles.SeedDefaults(campaign.Id);
             NpcRelationshipTypes.SeedDefaults(campaign.Id);
             NpcStatuses         .SeedDefaults(campaign.Id);

@@ -6,11 +6,13 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_navbar"]
 bg_color = Color(0.05882, 0.09020, 0.16471, 1)
 
-[node name="NavBar" type="PanelContainer" node_paths=PackedStringArray("_backButton", "_settingsButton")]
+[node name="NavBar" type="PanelContainer" node_paths=PackedStringArray("_backButton", "_notesButton", "_systemButton", "_settingsButton")]
 custom_minimum_size = Vector2(0, 48)
 theme_override_styleboxes/panel = SubResource("StyleBoxFlat_navbar")
 script = ExtResource("1_navbar")
 _backButton             = NodePath("HBox/BackButton")
+_notesButton            = NodePath("HBox/NotesButton")
+_systemButton           = NodePath("HBox/SystemButton")
 _settingsButton         = NodePath("HBox/SettingsButton")
 _importExportModalScene = ExtResource("2_importexport")
 
@@ -21,6 +23,18 @@ theme_override_constants/separation = 8
 [node name="BackButton" type="Button" parent="HBox"]
 layout_mode = 2
 text = "← Campaigns"
+visible = false
+
+[node name="NotesButton" type="Button" parent="HBox"]
+layout_mode = 2
+text = "Notes"
+flat = false
+visible = false
+
+[node name="SystemButton" type="Button" parent="HBox"]
+layout_mode = 2
+text = "System"
+flat = false
 visible = false
 
 [node name="Spacer" type="Control" parent="HBox"]

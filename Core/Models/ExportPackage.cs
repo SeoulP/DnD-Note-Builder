@@ -27,6 +27,11 @@ namespace DndBuilder.Core.Models
         public List<Item>     Items     { get; set; } = new();
         public List<Quest>    Quests    { get; set; } = new();
 
+        // System entities
+        public List<Class>      Classes    { get; set; } = new();
+        public List<Subclass>   Subclasses { get; set; } = new();
+        public List<Subspecies> Subspecies { get; set; } = new();
+
         // Images (base64-encoded file bytes, keyed to entity by OldEntityId + EntityType)
         public List<EntityImageExport> Images { get; set; } = new();
     }
