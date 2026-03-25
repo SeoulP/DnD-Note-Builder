@@ -5,7 +5,7 @@
 [ext_resource type="Theme" uid="uid://serwwl5j7fdu" path="res://theme.tres" id="3_5j2cg"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
-[ext_resource type="PackedScene" path="res://Scenes/Modals/BackgroundPickerModal/background_picker_modal.tscn" id="6_bgmodal"]
+[ext_resource type="PackedScene" uid="uid://bgpk7xm3y02ql" path="res://Scenes/Modals/BackgroundPickerModal/background_picker_modal.tscn" id="6_bgmodal"]
 
 [node name="PlayerCharacterDetailPane" type="ScrollContainer" unique_id=1808163932 node_paths=PackedStringArray("_nameInput", "_speciesLabel", "_classLabel", "_speciesInput", "_subspeciesInput", "_classInput", "_subclassInput", "_levelInput", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_descInput", "_backgroundLabel", "_backgroundButton", "_skillsSection", "_skillsChipsContainer", "_skillsListContainer", "_abilityChoicesSection", "_abilityChoicesContainer", "_resourcesSection", "_resourcesContainer", "_notes", "_imageCarousel", "_deleteButton")]
 anchors_preset = 15
@@ -321,45 +321,48 @@ placeholder_text = "Appearance, backstory..."
 wrap_mode = 1
 caret_blink = true
 
-[node name="BackgroundRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=3100000001]
+[node name="BackgroundRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=-1194967295]
 layout_mode = 2
 
-[node name="BackgroundKeyLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=3100000002]
+[node name="BackgroundKeyLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=-1194967294]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "Background"
 
-[node name="BackgroundLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=3100000003]
+[node name="BackgroundLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=-1194967293]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "(None)"
 
-[node name="BackgroundButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=3100000004]
+[node name="BackgroundButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=-1194967292]
 layout_mode = 2
 text = "Choose"
 
-[node name="SkillsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=3100000005]
+[node name="SkillsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=-1194967291]
 layout_mode = 2
 
-[node name="SkillsSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=3100000006]
+[node name="SkillsSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=-1194967290]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="SkillsHeader" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection" unique_id=3100000007]
+[node name="SkillsHeader" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection" unique_id=-1194967289]
 layout_mode = 2
 
-[node name="SkillsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsHeader" unique_id=3100000008]
+[node name="SkillsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsHeader" unique_id=-1194967288]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Skills"
 
-[node name="ChipsContainer" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsHeader" unique_id=3100000009]
+[node name="ChipsContainer" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsHeader" unique_id=-1194967287]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="SkillsListContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection" unique_id=3100000011]
+[node name="SkillsListContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection" unique_id=-1194967285]
 layout_mode = 2
 theme_override_constants/separation = 2
+
+[node name="AbilitySep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=17174855]
+layout_mode = 2
 
 [node name="AbilityChoicesSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=64197964]
 visible = false
@@ -374,16 +377,16 @@ text = "Abilities"
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ResourcesSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=3048291001]
+[node name="ResourcesSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=-1246676295]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="ResourcesLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ResourcesSection" unique_id=3048291002]
+[node name="ResourcesLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ResourcesSection" unique_id=-1246676294]
 layout_mode = 2
 text = "Resources"
 
-[node name="ResourcesContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ResourcesSection" unique_id=3048291003]
+[node name="ResourcesContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ResourcesSection" unique_id=-1246676293]
 layout_mode = 2
 theme_override_constants/separation = 6
 
@@ -399,5 +402,5 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="BackgroundPickerModal" parent="." unique_id=3100000020 instance=ExtResource("6_bgmodal")]
+[node name="BackgroundPickerModal" parent="." unique_id=-1194967276 instance=ExtResource("6_bgmodal")]
 visible = false

@@ -1,6 +1,7 @@
 using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using Godot;
+using System;
 using System.Collections.Generic;
 
 public partial class PlayerCharacterDetailPane : ScrollContainer
@@ -11,8 +12,20 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     private int                      _subclassUnlockLevel  = 3;
     private bool                     _loading              = false;
     private HashSet<int>             _openAbilityDropdowns = new();
+    private HashSet<string>          _openAbilitySections  = new();
     private SkillExpectationService  _skillExpectations;
     private BackgroundPickerModal    _backgroundModal;
+
+    private static readonly string[] _abilityActionSectionOrder =
+    {
+        "Action",
+        "Bonus Action",
+        "Reaction",
+        "Free",
+        "No Action",
+        "Passive",
+        "Unspecified",
+    };
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NavigateToNewTabEventHandler(string entityType, int entityId);
@@ -537,28 +550,109 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 
         var abilities = GetAllOwnedAbilities();
 
-        // Current resource amounts for greying out depleted Use buttons
+        // Current resource amounts for greying out depleted Use buttons, and names for tooltips
         var resourceAmounts = new Dictionary<int, int>();
-        foreach (var res in _db.PlayerCharacters.GetResources(_pc.Id))
+        var resourceNames   = new Dictionary<int, string>();
+        foreach (var (res, name) in _db.PlayerCharacters.GetResourcesWithNames(_pc.Id))
+        {
             resourceAmounts[res.ResourceTypeId] = res.CurrentAmount;
+            resourceNames[res.ResourceTypeId]   = name;
+        }
 
-        // Remove abilities that are just linked options inside a fixed-choice ability —
-        // they already appear inside that ability's dropdown, not as top-level rows.
+        // Remove abilities that are choice-linked options inside a fixed-choice parent —
+        // they must not appear as duplicate top-level rows.
         var choiceLinkedIds = new HashSet<int>();
+        var choicesCache    = new Dictionary<int, List<AbilityChoice>>();
         foreach (var a in abilities)
-            if (a.ChoicePoolType == "fixed")
-                foreach (var ch in _db.Abilities.GetChoicesForAbility(a.Id))
-                    if (ch.LinkedAbilityId.HasValue)
-                        choiceLinkedIds.Add(ch.LinkedAbilityId.Value);
+        {
+            if (a.ChoicePoolType != "fixed") continue;
+            var choices = _db.Abilities.GetChoicesForAbility(a.Id);
+            choicesCache[a.Id] = choices;
+            foreach (var ch in choices)
+                if (ch.LinkedAbilityId.HasValue)
+                    choiceLinkedIds.Add(ch.LinkedAbilityId.Value);
+        }
 
         var filtered = new List<Ability>();
         foreach (var a in abilities)
             if (!choiceLinkedIds.Contains(a.Id))
                 filtered.Add(a);
+
+        // Re-add only the *chosen* linked sub-abilities at the top level so they
+        // appear in their own action-type section (e.g. Riposte → Bonus Action).
+        var seenLinkedIds = new HashSet<int>();
+        foreach (var a in abilities)
+        {
+            if (a.ChoicePoolType != "fixed") continue;
+            if (!choicesCache.TryGetValue(a.Id, out var allChoices)) continue;
+            foreach (var sel in _db.Abilities.GetCharacterAbilityChoices(_pc.Id, a.Id))
+            {
+                var choice = allChoices.Find(c => c.Id == sel.ChoiceId);
+                if (choice?.LinkedAbilityId == null) continue;
+                int linkedId = choice.LinkedAbilityId.Value;
+                if (!seenLinkedIds.Add(linkedId)) continue;
+                var linked = _db.Abilities.Get(linkedId);
+                if (linked != null) filtered.Add(linked);
+            }
+        }
+
         abilities = filtered;
 
         _abilityChoicesSection.Visible = abilities.Count > 0;
         if (abilities.Count == 0) return;
+
+        var abilitiesBySection = GroupAbilitiesByAction(abilities);
+        foreach (var sectionName in GetOrderedAbilitySectionNames(abilitiesBySection.Keys))
+        {
+            bool isOpen = _openAbilitySections.Contains(sectionName);
+
+            var sectionContainer = new VBoxContainer();
+            sectionContainer.AddThemeConstantOverride("separation", 4);
+
+            var rowStyle  = _abilityChoicesContainer.GetThemeStylebox("panel", "PanelContainer");
+            var hoverBox  = new StyleBoxFlat { BgColor = ThemeManager.Instance.Current.Hover };
+            hoverBox.SetCornerRadiusAll(3);
+
+            var sectionToggle = new Button
+            {
+                Text                = $"{(isOpen ? "▲" : "▼")}  {sectionName}",
+                ToggleMode          = true,
+                ButtonPressed       = isOpen,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                Alignment           = HorizontalAlignment.Left,
+                Flat                = false,
+            };
+            sectionToggle.AddThemeStyleboxOverride("normal",  rowStyle);
+            sectionToggle.AddThemeStyleboxOverride("hover",   hoverBox);
+            sectionToggle.AddThemeStyleboxOverride("pressed", hoverBox);
+            sectionToggle.AddThemeStyleboxOverride("focus",   rowStyle);
+
+            var sectionBody = new VBoxContainer();
+            sectionBody.AddThemeConstantOverride("separation", 8);
+
+            var bodyMargin = new MarginContainer { Visible = isOpen };
+            bodyMargin.AddThemeConstantOverride("margin_left", 24);
+            bodyMargin.AddChild(sectionBody);
+
+            sectionToggle.Toggled += pressed =>
+            {
+                if (pressed) _openAbilitySections.Add(sectionName);
+                else _openAbilitySections.Remove(sectionName);
+                bodyMargin.Visible = pressed;
+                sectionToggle.Text = $"{(pressed ? "▲" : "▼")}  {sectionName}";
+            };
+
+            foreach (var ability in abilitiesBySection[sectionName])
+                sectionBody.AddChild(BuildAbilityBlock(ability, resourceAmounts, resourceNames));
+
+            sectionContainer.AddChild(sectionToggle);
+            sectionContainer.AddChild(bodyMargin);
+            _abilityChoicesContainer.AddChild(sectionContainer);
+        }
+
+        return;
+
+#pragma warning disable CS0162
 
         foreach (var ability in abilities)
         {
@@ -732,6 +826,238 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             abilityBlock.AddChild(selectedList);
             _abilityChoicesContainer.AddChild(abilityBlock);
         }
+
+#pragma warning restore CS0162
+    }
+
+    private static string CostTooltip(List<AbilityCost> costs, Dictionary<int, string> resourceNames)
+    {
+        var parts = new System.Text.StringBuilder();
+        foreach (var cost in costs)
+        {
+            if (parts.Length > 0) parts.Append(", ");
+            string name = resourceNames.TryGetValue(cost.ResourceTypeId, out var n) ? n : "resource";
+            parts.Append(cost.Amount == 1 ? $"1 {name}" : $"{cost.Amount} {name}");
+        }
+        return parts.ToString();
+    }
+
+    private VBoxContainer BuildAbilityBlock(Ability ability, Dictionary<int, int> resourceAmounts, Dictionary<int, string> resourceNames)
+    {
+        var abilityBlock = new VBoxContainer();
+        abilityBlock.AddThemeConstantOverride("separation", 2);
+
+        if (ability.ChoicePoolType != "fixed")
+        {
+            var row = new EntityRow
+            {
+                ShowDelete      = false,
+                Text            = ability.Name,
+                ShowDescription = !string.IsNullOrWhiteSpace(ability.Trigger),
+                Description     = ability.Trigger,
+            };
+            int navId = ability.Id;
+            row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo, "ability", navId);
+            row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "ability", navId);
+
+            if (ability.Costs.Count > 0)
+            {
+                var hbox = new HBoxContainer();
+                hbox.AddThemeConstantOverride("separation", -30);
+                row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                hbox.AddChild(row);
+                var capturedCosts = ability.Costs;
+                bool depleted = IsOutOfUses(capturedCosts, resourceAmounts);
+                var useBtn = new Button { Text = "⚡", Flat = true, TooltipText = CostTooltip(capturedCosts, resourceNames), MouseDefaultCursorShape = depleted ? Control.CursorShape.Forbidden : Control.CursorShape.PointingHand };
+                useBtn.Disabled = depleted;
+                useBtn.Pressed += () => SpendResources(capturedCosts);
+                hbox.AddChild(useBtn);
+                abilityBlock.AddChild(hbox);
+            }
+            else
+            {
+                abilityBlock.AddChild(row);
+            }
+
+            return abilityBlock;
+        }
+
+        int allowed = _db.Abilities.ResolveChoiceCount(ability, _pc.Level, _pc);
+        var selectedChoices = _db.Abilities.GetCharacterAbilityChoices(_pc.Id, ability.Id);
+        var selectedIds = new HashSet<int>();
+        foreach (var s in selectedChoices) selectedIds.Add(s.ChoiceId);
+        var allChoices = _db.Abilities.GetChoicesForAbility(ability.Id);
+
+        string countText = allowed > 0 ? $"{selectedIds.Count}/{allowed} picks"
+                         : selectedIds.Count > 0 ? $"{selectedIds.Count} selected"
+                         : "0 picks";
+        bool isOpen = _openAbilityDropdowns.Contains(ability.Id);
+        var toggleBtn = new Button
+        {
+            Text                = $"{(isOpen ? "▲" : "▼")}  {ability.Name}  [{countText}]",
+            ToggleMode          = true,
+            ButtonPressed       = isOpen,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            Alignment           = HorizontalAlignment.Left,
+        };
+
+        var dropdownBg = new StyleBoxFlat { BgColor = new Color(1, 1, 1, 0.06f) };
+        dropdownBg.SetCornerRadiusAll(3);
+        dropdownBg.ContentMarginLeft   = 8;
+        dropdownBg.ContentMarginRight  = 8;
+        dropdownBg.ContentMarginTop    = 6;
+        dropdownBg.ContentMarginBottom = 6;
+
+        var dropdownPanel = new PanelContainer { Visible = isOpen };
+        dropdownPanel.AddThemeStyleboxOverride("panel", dropdownBg);
+        var checkboxVbox = new VBoxContainer();
+        checkboxVbox.AddThemeConstantOverride("separation", 4);
+        dropdownPanel.AddChild(checkboxVbox);
+
+        foreach (var choice in allChoices)
+        {
+            var cap         = choice;
+            bool isSelected = selectedIds.Contains(cap.Id);
+            bool disabled   = allowed > 0 && selectedIds.Count >= allowed && !isSelected;
+            var checkbox    = new CheckBox { Text = cap.Name, ButtonPressed = isSelected, Disabled = disabled };
+            checkbox.AddThemeColorOverride("font_uncheck_color", new Color(1, 1, 1, 0.85f));
+            checkbox.AddThemeColorOverride("font_uncheck_disabled_color", new Color(0.8f, 0.8f, 0.8f, 0.5f));
+
+            if (cap.LinkedAbilityId.HasValue)
+            {
+                int linkedId = cap.LinkedAbilityId.Value;
+                checkbox.MouseEntered += () =>
+                    checkbox.MouseDefaultCursorShape = Input.IsKeyPressed(Key.Ctrl)
+                        ? Control.CursorShape.PointingHand : Control.CursorShape.Arrow;
+                checkbox.MouseExited += () =>
+                    checkbox.MouseDefaultCursorShape = Control.CursorShape.Arrow;
+                checkbox.GuiInput += e =>
+                {
+                    if (e is InputEventMouseMotion mm)
+                    {
+                        checkbox.MouseDefaultCursorShape = mm.CtrlPressed
+                            ? Control.CursorShape.PointingHand : Control.CursorShape.Arrow;
+                    }
+                    else if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mb && mb.CtrlPressed)
+                    {
+                        checkbox.AcceptEvent();
+                        EmitSignal(SignalName.NavigateTo, "ability", linkedId);
+                    }
+                };
+            }
+
+            checkbox.Toggled += toggled =>
+            {
+                var current = new HashSet<int>();
+                foreach (var x in _db.Abilities.GetCharacterAbilityChoices(_pc.Id, ability.Id))
+                    current.Add(x.ChoiceId);
+
+                if (toggled && allowed > 0 && current.Count >= allowed && !current.Contains(cap.Id))
+                {
+                    checkbox.SetPressedNoSignal(false);
+                    return;
+                }
+                _db.Abilities.SetCharacterAbilityChoiceSelected(_pc.Id, ability.Id, cap.Id, toggled);
+                if (toggled && allowed > 0 && _db.Abilities.GetCharacterAbilityChoices(_pc.Id, ability.Id).Count >= allowed)
+                    _openAbilityDropdowns.Remove(ability.Id);
+                LoadAbilityChoices();
+            };
+            checkboxVbox.AddChild(checkbox);
+        }
+
+        toggleBtn.Toggled += pressed =>
+        {
+            if (pressed) _openAbilityDropdowns.Add(ability.Id);
+            else _openAbilityDropdowns.Remove(ability.Id);
+            dropdownPanel.Visible = pressed;
+            toggleBtn.Text = $"{(pressed ? "▲" : "▼")}  {ability.Name}  [{countText}]";
+        };
+
+        var selectedList = new VBoxContainer();
+        selectedList.AddThemeConstantOverride("separation", 1);
+        var parentCosts = ability.Costs;
+        foreach (var sel in selectedChoices)
+        {
+            var choice = allChoices.Find(c => c.Id == sel.ChoiceId);
+            if (choice == null) continue;
+            // Linked sub-abilities appear at the top level sorted by their own action type.
+            if (choice.LinkedAbilityId.HasValue) continue;
+            var row = new EntityRow { ShowDelete = false, Text = choice.Name };
+            if (choice.LinkedAbilityId.HasValue)
+            {
+                int linkedId = choice.LinkedAbilityId.Value;
+                row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo, "ability", linkedId);
+                row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "ability", linkedId);
+            }
+            var margin = new MarginContainer();
+            margin.AddThemeConstantOverride("margin_left", 24);
+
+            if (parentCosts.Count > 0)
+            {
+                var hbox = new HBoxContainer();
+                hbox.AddThemeConstantOverride("separation", -30);
+                row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                hbox.AddChild(row);
+                var capturedCosts = parentCosts;
+                bool depleted = IsOutOfUses(capturedCosts, resourceAmounts);
+                var useBtn = new Button { Text = "⚡", Flat = true, TooltipText = CostTooltip(capturedCosts, resourceNames), MouseDefaultCursorShape = depleted ? Control.CursorShape.Forbidden : Control.CursorShape.PointingHand };
+                useBtn.Disabled = depleted;
+                useBtn.Pressed += () => SpendResources(capturedCosts);
+                hbox.AddChild(useBtn);
+                margin.AddChild(hbox);
+            }
+            else
+            {
+                margin.AddChild(row);
+            }
+            selectedList.AddChild(margin);
+        }
+
+        abilityBlock.AddChild(toggleBtn);
+        abilityBlock.AddChild(dropdownPanel);
+        abilityBlock.AddChild(selectedList);
+        return abilityBlock;
+    }
+
+    private Dictionary<string, List<Ability>> GroupAbilitiesByAction(List<Ability> abilities)
+    {
+        var grouped = new Dictionary<string, List<Ability>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var ability in abilities)
+        {
+            string sectionName = GetAbilityActionSectionName(ability);
+            if (!grouped.TryGetValue(sectionName, out var sectionAbilities))
+            {
+                sectionAbilities = new List<Ability>();
+                grouped[sectionName] = sectionAbilities;
+            }
+            sectionAbilities.Add(ability);
+        }
+
+        return grouped;
+    }
+
+    private List<string> GetOrderedAbilitySectionNames(IEnumerable<string> sectionNames)
+    {
+        var lookup = new HashSet<string>(sectionNames, StringComparer.OrdinalIgnoreCase);
+        var ordered = new List<string>();
+        foreach (var actionName in _abilityActionSectionOrder)
+            if (lookup.Contains(actionName))
+                ordered.Add(actionName);
+
+        var remaining = new List<string>();
+        foreach (var sectionName in lookup)
+            if (!ordered.Contains(sectionName))
+                remaining.Add(sectionName);
+
+        remaining.Sort(StringComparer.OrdinalIgnoreCase);
+        ordered.AddRange(remaining);
+        return ordered;
+    }
+
+    private static string GetAbilityActionSectionName(Ability ability)
+    {
+        string action = ability.Action?.Trim() ?? "";
+        return string.IsNullOrEmpty(action) ? "Unspecified" : action;
     }
 
     private void LoadResources()
