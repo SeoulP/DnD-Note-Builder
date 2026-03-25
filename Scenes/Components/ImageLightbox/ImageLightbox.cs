@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using DndBuilder.Core.Models;
@@ -158,10 +159,24 @@ public partial class ImageLightbox : CanvasLayer
     {
         if (_images.Count == 0 || _imageDisplay == null) return;
         var path = _images[_index].Path;
-        if (!File.Exists(path)) return;
-        var bytes = File.ReadAllBytes(path);
-        var img   = new Image();
-        if (LoadImageFromBytes(img, bytes) != Error.Ok) return;
+        if (!File.Exists(path))
+        {
+            AppLogger.Instance.Warn("ImageLightbox", $"Image file not found: {path}");
+            return;
+        }
+        byte[] bytes;
+        try { bytes = File.ReadAllBytes(path); }
+        catch (Exception ex)
+        {
+            AppLogger.Instance.Error("ImageLightbox", $"Failed to read image: {path}", ex);
+            return;
+        }
+        var img = new Image();
+        if (LoadImageFromBytes(img, bytes) != Error.Ok)
+        {
+            AppLogger.Instance.Warn("ImageLightbox", $"Failed to decode image: {path}");
+            return;
+        }
         ApplyTexture(ImageTexture.CreateFromImage(img));
     }
 

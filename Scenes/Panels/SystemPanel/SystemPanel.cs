@@ -9,8 +9,8 @@ public partial class SystemPanel : Control
 {
     private int             _campaignId;
     private DatabaseService _db;
-    private HashSet<int>    _collapsedClasses = new();
-    private HashSet<int>    _collapsedSpecies = new();
+    private readonly HashSet<int> _expandedClasses = new();
+    private readonly HashSet<int> _expandedSpecies = new();
     private SystemVocabulary _vocab           = SystemVocabulary.Default;
 
     [Export] private Button _addClassesButton;
@@ -163,8 +163,8 @@ public partial class SystemPanel : Control
     public void SetCampaign(int campaignId)
     {
         _campaignId = campaignId;
-        _collapsedClasses.Clear();
-        _collapsedSpecies.Clear();
+        _expandedClasses.Clear();
+        _expandedSpecies.Clear();
         foreach (var tab in _tabs) { tab.Pane?.QueueFree(); tab.Widget?.QueueFree(); }
         _tabs.Clear();
         _activeTab = -1;
@@ -196,7 +196,7 @@ public partial class SystemPanel : Control
         {
             int  clsId       = cls.Id;
             var  subclasses  = _db.Classes.GetSubclassesForClass(cls.Id);
-            bool isCollapsed = _collapsedClasses.Contains(cls.Id);
+            bool isExpanded = _expandedClasses.Contains(cls.Id);
 
             if (subclasses.Count > 0)
             {
@@ -205,28 +205,34 @@ public partial class SystemPanel : Control
 
                 var toggleBtn = new Button
                 {
-                    Text              = isCollapsed ? "▶" : "▼",
+                    Text              = isExpanded ? "▼" : "▶",
                     Flat              = true,
                     CustomMinimumSize = new Vector2(24, 0),
                 };
                 toggleBtn.Pressed += () =>
                 {
-                    if (_collapsedClasses.Contains(clsId)) _collapsedClasses.Remove(clsId);
-                    else _collapsedClasses.Add(clsId);
-                    LoadClasses();
+                    if (_expandedClasses.Contains(clsId)) _expandedClasses.Remove(clsId);
+                    else _expandedClasses.Add(clsId);
+                    Callable.From(LoadClasses).CallDeferred();
                 };
 
                 var btn = MakeSidebarButton(cls.Name, ClassColor);
                 btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
                 btn.SetMeta("id", clsId);
-                btn.Pressed += () => ShowDetailPane("class", clsId);
+                btn.Pressed += () =>
+                {
+                    ShowDetailPane("class", clsId);
+                    if (_expandedClasses.Contains(clsId)) _expandedClasses.Remove(clsId);
+                    else _expandedClasses.Add(clsId);
+                    Callable.From(LoadClasses).CallDeferred();
+                };
                 WireCtrlClick(btn, "class", clsId);
 
                 hbox.AddChild(toggleBtn);
                 hbox.AddChild(btn);
                 _classesContainer.AddChild(hbox);
 
-                if (!isCollapsed)
+                if (isExpanded)
                 {
                     foreach (var sub in subclasses)
                     {
@@ -258,7 +264,7 @@ public partial class SystemPanel : Control
         {
             int  spId        = sp.Id;
             var  subspecies  = _db.Subspecies.GetAllForSpecies(sp.Id);
-            bool isCollapsed = _collapsedSpecies.Contains(sp.Id);
+            bool isExpanded = _expandedSpecies.Contains(sp.Id);
 
             if (subspecies.Count > 0)
             {
@@ -267,28 +273,34 @@ public partial class SystemPanel : Control
 
                 var toggleBtn = new Button
                 {
-                    Text              = isCollapsed ? "▶" : "▼",
+                    Text              = isExpanded ? "▼" : "▶",
                     Flat              = true,
                     CustomMinimumSize = new Vector2(24, 0),
                 };
                 toggleBtn.Pressed += () =>
                 {
-                    if (_collapsedSpecies.Contains(spId)) _collapsedSpecies.Remove(spId);
-                    else _collapsedSpecies.Add(spId);
-                    LoadSpecies();
+                    if (_expandedSpecies.Contains(spId)) _expandedSpecies.Remove(spId);
+                    else _expandedSpecies.Add(spId);
+                    Callable.From(LoadSpecies).CallDeferred();
                 };
 
                 var btn = MakeSidebarButton(sp.Name, SpeciesColor);
                 btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
                 btn.SetMeta("id", spId);
-                btn.Pressed += () => ShowDetailPane("species", spId);
+                btn.Pressed += () =>
+                {
+                    ShowDetailPane("species", spId);
+                    if (_expandedSpecies.Contains(spId)) _expandedSpecies.Remove(spId);
+                    else _expandedSpecies.Add(spId);
+                    Callable.From(LoadSpecies).CallDeferred();
+                };
                 WireCtrlClick(btn, "species", spId);
 
                 hbox.AddChild(toggleBtn);
                 hbox.AddChild(btn);
                 _speciesContainer.AddChild(hbox);
 
-                if (!isCollapsed)
+                if (isExpanded)
                 {
                     foreach (var sub in subspecies)
                     {

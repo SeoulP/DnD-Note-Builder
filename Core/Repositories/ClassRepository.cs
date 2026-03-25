@@ -164,7 +164,7 @@ namespace DndBuilder.Core.Repositories
 
                 ("Fighter",
                  "A master of martial combat, skilled with a variety of weapons and armor.",
-                 3, "d10", "Strength or Dexterity",
+                 3, "d10", "Strength, Dexterity",
                  "Strength, Constitution",
                  "All armor, Shields",
                  "Simple weapons, Martial weapons",
@@ -177,7 +177,7 @@ namespace DndBuilder.Core.Repositories
 
                 ("Monk",
                  "A master of martial arts, harnessing the power of the body in pursuit of physical and spiritual perfection.",
-                 3, "d8", "Strength or Dexterity",
+                 3, "d8", "Strength, Dexterity",
                  "Strength, Dexterity",
                  "None",
                  "Simple weapons, Shortswords",
@@ -190,7 +190,7 @@ namespace DndBuilder.Core.Repositories
 
                 ("Paladin",
                  "A holy warrior bound to a sacred oath.",
-                 3, "d10", "Strength and Charisma",
+                 3, "d10", "Strength, Charisma",
                  "Wisdom, Charisma",
                  "All armor, Shields",
                  "Simple weapons, Martial weapons",
@@ -203,7 +203,7 @@ namespace DndBuilder.Core.Repositories
 
                 ("Ranger",
                  "A warrior who uses martial prowess and nature magic to combat threats on the edges of civilization.",
-                 3, "d10", "Dexterity and Wisdom",
+                 3, "d10", "Dexterity, Wisdom",
                  "Strength, Dexterity",
                  "Light armor, Medium armor, Shields",
                  "Simple weapons, Martial weapons",

@@ -508,7 +508,7 @@ public partial class CampaignDashboard : Control
                 var btn = new Button { Text = cls.Name, Flat = false, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, SizeFlagsHorizontal = SizeFlags.ExpandFill };
                 ApplyButtonStyle(btn, ClassColor, roundLeft: false, roundRight: true);
                 btn.SetMeta("id", clsId);
-                btn.Pressed += () => ShowDetailPane("class", clsId);
+                btn.Pressed += () => { ShowDetailPane("class", clsId); if (_collapsedClasses.Remove(clsId)) LoadClasses(); };
                 WireCtrlClick(btn, "class", clsId);
 
                 hbox.AddChild(toggleBtn);
@@ -573,7 +573,7 @@ public partial class CampaignDashboard : Control
                 var btn = new Button { Text = sp.Name, Flat = false, Alignment = HorizontalAlignment.Left, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, SizeFlagsHorizontal = SizeFlags.ExpandFill };
                 ApplyButtonStyle(btn, SpeciesColor, roundLeft: false, roundRight: true);
                 btn.SetMeta("id", spId);
-                btn.Pressed += () => ShowDetailPane("species", spId);
+                btn.Pressed += () => { ShowDetailPane("species", spId); if (_collapsedSpecies.Remove(spId)) LoadSpecies(); };
                 WireCtrlClick(btn, "species", spId);
 
                 hbox.AddChild(toggleBtn);
@@ -1061,7 +1061,7 @@ public partial class CampaignDashboard : Control
             int activeIdx = Mathf.Clamp(savedActive, 0, _tabs.Count - 1);
             if (_tabs.Count > 0) ActivateTab(activeIdx);
         }
-        catch { /* corrupt saved state — ignore */ }
+        catch (Exception ex) { AppLogger.Instance.Debug("TabHistory", $"Corrupt saved tab state — ignored: {ex.Message}"); }
     }
 
     private Control BuildAddTabWidget()

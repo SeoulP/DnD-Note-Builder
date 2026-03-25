@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Microsoft.Data.Sqlite;
 using DndBuilder.Core.Models;
@@ -45,6 +46,10 @@ public partial class DatabaseService : Node
         ImgDir = System.IO.Path.Combine(appDir, "img");
         System.IO.Directory.CreateDirectory(ImgDir);
         InitConnection();
+
+        AppLogger.Instance.SetLogDirectory(System.IO.Path.GetDirectoryName(DbPath));
+        if (System.Enum.TryParse<LogLevel>(Settings.Get("log_level", "Info"), ignoreCase: true, out var logLevel))
+            AppLogger.Instance.SetMinLevel(logLevel);
     }
 
     public void Reconnect()
@@ -64,6 +69,12 @@ public partial class DatabaseService : Node
     {
         _conn = new SqliteConnection($"Data Source={DbPath}");
         _conn.Open();
+
+        using (var pragma = _conn.CreateCommand())
+        {
+            pragma.CommandText = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;";
+            pragma.ExecuteNonQuery();
+        }
 
         Campaigns            = new CampaignRepository(_conn);
         Sessions             = new SessionRepository(_conn);
@@ -200,13 +211,20 @@ public partial class DatabaseService : Node
                     if (!System.IO.Path.IsPathRooted(img.Path)) continue; // already relative
                     if (!System.IO.File.Exists(img.Path)) continue;       // file missing — skip silently
 
-                    System.IO.Directory.CreateDirectory(subDir);
-                    string ext     = System.IO.Path.GetExtension(img.Path);
-                    string dest    = System.IO.Path.Combine(subDir, System.Guid.NewGuid().ToString("N") + ext);
-                    System.IO.File.Copy(img.Path, dest, overwrite: false);
+                    try
+                    {
+                        System.IO.Directory.CreateDirectory(subDir);
+                        string ext     = System.IO.Path.GetExtension(img.Path);
+                        string dest    = System.IO.Path.Combine(subDir, System.Guid.NewGuid().ToString("N") + ext);
+                        System.IO.File.Copy(img.Path, dest, overwrite: false);
 
-                    string relPath = System.IO.Path.GetRelativePath(appDir, dest).Replace('\\', '/');
-                    EntityImages.UpdatePath(img.Id, relPath);
+                        string relPath = System.IO.Path.GetRelativePath(appDir, dest).Replace('\\', '/');
+                        EntityImages.UpdatePath(img.Id, relPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.Instance.Warn("DatabaseService", $"Legacy image migration failed for {img.Path}: {ex.Message}");
+                    }
                 }
             }
         }

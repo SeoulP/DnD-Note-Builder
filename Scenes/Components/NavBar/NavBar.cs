@@ -22,6 +22,7 @@ public partial class NavBar : PanelContainer
     private DatabaseService    _db;
     private int?               _campaignId;
     private ConfirmationDialog _restoreConfirmDialog;
+    private ConfirmationDialog _clearLogDialog;
     private string             _pendingRestorePath = "";
     private string             _activePanel        = "notes";
 
@@ -52,6 +53,11 @@ public partial class NavBar : PanelContainer
         AddChild(_restoreConfirmDialog);
         _restoreConfirmDialog.Confirmed += DoRestore;
 
+        // Clear log confirmation
+        _clearLogDialog = DialogHelper.Make("Clear App Log");
+        AddChild(_clearLogDialog);
+        _clearLogDialog.Confirmed += DoClearLog;
+
         // Settings menu
         var popup = _settingsButton.GetPopup();
         popup.AddItem("Backup Database",         0);
@@ -65,10 +71,26 @@ public partial class NavBar : PanelContainer
         popup.SetItemChecked(popup.GetItemIndex(5), _db.Settings.Get("remember_tabs", "false") == "true");
         popup.AddSeparator();
         popup.AddItem("Appearance...",           4);
+        popup.AddSeparator();
+
+        // Log level submenu
+        var logLevelSubmenu = new PopupMenu { Name = "LogLevelSubmenu" };
+        popup.AddChild(logLevelSubmenu);
+        logLevelSubmenu.HideOnCheckableItemSelection = false;
+        string[] levelNames = { "Trace", "Debug", "Info", "Warning", "Error" };
+        for (int i = 0; i < levelNames.Length; i++)
+            logLevelSubmenu.AddRadioCheckItem(levelNames[i], 10 + i);
+        logLevelSubmenu.SetItemChecked((int)AppLogger.Instance.MinLevel, true);
+        logLevelSubmenu.IdPressed += OnLogLevelSelected;
+        popup.AddSubmenuItem("Log Level", "LogLevelSubmenu", 6);
+        popup.AddItem("Clear App Log",           7);
         popup.SetItemTooltip(0, "Save a .zip containing the database and all images. Backs up all campaigns and their data.");
         popup.SetItemTooltip(1, "Restore from a .zip backup (or legacy .db file). Overwrites all current data.");
         popup.SetItemTooltip(3, "Selectively export NPCs, Locations, Factions, Sessions, Items, and types from this campaign to a .dndx file.");
         popup.SetItemTooltip(4, "Import entities and types from a .dndx file into this campaign.");
+        popup.AboutToPopup += () =>
+            popup.SetItemDisabled(popup.GetItemIndex(7), !AppLogger.Instance.LogExists());
+        popup.SetItemDisabled(popup.GetItemIndex(7), !AppLogger.Instance.LogExists());
         popup.IdPressed += OnMenuItemPressed;
 
         // Navbar background — driven by ThemeManager so it updates live
@@ -257,7 +279,32 @@ public partial class NavBar : PanelContainer
                 p.SetItemChecked(idx, now);
                 _db.Settings.Set("remember_tabs", now ? "true" : "false");
                 break;
+            case 7: OpenClearLogDialog(); break;
         }
+    }
+
+    private void OnLogLevelSelected(long id)
+    {
+        var level = (LogLevel)(int)(id - 10);
+        AppLogger.Instance.SetMinLevel(level);
+        _db.Settings.Set("log_level", level.ToString());
+
+        var submenu = _settingsButton.GetPopup().GetNode<PopupMenu>("LogLevelSubmenu");
+        for (int i = 0; i < 5; i++)
+            submenu.SetItemChecked(i, i == (int)level);
+    }
+
+    private void OpenClearLogDialog()
+    {
+        DialogHelper.Show(_clearLogDialog, "This will permanently delete the app log. Continue?");
+    }
+
+    private void DoClearLog()
+    {
+        AppLogger.Instance.ClearLog();
+        _settingsButton.GetPopup().SetItemDisabled(
+            _settingsButton.GetPopup().GetItemIndex(7),
+            !AppLogger.Instance.LogExists());
     }
 
     // ─── Backup / Restore ─────────────────────────────────────────────────────
@@ -324,20 +371,11 @@ public partial class NavBar : PanelContainer
                 Callable.From((bool ok, string[] paths, long _) =>
                 {
                     if (!ok || paths.Length == 0) return;
-                    string logPath = Path.Combine(Path.GetDirectoryName(_db.DbPath), "backup_debug.log");
                     _db.Disconnect();
                     try
                     {
-                        var log = new System.Text.StringBuilder();
-                        log.AppendLine($"[{DateTime.Now}] Backup started");
-                        log.AppendLine($"  dest    = {paths[0]}");
-                        log.AppendLine($"  DbPath  = {_db.DbPath}  exists={File.Exists(_db.DbPath)}");
-                        log.AppendLine($"  ImgDir  = {_db.ImgDir}  exists={Directory.Exists(_db.ImgDir)}");
-
                         if (File.Exists(paths[0])) File.Delete(paths[0]);
-                        log.AppendLine("  ZipFile.Open...");
                         using var zip = ZipFile.Open(paths[0], ZipArchiveMode.Create);
-                        log.AppendLine("  Adding campaign.db...");
                         zip.CreateEntryFromFile(_db.DbPath, "campaign.db");
                         foreach (var ext in new[] { "-wal", "-shm" })
                         {
@@ -350,18 +388,14 @@ public partial class NavBar : PanelContainer
                             foreach (var file in Directory.GetFiles(_db.ImgDir, "*", SearchOption.AllDirectories))
                             {
                                 string entryName = "img/" + Path.GetRelativePath(_db.ImgDir, file).Replace('\\', '/');
-                                log.AppendLine($"  Adding {entryName}...");
                                 zip.CreateEntryFromFile(file, entryName);
                             }
                         }
-                        log.AppendLine("  Done.");
-                        File.WriteAllText(logPath, log.ToString());
+                        AppLogger.Instance.Info("Backup", $"Backup saved to {paths[0]}");
                     }
                     catch (Exception ex)
                     {
-                        string msg = $"[{DateTime.Now}] FAILED: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}";
-                        File.WriteAllText(logPath, msg);
-                        OS.Alert($"Backup failed:\n{ex.Message}", "Backup Error");
+                        AppLogger.Instance.Error("Backup", "Backup failed", ex);
                     }
                     finally
                     {
@@ -393,30 +427,46 @@ public partial class NavBar : PanelContainer
         if (string.IsNullOrEmpty(_pendingRestorePath)) return;
         string appDir = Path.GetDirectoryName(_db.DbPath);
 
-        if (Path.GetExtension(_pendingRestorePath).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            _db.Disconnect();
-            using (var zip = ZipFile.OpenRead(_pendingRestorePath))
+            AppLogger.Instance.Info("Restore", $"Restoring from {_pendingRestorePath}");
+            if (Path.GetExtension(_pendingRestorePath).Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var entry in zip.Entries)
+                _db.Disconnect();
+                try
                 {
-                    if (string.IsNullOrEmpty(entry.Name)) continue; // directory entry
-                    string dest = Path.Combine(appDir, entry.FullName.Replace('/', Path.DirectorySeparatorChar));
-                    Directory.CreateDirectory(Path.GetDirectoryName(dest));
-                    entry.ExtractToFile(dest, overwrite: true);
+                    using var zip = ZipFile.OpenRead(_pendingRestorePath);
+                    foreach (var entry in zip.Entries)
+                    {
+                        if (string.IsNullOrEmpty(entry.Name)) continue; // directory entry
+                        string dest = Path.Combine(appDir, entry.FullName.Replace('/', Path.DirectorySeparatorChar));
+                        Directory.CreateDirectory(Path.GetDirectoryName(dest));
+                        entry.ExtractToFile(dest, overwrite: true);
+                    }
+                }
+                finally
+                {
+                    _db.Reconnect();
                 }
             }
-            _db.Reconnect();
-        }
-        else
-        {
-            // Legacy .db restore
-            File.Copy(_pendingRestorePath, _db.DbPath, overwrite: true);
-            _db.Reconnect();
-        }
+            else
+            {
+                // Legacy .db restore
+                File.Copy(_pendingRestorePath, _db.DbPath, overwrite: true);
+                _db.Reconnect();
+            }
 
-        EmitSignal(SignalName.DatabaseRestored);
-        _pendingRestorePath = "";
+            AppLogger.Instance.Info("Restore", "Restore completed");
+            EmitSignal(SignalName.DatabaseRestored);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Instance.Error("Restore", "Restore failed", ex);
+        }
+        finally
+        {
+            _pendingRestorePath = "";
+        }
     }
 
     // ─── Export / Import campaign data ────────────────────────────────────────
@@ -464,18 +514,29 @@ public partial class NavBar : PanelContainer
 
     private void WriteExportFile(string path, ExportSelection sel)
     {
-        var pkg  = ImportExportService.BuildPackage(_campaignId.Value, sel, _db);
-        var json = JsonSerializer.Serialize(pkg, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(path, json);
+        try
+        {
+            var pkg  = ImportExportService.BuildPackage(_campaignId.Value, sel, _db);
+            var json = JsonSerializer.Serialize(pkg, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(path, json);
+            AppLogger.Instance.Info("ImportExport", $"Export saved to {path}");
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Instance.Error("ImportExport", "Export failed", ex);
+        }
     }
 
     private void ShowImportCampaignModal(string path)
     {
         if (!_campaignId.HasValue) return;
-        var json = File.ReadAllText(path);
         ExportPackage pkg;
-        try { pkg = JsonSerializer.Deserialize<ExportPackage>(json); }
-        catch { GD.PrintErr("ImportExportModal: failed to parse .dndx file"); return; }
+        try
+        {
+            var json = File.ReadAllText(path);
+            pkg = JsonSerializer.Deserialize<ExportPackage>(json);
+        }
+        catch (Exception ex) { AppLogger.Instance.Error("ImportExport", "Failed to read .dndx file", ex); return; }
         if (pkg == null) return;
 
         var modal = _importExportModalScene.Instantiate<ImportExportModal>();

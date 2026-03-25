@@ -117,25 +117,6 @@ namespace DndBuilder.Core.Repositories
                 alter.ExecuteNonQuery();
             }
 
-            // ability_costs — structured resource costs per ability (source of truth for runtime logic)
-            cmd = _conn.CreateCommand();
-            cmd.CommandText = @"CREATE TABLE IF NOT EXISTS ability_costs (
-                ability_id       INTEGER NOT NULL REFERENCES abilities(id)              ON DELETE CASCADE,
-                resource_type_id INTEGER NOT NULL REFERENCES ability_resource_types(id) ON DELETE CASCADE,
-                amount           INTEGER NOT NULL DEFAULT 1,
-                PRIMARY KEY (ability_id, resource_type_id)
-            )";
-            cmd.ExecuteNonQuery();
-
-            // One-time migration: seed ability_costs from legacy resource_type_id column on abilities
-            var migrateCmd = _conn.CreateCommand();
-            migrateCmd.CommandText = @"
-                INSERT OR IGNORE INTO ability_costs (ability_id, resource_type_id, amount)
-                SELECT id, resource_type_id, 1
-                FROM abilities
-                WHERE resource_type_id IS NOT NULL";
-            migrateCmd.ExecuteNonQuery();
-
             // Choices support — additive columns on abilities
             AddAbilityColumnIfMissing("max_choices",        "INTEGER NOT NULL DEFAULT 0");
             AddAbilityColumnIfMissing("choice_pool_type",   "TEXT    NOT NULL DEFAULT ''");
@@ -149,6 +130,25 @@ namespace DndBuilder.Core.Repositories
             AddAbilityColumnIfMissing("choice_count_attribute","TEXT    NOT NULL DEFAULT ''");
             AddAbilityColumnIfMissing("choice_count_add_prof", "INTEGER NOT NULL DEFAULT 0");
             AddAbilityColumnIfMissing("choice_count_add_level","TEXT    NOT NULL DEFAULT ''");
+
+            // ability_costs — structured resource costs per ability (source of truth for runtime logic)
+            cmd = _conn.CreateCommand();
+            cmd.CommandText = @"CREATE TABLE IF NOT EXISTS ability_costs (
+                ability_id       INTEGER NOT NULL REFERENCES abilities(id)              ON DELETE CASCADE,
+                resource_type_id INTEGER NOT NULL REFERENCES ability_resource_types(id) ON DELETE CASCADE,
+                amount           INTEGER NOT NULL DEFAULT 1,
+                PRIMARY KEY (ability_id, resource_type_id)
+            )";
+            cmd.ExecuteNonQuery();
+
+            // Seed structured costs from the legacy abilities.resource_type_id column after ensuring it exists.
+            var migrateCmd = _conn.CreateCommand();
+            migrateCmd.CommandText = @"
+                INSERT OR IGNORE INTO ability_costs (ability_id, resource_type_id, amount)
+                SELECT id, resource_type_id, 1
+                FROM abilities
+                WHERE resource_type_id IS NOT NULL";
+            migrateCmd.ExecuteNonQuery();
 
             // ability_choices — predefined options for fixed-pool abilities
             var choicesCmd = _conn.CreateCommand();
@@ -789,6 +789,8 @@ namespace DndBuilder.Core.Repositories
                 recovery: "Short Rest or Long Rest",
                 effect:   "You can take the Dash action as a Bonus Action. When you do so, you gain a number of Temporary Hit Points equal to your Proficiency Bonus. You can use this trait a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Short or Long Rest.");
 
+            SeedSpeciesAbilityLinks(campaignId, "Orc", new[] { "Relentless Endurance", "Adrenaline Rush" });
+
             // ── Origin Feats ──────────────────────────────────────────────────────
             SeedAbility(campaignId, "Savage Attacker",
                 type:    "Feat",
@@ -955,6 +957,27 @@ namespace DndBuilder.Core.Repositories
                 insert.Parameters.AddWithValue("@level", level);
                 insert.Parameters.AddWithValue("@count", choices);
                 insert.ExecuteNonQuery();
+            }
+        }
+
+        private void SeedSpeciesAbilityLinks(int campaignId, string speciesName, string[] abilityNames)
+        {
+            var speciesIdCmd = _conn.CreateCommand();
+            speciesIdCmd.CommandText = "SELECT id FROM species WHERE campaign_id = @cid AND name = @name LIMIT 1";
+            speciesIdCmd.Parameters.AddWithValue("@cid",  campaignId);
+            speciesIdCmd.Parameters.AddWithValue("@name", speciesName);
+            var result = speciesIdCmd.ExecuteScalar();
+            if (result == null) return;
+            int speciesId = (int)(long)result;
+
+            foreach (var abilityName in abilityNames)
+            {
+                int abilityId = GetOrCreateAbility(campaignId, abilityName);
+                var linkCmd = _conn.CreateCommand();
+                linkCmd.CommandText = "INSERT OR IGNORE INTO species_abilities (species_id, ability_id) VALUES (@sid, @aid)";
+                linkCmd.Parameters.AddWithValue("@sid", speciesId);
+                linkCmd.Parameters.AddWithValue("@aid", abilityId);
+                linkCmd.ExecuteNonQuery();
             }
         }
 

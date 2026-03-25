@@ -86,24 +86,32 @@ public partial class AddCampaignModal : Window
             DateStarted = _dateLabel.Text.Trim(),
         };
 
-        int newId = _databaseService.Campaigns.Add(campaign);
-        _databaseService.Species                   .SeedDefaults(newId);
-        _databaseService.Subspecies                .SeedDefaults(newId);
-        _databaseService.Classes                   .SeedDefaults(newId);
-        _databaseService.AbilityTypes              .SeedDefaults(newId);
-        _databaseService.AbilityResourceTypes      .SeedDefaults(newId);
-        _databaseService.Abilities                 .SeedDefaults(newId);
-        _databaseService.LocationFactionRoles      .SeedDefaults(newId);
-        _databaseService.NpcRelationshipTypes      .SeedDefaults(newId);
-        _databaseService.NpcStatuses               .SeedDefaults(newId);
-        _databaseService.NpcFactionRoles           .SeedDefaults(newId);
-        _databaseService.FactionRelationshipTypes  .SeedDefaults(newId);
-        _databaseService.CharacterRelationshipTypes.SeedDefaults(newId);
-        _databaseService.ItemTypes                 .SeedDefaults(newId);
-        _databaseService.QuestStatuses             .SeedDefaults(newId);
-        EmitSignal(SignalName.CampaignCreated, newId);
-        Hide();
-        ResetForm();
+        try
+        {
+            int newId = _databaseService.Campaigns.Add(campaign);
+            _databaseService.Species                   .SeedDefaults(newId);
+            _databaseService.Subspecies                .SeedDefaults(newId);
+            _databaseService.Classes                   .SeedDefaults(newId);
+            _databaseService.AbilityTypes              .SeedDefaults(newId);
+            _databaseService.AbilityResourceTypes      .SeedDefaults(newId);
+            _databaseService.Abilities                 .SeedDefaults(newId);
+            _databaseService.LocationFactionRoles      .SeedDefaults(newId);
+            _databaseService.NpcRelationshipTypes      .SeedDefaults(newId);
+            _databaseService.NpcStatuses               .SeedDefaults(newId);
+            _databaseService.NpcFactionRoles           .SeedDefaults(newId);
+            _databaseService.FactionRelationshipTypes  .SeedDefaults(newId);
+            _databaseService.CharacterRelationshipTypes.SeedDefaults(newId);
+            _databaseService.ItemTypes                 .SeedDefaults(newId);
+            _databaseService.QuestStatuses             .SeedDefaults(newId);
+            EmitSignal(SignalName.CampaignCreated, newId);
+            Hide();
+            ResetForm();
+        }
+        catch (System.Exception ex)
+        {
+            AppLogger.Instance.Error("AddCampaignModal", "OnCreate failed", ex);
+            SetErrorMessage($"Error: {ex.Message}");
+        }
     }
 
     private void OnSave()

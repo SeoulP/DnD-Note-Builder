@@ -7,11 +7,17 @@ public partial class App : Control
 	[Export] private NavBar _navBar;
 	[Export] PackedScene _campaignListPanelScene;
 	[Export] PackedScene _campaignDashboardScene;
+	[Export] PackedScene _toastScene;
 
 	private CampaignDashboard _currentDashboard;
+	private Toast              _toast;
 
 	public override void _Ready()
 	{
+		_toast = _toastScene.Instantiate<Toast>();
+		AddChild(_toast);
+		AppLogger.Instance.ToastRequested += (msg, lvl) => _toast.Show(msg, lvl);
+
 		_navBar.BackPressed           += ShowCampaignList;
 		_navBar.DatabaseRestored      += ShowCampaignList;
 		_navBar.CampaignDataImported  += () => _currentDashboard?.ReloadSidebar();

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Seoul/AppData/Roaming/Godot/app_userdata/**)",
+      "Read(//c/Users/Seoul/Desktop/Game Development/WIP Games/Godot/dnd-builder/$APPDATA/Godot/app_userdata/**)"
+    ]
+  }
+}

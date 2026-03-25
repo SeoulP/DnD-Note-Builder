@@ -19,6 +19,7 @@ public partial class CampaignList : VBoxContainer
 
 		var db = GetNode<DatabaseService>("/root/DatabaseService");
 		var campaigns = db.Campaigns.GetAll();
+		GD.Print($"[LoadCampaigns] GetAll returned {campaigns.Count} campaign(s)");
 
 		if (campaigns.Count == 0)
 		{

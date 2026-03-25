@@ -274,7 +274,8 @@ public partial class ImageCarousel : Control
             absPath.StartsWith(_db.ImgDir, StringComparison.OrdinalIgnoreCase) &&
             File.Exists(absPath))
         {
-            File.Delete(absPath);
+            try { File.Delete(absPath); }
+            catch (Exception ex) { AppLogger.Instance.Warn("ImageCarousel", $"Could not delete image file: {ex.Message}"); }
         }
         _images.RemoveAt(_index);
         _index = Mathf.Clamp(_index, 0, Mathf.Max(0, _images.Count - 1));
@@ -283,18 +284,25 @@ public partial class ImageCarousel : Control
 
     private void AddImage(string sourcePath)
     {
-        string destPath = CopyToImgDir(sourcePath);
-        var img = new EntityImage
+        try
         {
-            EntityType = _entityType,
-            EntityId   = _entityId,
-            Path       = destPath,
-            SortOrder  = _images.Count,
-        };
-        img.Id = _db.EntityImages.Add(img);
-        _images.Add(img);
-        _index = _images.Count - 1;
-        Refresh();
+            string destPath = CopyToImgDir(sourcePath);
+            var img = new EntityImage
+            {
+                EntityType = _entityType,
+                EntityId   = _entityId,
+                Path       = destPath,
+                SortOrder  = _images.Count,
+            };
+            img.Id = _db.EntityImages.Add(img);
+            _images.Add(img);
+            _index = _images.Count - 1;
+            Refresh();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Instance.Error("ImageCarousel", $"Failed to add image from {sourcePath}", ex);
+        }
     }
 
     // Resolves a stored path to an absolute path.
@@ -340,11 +348,25 @@ public partial class ImageCarousel : Control
 
     private static ImageTexture LoadTexture(string path)
     {
-        if (!File.Exists(path)) return null;
-        var bytes = File.ReadAllBytes(path);
-        var img   = new Image();
-        var err   = LoadImageFromBytes(img, bytes);
-        if (err != Error.Ok) return null;
+        if (!File.Exists(path))
+        {
+            AppLogger.Instance.Warn("ImageCarousel", $"Image file not found: {path}");
+            return null;
+        }
+        byte[] bytes;
+        try { bytes = File.ReadAllBytes(path); }
+        catch (Exception ex)
+        {
+            AppLogger.Instance.Error("ImageCarousel", $"Failed to read image: {path}", ex);
+            return null;
+        }
+        var img = new Image();
+        var err = LoadImageFromBytes(img, bytes);
+        if (err != Error.Ok)
+        {
+            AppLogger.Instance.Warn("ImageCarousel", $"Failed to decode image ({err}): {path}");
+            return null;
+        }
         return ImageTexture.CreateFromImage(img);
     }
 

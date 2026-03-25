@@ -153,14 +153,21 @@ namespace DndBuilder.Core
                     {
                         string absPath = ResolveToAbsolute(img.Path, appDir);
                         if (!File.Exists(absPath)) continue;
-                        pkg.Images.Add(new EntityImageExport
+                        try
                         {
-                            EntityType  = entityType,
-                            OldEntityId = entityId,
-                            Extension   = Path.GetExtension(absPath),
-                            DataBase64  = Convert.ToBase64String(File.ReadAllBytes(absPath)),
-                            SortOrder   = img.SortOrder,
-                        });
+                            pkg.Images.Add(new EntityImageExport
+                            {
+                                EntityType  = entityType,
+                                OldEntityId = entityId,
+                                Extension   = Path.GetExtension(absPath),
+                                DataBase64  = Convert.ToBase64String(File.ReadAllBytes(absPath)),
+                                SortOrder   = img.SortOrder,
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            AppLogger.Instance.Warn("ImportExport", $"Skipping image during export (read failed: {ex.Message}): {absPath}");
+                        }
                     }
                 }
             }
@@ -176,6 +183,20 @@ namespace DndBuilder.Core
         /// FKs are resolved by name for types; cross-entity FKs use the package's ID remapping.
         /// </summary>
         public static void ApplyPackage(int campaignId, ExportPackage pkg, ExportSelection sel, DatabaseService db)
+        {
+            AppLogger.Instance.Info("ImportExport", "Import started");
+            try
+            {
+                ApplyPackageInner(campaignId, pkg, sel, db);
+                AppLogger.Instance.Info("ImportExport", "Import completed");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Instance.Error("ImportExport", "Import failed", ex);
+            }
+        }
+
+        private static void ApplyPackageInner(int campaignId, ExportPackage pkg, ExportSelection sel, DatabaseService db)
         {
             // ── Step 1: types ─────────────────────────────────────────────────
             var speciesMap    = ImportTypes(pkg.Species,                   sel.AllTypes || sel.Species,                    campaignId, db.Species.GetAll(campaignId),                   (t, cid) => db.Species.Add(new Models.Species                   { CampaignId = cid, Name = t.Name }));
@@ -440,18 +461,25 @@ namespace DndBuilder.Core
                     if (!map.TryGetValue(img.OldEntityId, out var newEntityId)) continue;
                     if (string.IsNullOrEmpty(img.DataBase64)) continue;
 
-                    byte[] bytes = Convert.FromBase64String(img.DataBase64);
-                    string ext   = string.IsNullOrEmpty(img.Extension) ? ".png" : img.Extension;
-                    string dest  = Path.Combine(subDir, Guid.NewGuid().ToString("N") + ext);
-                    File.WriteAllBytes(dest, bytes);
-
-                    db.EntityImages.Add(new EntityImage
+                    try
                     {
-                        EntityType = img.EntityType,
-                        EntityId   = newEntityId,
-                        Path       = Path.GetRelativePath(imgAppDir, dest).Replace('\\', '/'),
-                        SortOrder  = img.SortOrder,
-                    });
+                        byte[] bytes = Convert.FromBase64String(img.DataBase64);
+                        string ext   = string.IsNullOrEmpty(img.Extension) ? ".png" : img.Extension;
+                        string dest  = Path.Combine(subDir, Guid.NewGuid().ToString("N") + ext);
+                        File.WriteAllBytes(dest, bytes);
+
+                        db.EntityImages.Add(new EntityImage
+                        {
+                            EntityType = img.EntityType,
+                            EntityId   = newEntityId,
+                            Path       = Path.GetRelativePath(imgAppDir, dest).Replace('\\', '/'),
+                            SortOrder  = img.SortOrder,
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.Instance.Error("ImportExport", $"Failed to write image during import ({img.EntityType} id={img.OldEntityId})", ex);
+                    }
                 }
             }
         }

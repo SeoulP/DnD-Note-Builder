@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+AppLogger="*res://Core/AppLogger.cs"
 DatabaseService="*res://Core/DatabaseService.cs"
 ThemeManager="*res://Core/ThemeManager.cs"
 

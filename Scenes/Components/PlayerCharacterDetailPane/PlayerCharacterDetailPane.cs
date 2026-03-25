@@ -157,6 +157,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         if (spId.HasValue)
             foreach (var sub in _db.Subspecies.GetAllForSpecies(spId.Value))
                 _subspeciesInput.AddItem(sub.Name, sub.Id);
+        _subspeciesInput.Visible = _subspeciesInput.ItemCount > 1;
         SelectOptionById(_subspeciesInput, spId.HasValue ? _pc?.SubspeciesId : null);
     }
 
