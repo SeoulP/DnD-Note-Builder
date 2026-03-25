@@ -1,15 +1,18 @@
+using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using Godot;
 using System.Collections.Generic;
 
 public partial class PlayerCharacterDetailPane : ScrollContainer
 {
-    private DatabaseService    _db;
-    private PlayerCharacter    _pc;
-    private ConfirmationDialog _confirmDialog;
-    private int                _subclassUnlockLevel  = 3;
-    private bool               _loading              = false;
-    private HashSet<int>       _openAbilityDropdowns = new();
+    private DatabaseService          _db;
+    private PlayerCharacter          _pc;
+    private ConfirmationDialog       _confirmDialog;
+    private int                      _subclassUnlockLevel  = 3;
+    private bool                     _loading              = false;
+    private HashSet<int>             _openAbilityDropdowns = new();
+    private SkillExpectationService  _skillExpectations;
+    private BackgroundPickerModal    _backgroundModal;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NavigateToNewTabEventHandler(string entityType, int entityId);
@@ -37,6 +40,11 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     [Export] private Label         _wisMod;
     [Export] private Label         _chaMod;
     [Export] private TextEdit      _descInput;
+    [Export] private Label         _backgroundLabel;
+    [Export] private Button        _backgroundButton;
+    [Export] private Control       _skillsSection;
+    [Export] private HBoxContainer _skillsChipsContainer;
+    [Export] private VBoxContainer _skillsListContainer;
     [Export] private Control       _abilityChoicesSection;
     [Export] private VBoxContainer _abilityChoicesContainer;
     [Export] private Control       _resourcesSection;
@@ -48,10 +56,14 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
+        _skillExpectations = new SkillExpectationService(_db.Classes, _db.Abilities, _db.DnD5eBackgrounds);
+        _backgroundModal   = GetNode<BackgroundPickerModal>("BackgroundPickerModal");
+        _backgroundModal.Confirmed += OnBackgroundSelected;
 
         _nameInput.TextChanged  += name => { Save(); EmitSignal(SignalName.NameChanged, "playercharacter", _pc?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Character" : name); };
         _nameInput.FocusExited  += () => { if (_nameInput.Text == "") _nameInput.Text = "New Character"; };
         _nameInput.FocusEntered += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
+        _backgroundButton.Pressed     += () => _backgroundModal.Open(_pc.CampaignId, _pc.BackgroundId);
         _speciesInput.ItemSelected    += idx => { Save(); RefreshSubspecies(_speciesInput.GetItemId((int)idx)); LoadAbilityChoices(); LoadResources(); };
         _subspeciesInput.ItemSelected += _ => { Save(); LoadAbilityChoices(); LoadResources(); };
         _classInput.ItemSelected      += idx => { Save(); RefreshSubclass(_classInput.GetItemId((int)idx)); LoadAbilityChoices(); LoadResources(); };
@@ -71,7 +83,11 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             capturedInput.TextChanged += text =>
             {
                 if (int.TryParse(text, out int v) && v >= 1 && v <= 30)
+                {
                     capturedMod.Text = ModLabel(v);
+                    Save();
+                    LoadSkills();
+                }
             };
             capturedInput.FocusExited += () =>
             {
@@ -80,6 +96,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
                 capturedMod.Text   = ModLabel(val);
                 Save();
                 LoadAbilityChoices();
+                LoadSkills();
             };
         }
 
@@ -113,6 +130,8 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         PopulateClass();
         _imageCarousel.Setup(EntityType.PlayerCharacter, pc.Id, _db);
         _loading = false;
+        LoadBackground();
+        LoadSkills();
         LoadAbilityChoices();
         LoadResources();
     }
@@ -134,6 +153,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _pc.Charisma     = ParseScore(_chaInput.Text);
         _pc.Description  = _descInput.Text;
         _pc.Notes        = _notes.Text;
+        // BackgroundId is set directly on _pc by OnBackgroundSelected before Save() is called
         _db.PlayerCharacters.Edit(_pc);
     }
 
@@ -214,6 +234,299 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         int mod = (int)System.Math.Floor((score - 10) / 2.0);
         return mod >= 0 ? $"(+{mod})" : $"({mod})";
     }
+
+    // ── Background ────────────────────────────────────────────────────────────
+
+    private void OnBackgroundSelected(int? backgroundId)
+    {
+        if (_pc == null) return;
+        _pc.BackgroundId = backgroundId;
+        Save();
+        LoadBackground();
+        LoadSkills();
+    }
+
+    private void LoadBackground()
+    {
+        if (_pc == null) return;
+        if (_pc.BackgroundId.HasValue)
+        {
+            var bg = _db.DnD5eBackgrounds.Get(_pc.BackgroundId.Value);
+            _backgroundLabel.Text  = bg?.Name ?? "(None)";
+            _backgroundButton.Text = "Change";
+        }
+        else
+        {
+            _backgroundLabel.Text  = "(None)";
+            _backgroundButton.Text = "Choose";
+        }
+        SyncBackgroundSkills(_pc.BackgroundId);
+    }
+
+    private void SyncBackgroundSkills(int? backgroundId)
+    {
+        // Remove any existing background-sourced skills
+        var current = _db.DnD5eCharacterSkills.GetForCharacter(_pc.Id);
+        foreach (var cs in current)
+            if (cs.Source == "background")
+                _db.DnD5eCharacterSkills.Delete(_pc.Id, cs.SkillId);
+
+        if (!backgroundId.HasValue) return;
+
+        var bg = _db.DnD5eBackgrounds.Get(backgroundId.Value);
+        if (bg == null || string.IsNullOrEmpty(bg.SkillNames)) return;
+
+        var allSkills    = _db.DnD5eSkills.GetAll(_pc.CampaignId);
+        var skillsByName = new Dictionary<string, DnD5eSkill>(System.StringComparer.OrdinalIgnoreCase);
+        foreach (var s in allSkills) skillsByName[s.Name] = s;
+
+        foreach (var rawName in bg.SkillNames.Split(','))
+        {
+            var name = rawName.Trim();
+            if (skillsByName.TryGetValue(name, out var skill))
+                _db.DnD5eCharacterSkills.Upsert(new DnD5eCharacterSkill
+                {
+                    PlayerCharacterId = _pc.Id,
+                    SkillId           = skill.Id,
+                    Source            = "background",
+                    IsExpertise       = false,
+                });
+        }
+    }
+
+    // ── Skills ────────────────────────────────────────────────────────────────
+
+    private void LoadSkills()
+    {
+        if (_pc == null) return;
+
+        var allSkills      = _db.DnD5eSkills.GetAll(_pc.CampaignId);
+        var characterSkills = _db.DnD5eCharacterSkills.GetForCharacter(_pc.Id);
+        var skillMap       = new Dictionary<int, DnD5eCharacterSkill>();
+        foreach (var cs in characterSkills)
+            skillMap[cs.SkillId] = cs;
+
+        var expectations   = _skillExpectations.GetExpectations(_pc);
+
+        // Rebuild chips
+        foreach (Node child in _skillsChipsContainer.GetChildren())
+            child.QueueFree();
+        BuildSourceChips(expectations, skillMap);
+
+        // Rebuild skill rows
+        foreach (Node child in _skillsListContainer.GetChildren())
+            child.QueueFree();
+
+        int profBonus = CalcProfBonus(_pc.Level);
+
+        string bgName = _pc.BackgroundId.HasValue
+            ? _db.DnD5eBackgrounds.Get(_pc.BackgroundId.Value)?.Name ?? "Background"
+            : "Background";
+
+        foreach (var skill in allSkills)
+        {
+            skillMap.TryGetValue(skill.Id, out var cs);
+            bool isProficient = cs != null;
+            bool isExpertise  = cs?.IsExpertise ?? false;
+            int  bonus        = CalcSkillBonus(skill.Attribute, _pc, profBonus, isProficient, isExpertise);
+
+            var row = BuildSkillRow(skill, cs, bonus, profBonus, skillMap, expectations, allSkills, bgName);
+            _skillsListContainer.AddChild(row);
+        }
+    }
+
+    private HBoxContainer BuildSkillRow(
+        DnD5eSkill skill,
+        DnD5eCharacterSkill cs,
+        int bonus,
+        int profBonus,
+        Dictionary<int, DnD5eCharacterSkill> skillMap,
+        List<SkillExpectation> expectations,
+        List<DnD5eSkill> allSkills,
+        string bgName = "Background")
+    {
+        bool isProficient = cs != null;
+        bool isExpertise  = cs?.IsExpertise ?? false;
+        bool isLocked     = cs?.Source == "background";
+
+        var row = new HBoxContainer();
+        row.AddThemeConstantOverride("separation", 4);
+
+        // Proficiency checkbox — locked for background skills
+        var profCb = new CheckBox
+        {
+            ButtonPressed = isProficient,
+            Disabled      = isLocked,
+            TooltipText   = isLocked ? $"Granted by {bgName}" : "",
+            MouseFilter   = Control.MouseFilterEnum.Stop,
+        };
+        profCb.AddThemeConstantOverride("icon_max_width", 14);
+
+        // Expertise checkbox — disabled when not proficient or skill is locked
+        var expCb = new CheckBox { ButtonPressed = isExpertise, Disabled = !isProficient || isLocked };
+        expCb.AddThemeConstantOverride("icon_max_width", 14);
+
+        // Skill name + attribute label
+        var nameLabel = new Label
+        {
+            Text                = $"{skill.Name} ({skill.Attribute.ToUpper()})",
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+        };
+
+        // Bonus label
+        var bonusLabel = new Label
+        {
+            Text                    = BonusText(bonus),
+            CustomMinimumSize       = new Vector2(32, 0),
+            HorizontalAlignment     = HorizontalAlignment.Right,
+        };
+
+        // Wire expertise → depends on proficiency
+        int capturedSkillId = skill.Id;
+        expCb.Toggled += toggled =>
+        {
+            if (_pc == null) return;
+            var existing = _db.DnD5eCharacterSkills.GetForCharacter(_pc.Id).Find(x => x.SkillId == capturedSkillId);
+            if (existing == null) return;
+            existing.IsExpertise = toggled;
+            _db.DnD5eCharacterSkills.Upsert(existing);
+            LoadSkills();
+        };
+
+        profCb.Toggled += toggled =>
+        {
+            if (_pc == null) return;
+            if (toggled)
+            {
+                var source = InferSource(capturedSkillId, skillMap, expectations, allSkills);
+                _db.DnD5eCharacterSkills.Upsert(new DnD5eCharacterSkill
+                {
+                    PlayerCharacterId = _pc.Id,
+                    SkillId           = capturedSkillId,
+                    Source            = source,
+                    IsExpertise       = false,
+                });
+            }
+            else
+            {
+                _db.DnD5eCharacterSkills.Delete(_pc.Id, capturedSkillId);
+            }
+            LoadSkills();
+        };
+
+        row.AddChild(profCb);
+        row.AddChild(expCb);
+        row.AddChild(nameLabel);
+        row.AddChild(bonusLabel);
+        return row;
+    }
+
+    private void BuildSourceChips(List<SkillExpectation> expectations, Dictionary<int, DnD5eCharacterSkill> skillMap)
+    {
+        // Count actual selections per source — background is auto-applied and never shown as a chip
+        var actualCounts = new Dictionary<string, int> { ["class"] = 0, ["feat"] = 0 };
+        foreach (var cs in skillMap.Values)
+        {
+            if (actualCounts.ContainsKey(cs.Source))
+                actualCounts[cs.Source]++;
+        }
+
+        // Merge expectations with same source, skipping background
+        var classTotals = new Dictionary<string, int>();
+        foreach (var exp in expectations)
+        {
+            if (exp.Source == "background") continue;
+            if (!classTotals.ContainsKey(exp.Source)) classTotals[exp.Source] = 0;
+            classTotals[exp.Source] += exp.ExpectedCount;
+        }
+
+        foreach (var exp in expectations)
+        {
+            if (exp.Source == "background") continue;
+            int expected = classTotals.TryGetValue(exp.Source, out int t) ? t : exp.ExpectedCount;
+            actualCounts.TryGetValue(exp.Source, out int actual);
+            int diff = expected - actual;  // positive = under, 0 = met, negative = over
+
+            string icon, tooltip;
+            Color? color = null;
+
+            if (diff > 0)
+            {
+                icon    = "⚠";
+                tooltip = $"Select {diff} more";
+            }
+            else if (diff < 0)
+            {
+                icon    = "!";
+                tooltip = $"{-diff} over limit";
+                color   = new Color(0.9f, 0.25f, 0.25f);
+            }
+            else
+            {
+                icon    = "✓";
+                tooltip = "";
+            }
+
+            var chip = new Label
+            {
+                Text        = $"{icon} {exp.SourceName} ({actual}/{expected})",
+                TooltipText = tooltip,
+                MouseFilter = Control.MouseFilterEnum.Stop,
+            };
+            if (color.HasValue)
+                chip.AddThemeColorOverride("font_color", color.Value);
+
+            _skillsChipsContainer.AddChild(chip);
+            classTotals.Remove(exp.Source);
+        }
+    }
+
+    private string InferSource(int skillId, Dictionary<int, DnD5eCharacterSkill> skillMap,
+        List<SkillExpectation> expectations, List<DnD5eSkill> allSkills)
+    {
+        var counts   = new Dictionary<string, int> { ["class"] = 0, ["feat"] = 0 };
+        var expected = new Dictionary<string, int> { ["class"] = 0, ["feat"] = 0 };
+        foreach (var cs in skillMap.Values)
+            if (counts.ContainsKey(cs.Source)) counts[cs.Source]++;
+        foreach (var exp in expectations)
+            if (exp.Source != "background" && expected.ContainsKey(exp.Source))
+                expected[exp.Source] += exp.ExpectedCount;
+
+        // Fill any under-budget source first
+        foreach (var source in new[] { "class", "feat" })
+            if (expected[source] > 0 && counts[source] < expected[source]) return source;
+
+        // All slots filled — overflow goes to the first source that has a budget
+        foreach (var source in new[] { "class", "feat" })
+            if (expected[source] > 0) return source;
+
+        return "custom";
+    }
+
+    // ── Skill bonus math ──────────────────────────────────────────────────────
+
+    private static int CalcProfBonus(int level) => 2 + (level - 1) / 4;
+
+    private static int CalcSkillBonus(string attr, PlayerCharacter pc, int profBonus, bool isProficient, bool isExpertise)
+    {
+        int score = attr switch
+        {
+            "str" => pc.Strength,
+            "dex" => pc.Dexterity,
+            "con" => pc.Constitution,
+            "int" => pc.Intelligence,
+            "wis" => pc.Wisdom,
+            "cha" => pc.Charisma,
+            _     => 10,
+        };
+        int attrMod = (int)System.Math.Floor((score - 10) / 2.0);
+        int profMod = isExpertise ? 2 * profBonus : isProficient ? profBonus : 0;
+        return attrMod + profMod;
+    }
+
+    private static string BonusText(int bonus) => bonus >= 0 ? $"+{bonus}" : $"{bonus}";
+
+    // ── Ability choices ───────────────────────────────────────────────────────
 
     private void LoadAbilityChoices()
     {

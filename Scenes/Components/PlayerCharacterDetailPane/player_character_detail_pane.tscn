@@ -5,8 +5,9 @@
 [ext_resource type="Theme" uid="uid://serwwl5j7fdu" path="res://theme.tres" id="3_5j2cg"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
+[ext_resource type="PackedScene" path="res://Scenes/Modals/BackgroundPickerModal/background_picker_modal.tscn" id="6_bgmodal"]
 
-[node name="PlayerCharacterDetailPane" type="ScrollContainer" unique_id=1808163932 node_paths=PackedStringArray("_nameInput", "_speciesLabel", "_classLabel", "_speciesInput", "_subspeciesInput", "_classInput", "_subclassInput", "_levelInput", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_descInput", "_abilityChoicesSection", "_abilityChoicesContainer", "_resourcesSection", "_resourcesContainer", "_notes", "_imageCarousel", "_deleteButton")]
+[node name="PlayerCharacterDetailPane" type="ScrollContainer" unique_id=1808163932 node_paths=PackedStringArray("_nameInput", "_speciesLabel", "_classLabel", "_speciesInput", "_subspeciesInput", "_classInput", "_subclassInput", "_levelInput", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_descInput", "_backgroundLabel", "_backgroundButton", "_skillsSection", "_skillsChipsContainer", "_skillsListContainer", "_abilityChoicesSection", "_abilityChoicesContainer", "_resourcesSection", "_resourcesContainer", "_notes", "_imageCarousel", "_deleteButton")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -34,6 +35,11 @@ _intMod = NodePath("Margin/VBox/ContentHBox/Fields/AbilityScoresSection/AbilityS
 _wisMod = NodePath("Margin/VBox/ContentHBox/Fields/AbilityScoresSection/AbilityScoresGrid/PanelContainer2/WisVBox/WisMod")
 _chaMod = NodePath("Margin/VBox/ContentHBox/Fields/AbilityScoresSection/AbilityScoresGrid/PanelContainer/ChaVBox/ChaMod")
 _descInput = NodePath("Margin/VBox/ContentHBox/Fields/DescInput")
+_backgroundLabel = NodePath("Margin/VBox/ContentHBox/Fields/BackgroundRow/BackgroundLabel")
+_backgroundButton = NodePath("Margin/VBox/ContentHBox/Fields/BackgroundRow/BackgroundButton")
+_skillsSection = NodePath("Margin/VBox/ContentHBox/Fields/SkillsSection")
+_skillsChipsContainer = NodePath("Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsHeader/ChipsContainer")
+_skillsListContainer = NodePath("Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsListContainer")
 _abilityChoicesSection = NodePath("Margin/VBox/ContentHBox/Fields/AbilityChoicesSection")
 _abilityChoicesContainer = NodePath("Margin/VBox/ContentHBox/Fields/AbilityChoicesSection/AbilityChoicesContainer")
 _resourcesSection = NodePath("Margin/VBox/ContentHBox/Fields/ResourcesSection")
@@ -315,6 +321,46 @@ placeholder_text = "Appearance, backstory..."
 wrap_mode = 1
 caret_blink = true
 
+[node name="BackgroundRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=3100000001]
+layout_mode = 2
+
+[node name="BackgroundKeyLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=3100000002]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Background"
+
+[node name="BackgroundLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=3100000003]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "(None)"
+
+[node name="BackgroundButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/BackgroundRow" unique_id=3100000004]
+layout_mode = 2
+text = "Choose"
+
+[node name="SkillsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=3100000005]
+layout_mode = 2
+
+[node name="SkillsSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=3100000006]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SkillsHeader" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection" unique_id=3100000007]
+layout_mode = 2
+
+[node name="SkillsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsHeader" unique_id=3100000008]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skills"
+
+[node name="ChipsContainer" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection/SkillsHeader" unique_id=3100000009]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SkillsListContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SkillsSection" unique_id=3100000011]
+layout_mode = 2
+theme_override_constants/separation = 2
+
 [node name="AbilityChoicesSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=64197964]
 visible = false
 layout_mode = 2
@@ -352,3 +398,6 @@ layout_mode = 2
 [node name="CarouselSpacer" type="Control" parent="Margin/VBox/ContentHBox/CarouselColumn" unique_id=1222612572]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="BackgroundPickerModal" parent="." unique_id=3100000020 instance=ExtResource("6_bgmodal")]
+visible = false

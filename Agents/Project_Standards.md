@@ -215,6 +215,58 @@ All appearance-related values (colours, hover states, backgrounds) must go throu
 
 ---
 
+## Logging Conventions
+
+All runtime logging goes through `AppLogger`. Never use `GD.Print`, `GD.PrintErr`, or write ad-hoc log files directly.
+
+### AppLogger
+
+- Autoloaded singleton at `Core/AppLogger.cs` — access via `AppLogger.Instance`
+- Writes an append-only `app.log` to the same directory as `campaign.db`
+- Fires `ToastRequested` event for WARNING and above — `App.cs` handles the UI; call sites do not
+
+### Log Levels
+
+| Level | When to use |
+|-------|-------------|
+| `TRACE` | Fine-grained steps ("entering LoadAll", "queried 14 NPCs") |
+| `DEBUG` | Diagnostic details useful when investigating behaviour |
+| `INFO` | Normal operational milestones ("campaign opened", "import completed") |
+| `WARNING` | Unexpected but recoverable — automatically surfaces a toast |
+| `ERROR` | Something failed and needs attention — automatically surfaces a toast |
+
+Default minimum level is `INFO`. TRACE/DEBUG entries are filtered out unless the user changes the setting.
+
+### Public API
+
+| Method | Purpose |
+|--------|---------|
+| `AppLogger.Instance.Trace(source, message)` | TRACE entry |
+| `AppLogger.Instance.Debug(source, message)` | DEBUG entry |
+| `AppLogger.Instance.Info(source, message)` | INFO entry |
+| `AppLogger.Instance.Warn(source, message)` | WARNING entry + toast |
+| `AppLogger.Instance.Error(source, message, ex?)` | ERROR entry + toast |
+
+### Rules
+
+- **Process milestones** (campaign opened, session saved, import completed) → `Info`
+- **Any catch block** that catches a runtime failure → `Error(source, message, ex)` — pass the exception so the stack trace is written to the log
+- **Recoverable surprises** (e.g. duplicate skipped during import) → `Warn`
+- The `source` string should be the class or feature name, e.g. `"ImportExport"`, `"CampaignDashboard"`
+- New service or repository methods that do file I/O, JSON parsing, or image loading must wrap failures with `AppLogger.Instance.Error` and handle gracefully — never swallow silently
+
+### Standard try/catch Pattern
+
+```csharp
+catch (Exception ex)
+{
+    AppLogger.Instance.Error("ClassName", "Short description of what failed", ex);
+    // handle gracefully — return, surface default value, etc.
+}
+```
+
+---
+
 ## Tab System Conventions
 
 The detail pane supports multiple open records simultaneously as tabs.

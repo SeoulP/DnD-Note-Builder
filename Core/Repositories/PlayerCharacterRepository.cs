@@ -90,6 +90,15 @@ namespace DndBuilder.Core.Repositories
                     alter.ExecuteNonQuery();
                 }
             }
+
+            var hasBackgroundId = _conn.CreateCommand();
+            hasBackgroundId.CommandText = "SELECT COUNT(*) FROM pragma_table_info('player_characters') WHERE name = 'background_id'";
+            if ((long)hasBackgroundId.ExecuteScalar() == 0)
+            {
+                var alter = _conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE player_characters ADD COLUMN background_id INTEGER REFERENCES dnd5e_backgrounds(id) ON DELETE SET NULL";
+                alter.ExecuteNonQuery();
+            }
         }
 
         // ── Character resources CRUD ──────────────────────────────────────────
@@ -360,7 +369,8 @@ namespace DndBuilder.Core.Repositories
             c.id, c.campaign_id, c.name, c.portrait_path, c.gender, c.occupation,
             c.description, c.personality, c.notes, c.species_id,
             pc.class_id, pc.subclass_id, pc.subspecies_id, pc.level,
-            pc.str, pc.dex, pc.con, pc.int, pc.wis, pc.cha";
+            pc.str, pc.dex, pc.con, pc.int, pc.wis, pc.cha,
+            pc.background_id";
 
         private const string FromJoin = @"
             FROM characters c
@@ -401,8 +411,8 @@ namespace DndBuilder.Core.Repositories
 
             // Insert PC-specific row
             cmd = _conn.CreateCommand();
-            cmd.CommandText = @"INSERT INTO player_characters (id, class_id, subclass_id, subspecies_id, level, str, dex, con, int, wis, cha)
-                                VALUES (@id, @clid, @scid, @ssid, @level, @str, @dex, @con, @int, @wis, @cha)";
+            cmd.CommandText = @"INSERT INTO player_characters (id, class_id, subclass_id, subspecies_id, level, str, dex, con, int, wis, cha, background_id)
+                                VALUES (@id, @clid, @scid, @ssid, @level, @str, @dex, @con, @int, @wis, @cha, @bgid)";
             cmd.Parameters.AddWithValue("@id", newId);
             BindPc(cmd, pc);
             cmd.ExecuteNonQuery();
@@ -425,7 +435,8 @@ namespace DndBuilder.Core.Repositories
             cmd = _conn.CreateCommand();
             cmd.CommandText = @"UPDATE player_characters
                                 SET class_id = @clid, subclass_id = @scid, subspecies_id = @ssid, level = @level,
-                                    str = @str, dex = @dex, con = @con, int = @int, wis = @wis, cha = @cha
+                                    str = @str, dex = @dex, con = @con, int = @int, wis = @wis, cha = @cha,
+                                    background_id = @bgid
                                 WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", pc.Id);
             BindPc(cmd, pc);
@@ -466,6 +477,7 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@int",   pc.Intelligence);
             cmd.Parameters.AddWithValue("@wis",   pc.Wisdom);
             cmd.Parameters.AddWithValue("@cha",   pc.Charisma);
+            cmd.Parameters.AddWithValue("@bgid",  pc.BackgroundId.HasValue ? pc.BackgroundId.Value : DBNull.Value);
         }
 
         private static PlayerCharacter Map(SqliteDataReader r) => new PlayerCharacter
@@ -492,6 +504,7 @@ namespace DndBuilder.Core.Repositories
             Intelligence = r.IsDBNull(17) ? 10   : r.GetInt32(17),
             Wisdom       = r.IsDBNull(18) ? 10   : r.GetInt32(18),
             Charisma     = r.IsDBNull(19) ? 10   : r.GetInt32(19),
+            BackgroundId = r.IsDBNull(20) ? null : r.GetInt32(20),
         };
     }
 }

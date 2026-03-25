@@ -33,6 +33,9 @@ public partial class DatabaseService : Node
     public AbilityResourceTypeRepository  AbilityResourceTypes  { get; private set; }
     public SubspeciesRepository           Subspecies            { get; private set; }
     public PlayerCharacterRepository      PlayerCharacters      { get; private set; }
+    public DnD5eSkillRepository           DnD5eSkills           { get; private set; }
+    public DnD5eBackgroundRepository      DnD5eBackgrounds      { get; private set; }
+    public DnD5eCharacterSkillRepository  DnD5eCharacterSkills  { get; private set; }
 
     public string DbPath { get; private set; }
     public string ImgDir { get; private set; }
@@ -101,6 +104,9 @@ public partial class DatabaseService : Node
         AbilityResourceTypes = new AbilityResourceTypeRepository(_conn);
         Subspecies           = new SubspeciesRepository(_conn);
         PlayerCharacters     = new PlayerCharacterRepository(_conn);
+        DnD5eSkills          = new DnD5eSkillRepository(_conn);
+        DnD5eBackgrounds     = new DnD5eBackgroundRepository(_conn);
+        DnD5eCharacterSkills = new DnD5eCharacterSkillRepository(_conn);
 
         RunMigrations();
     }
@@ -134,6 +140,9 @@ public partial class DatabaseService : Node
         Abilities           .Migrate();  // references campaigns, classes, subclasses, species, subspecies, characters
         PlayerCharacters    .Migrate();  // additive columns on player_characters; references classes, subclasses, subspecies
         PlayerCharacters    .MigrateResources();  // character_resources — references ability_resource_types; must run after AbilityResourceTypes
+        DnD5eSkills         .Migrate();  // references campaigns
+        DnD5eBackgrounds    .Migrate();  // references campaigns; background_id FK on player_characters resolves at runtime
+        DnD5eCharacterSkills.Migrate();  // references player_characters, dnd5e_skills
 
         MigrateLegacyPortraits();
 
@@ -147,6 +156,8 @@ public partial class DatabaseService : Node
         {
             Species             .SeedDefaults(campaign.Id);
             Subspecies          .SeedDefaults(campaign.Id);
+            DnD5eSkills         .SeedDefaults(campaign.Id);
+            DnD5eBackgrounds    .SeedDefaults(campaign.Id);
             Classes             .SeedDefaults(campaign.Id);
             AbilityTypes        .SeedDefaults(campaign.Id);
             AbilityResourceTypes.SeedDefaults(campaign.Id);

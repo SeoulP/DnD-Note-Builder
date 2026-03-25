@@ -7,6 +7,7 @@ namespace DndBuilder.Core.Models
         public int?              ClassId      { get; set; }
         public int?              SubclassId   { get; set; }
         public int?              SubspeciesId { get; set; }
+        public int?              BackgroundId { get; set; }
         public int               Level        { get; set; } = 1;
         public int               Strength     { get; set; } = 10;
         public int               Dexterity    { get; set; } = 10;

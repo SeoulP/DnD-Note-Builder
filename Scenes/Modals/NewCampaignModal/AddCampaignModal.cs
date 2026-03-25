@@ -103,6 +103,8 @@ public partial class AddCampaignModal : Window
             _databaseService.CharacterRelationshipTypes.SeedDefaults(newId);
             _databaseService.ItemTypes                 .SeedDefaults(newId);
             _databaseService.QuestStatuses             .SeedDefaults(newId);
+            _databaseService.DnD5eSkills               .SeedDefaults(newId);
+            _databaseService.DnD5eBackgrounds          .SeedDefaults(newId);
             EmitSignal(SignalName.CampaignCreated, newId);
             Hide();
             ResetForm();
