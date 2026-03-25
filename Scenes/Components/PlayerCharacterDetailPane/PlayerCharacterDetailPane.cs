@@ -15,6 +15,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     private HashSet<string>          _openAbilitySections  = new();
     private SkillExpectationService  _skillExpectations;
     private BackgroundPickerModal    _backgroundModal;
+    private EffectPreviewPopup       _effectPreview;
 
     private static readonly string[] _abilityActionSectionOrder =
     {
@@ -72,6 +73,13 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _skillExpectations = new SkillExpectationService(_db.Classes, _db.Abilities, _db.DnD5eBackgrounds);
         _backgroundModal   = GetNode<BackgroundPickerModal>("BackgroundPickerModal");
         _backgroundModal.Confirmed += OnBackgroundSelected;
+
+        // CanvasLayer renders above the ScrollContainer without being clipped by it.
+        // EffectPreviewPopup uses MouseFilter=Ignore so it never steals scroll events.
+        _effectPreview = new EffectPreviewPopup();
+        var effectLayer = new CanvasLayer { Layer = 100 };
+        effectLayer.AddChild(_effectPreview);
+        AddChild(effectLayer);
 
         _nameInput.TextChanged  += name => { Save(); EmitSignal(SignalName.NameChanged, "playercharacter", _pc?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Character" : name); };
         _nameInput.FocusExited  += () => { if (_nameInput.Text == "") _nameInput.Text = "New Character"; };
@@ -543,6 +551,8 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 
     private void LoadAbilityChoices()
     {
+        _effectPreview?.Hide();
+
         foreach (Node child in _abilityChoicesContainer.GetChildren())
             child.QueueFree();
 
@@ -860,6 +870,13 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo, "ability", navId);
             row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "ability", navId);
 
+            if (!string.IsNullOrWhiteSpace(ability.Effect))
+            {
+                string capturedEffect = ability.Effect;
+                row.MouseEntered += () => _effectPreview.ShowFor(capturedEffect, row);
+                row.MouseExited  += _effectPreview.Hide;
+            }
+
             if (ability.Costs.Count > 0)
             {
                 var hbox = new HBoxContainer();
@@ -900,6 +917,13 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             Alignment           = HorizontalAlignment.Left,
         };
+
+        if (!string.IsNullOrWhiteSpace(ability.Effect))
+        {
+            string capturedEffect = ability.Effect;
+            toggleBtn.MouseEntered += () => _effectPreview.ShowFor(capturedEffect, toggleBtn);
+            toggleBtn.MouseExited  += _effectPreview.Hide;
+        }
 
         var dropdownBg = new StyleBoxFlat { BgColor = new Color(1, 1, 1, 0.06f) };
         dropdownBg.SetCornerRadiusAll(3);
