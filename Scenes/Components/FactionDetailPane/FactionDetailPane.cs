@@ -22,6 +22,7 @@ public partial class FactionDetailPane : ScrollContainer
     [Export] private TextEdit      _goalsInput;
     [Export] private WikiNotes     _notes;
     [Export] private Button        _deleteButton;
+    [Export] private VBoxContainer _aliasChipsRow;
     [Export] private ImageCarousel _imageCarousel;
     [Export] private TypeOptionButton _npcSelect;
     [Export] private TypeOptionButton _roleSelect;
@@ -141,6 +142,7 @@ public partial class FactionDetailPane : ScrollContainer
         _relFactionSelect.SelectById(null);
 
         LoadRelFactionRows();
+        LoadAliases();
         _loaded = true;
     }
 
@@ -149,6 +151,45 @@ public partial class FactionDetailPane : ScrollContainer
         _npcSelect.SelectById(null);
         _roleSelect.SelectById(null);
         _addNpcButton.Disabled = true;
+    }
+
+    private void LoadAliases()
+    {
+        if (_faction == null || _aliasChipsRow == null) return;
+        foreach (Node child in _aliasChipsRow.GetChildren()) child.QueueFree();
+        var chipsRow = new HBoxContainer();
+        chipsRow.AddThemeConstantOverride("separation", 4);
+        _aliasChipsRow.AddChild(chipsRow);
+        foreach (var alias in _db.EntityAliases.GetForEntity("faction", _faction.Id))
+        {
+            int capturedId  = alias.Id;
+            var normalStyle = new StyleBoxFlat { BgColor = new Color(0.18f, 0.18f, 0.18f) };
+            normalStyle.SetCornerRadiusAll(4);
+            normalStyle.ContentMarginLeft = 6; normalStyle.ContentMarginRight = 4;
+            normalStyle.ContentMarginTop  = 2; normalStyle.ContentMarginBottom = 2;
+            var hoverStyle  = new StyleBoxFlat { BgColor = new Color(0.45f, 0.10f, 0.10f) };
+            hoverStyle.SetCornerRadiusAll(4);
+            hoverStyle.ContentMarginLeft = 6; hoverStyle.ContentMarginRight = 4;
+            hoverStyle.ContentMarginTop  = 2; hoverStyle.ContentMarginBottom = 2;
+            var chip = new PanelContainer();
+            chip.AddThemeStyleboxOverride("panel", normalStyle);
+            var row = new HBoxContainer(); row.AddThemeConstantOverride("separation", 2);
+            var label = new Label { Text = alias.Alias }; label.AddThemeFontSizeOverride("font_size", 11);
+            var removeBtn = new Button { Text = "×", Flat = true, MouseDefaultCursorShape = CursorShape.PointingHand };
+            removeBtn.AddThemeFontSizeOverride("font_size", 11);
+            removeBtn.MouseEntered += () => chip.AddThemeStyleboxOverride("panel", hoverStyle);
+            removeBtn.MouseExited  += () => chip.AddThemeStyleboxOverride("panel", normalStyle);
+            removeBtn.Pressed      += () => { _db.EntityAliases.Delete(capturedId); LoadAliases(); };
+            row.AddChild(label); row.AddChild(removeBtn); chip.AddChild(row); chipsRow.AddChild(chip);
+        }
+        var addInput = new LineEdit { PlaceholderText = "+ alias", SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(80, 0) };
+        addInput.TextSubmitted += text =>
+        {
+            string t = text.Trim(); if (string.IsNullOrEmpty(t)) return; addInput.Text = "";
+            _db.EntityAliases.Add(new DndBuilder.Core.Models.EntityAlias { CampaignId = _faction.CampaignId, EntityType = "faction", EntityId = _faction.Id, Alias = t });
+            LoadAliases();
+        };
+        _aliasChipsRow.AddChild(addInput);
     }
 
     private void LoadNpcRows()

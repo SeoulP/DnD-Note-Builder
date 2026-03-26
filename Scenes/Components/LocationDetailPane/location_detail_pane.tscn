@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="5_wikinotes"]
 
-[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_typeInput", "_descInput", "_notes", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_setParentButton", "_parentLocationSelect", "_parentLocationContainer", "_subLocationSelect", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
+[node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_typeInput", "_descInput", "_notes", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_setParentButton", "_parentLocationSelect", "_parentLocationContainer", "_subLocationSelect", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -14,6 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_locdet")
 _nameInput             = NodePath("Margin/VBoxContainer/NameRow/NameInput")
+_aliasChipsRow         = NodePath("Margin/VBoxContainer/AliasChipsRow")
 _deleteButton          = NodePath("Margin/VBoxContainer/NameRow/DeleteButton")
 _typeInput             = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow/TypeInput")
 _descInput             = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/DescriptionInput")
@@ -56,6 +57,11 @@ theme_override_font_sizes/font_size = 22
 layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxContainer"]
 layout_mode = 2

@@ -29,8 +29,8 @@
 | # | Task | Category | Priority | Status |
 |---|------|----------|----------|--------|
 | P1 | PC Detail Pane layout restructure (header + nav tabs) | UI | High | ⬜ |
-| P2 | Add / remove abilities on PC | Feature | High | ⬜ |
-| P3 | Aliases / Nicknames | Feature | High | ⬜ |
+| P2 | Add / remove abilities on PC | Feature | High | ✅ |
+| P3 | Aliases / Nicknames | Feature | High | ✅ |
 | P4 | Background — feats, proficiencies, choices, write-back | Feature | High | ⬜ |
 | P5 | Species resource pools + level progression | Feature | High | ⬜ |
 | P6 | Sections open by default + per-session state memory | UX | Medium | ⬜ |
@@ -97,7 +97,7 @@
 
 ---
 
-### P2 — Add / Remove Abilities on PC ⬜
+### P2 — Add / Remove Abilities on PC ✅
 
 **Context:** PCs may acquire homebrew or ad-hoc abilities during play. Currently all abilities are sourced automatically from class/species. A manual add/remove path is needed.
 
@@ -124,7 +124,7 @@ List<int> GetManualAbilityIds(int characterId);
 
 ---
 
-### P3 — Aliases / Nicknames ⬜
+### P3 — Aliases / Nicknames ✅
 
 **Context:** Characters (and other entities) often have shortened names used in notes — e.g. Zemmouregal → Zemmy. Aliases should be searchable and resolve in WikiLinks.
 

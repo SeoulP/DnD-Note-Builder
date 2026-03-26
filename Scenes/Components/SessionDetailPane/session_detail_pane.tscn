@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
 
-[node name="SessionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_numberLabel", "_titleInput", "_playedOnInput", "_notes", "_deleteButton", "_imageCarousel", "_relatedLinksContainer")]
+[node name="SessionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_numberLabel", "_titleInput", "_aliasChipsRow", "_playedOnInput", "_notes", "_deleteButton", "_imageCarousel", "_relatedLinksContainer")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -14,6 +14,7 @@ grow_vertical = 2
 script = ExtResource("1_sesdet")
 _numberLabel           = NodePath("Margin/VBoxContainer/NumberLabel")
 _titleInput            = NodePath("Margin/VBoxContainer/TitleRow/TitleInput")
+_aliasChipsRow         = NodePath("Margin/VBoxContainer/AliasChipsRow")
 _deleteButton          = NodePath("Margin/VBoxContainer/TitleRow/DeleteButton")
 _playedOnInput         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow/PlayedOnInput")
 _notes                 = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/WikiNotes")
@@ -51,6 +52,11 @@ theme_override_font_sizes/font_size = 22
 layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxContainer"]
 layout_mode = 2

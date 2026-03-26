@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
 
-[node name="QuestDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_statusInput","_questGiverInput","_locationInput","_rewardInput","_descInput","_notes","_historyContainer","_addHistoryButton","_deleteButton","_imageCarousel")]
+[node name="QuestDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_aliasChipsRow","_statusInput","_questGiverInput","_locationInput","_rewardInput","_descInput","_notes","_historyContainer","_addHistoryButton","_deleteButton","_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -14,6 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 _nameInput        = NodePath("Margin/VBox/NameRow/NameInput")
+_aliasChipsRow    = NodePath("Margin/VBox/AliasChipsRow")
 _deleteButton     = NodePath("Margin/VBox/NameRow/DeleteButton")
 _statusInput      = NodePath("Margin/VBox/ContentHBox/Fields/StatusRow/StatusInput")
 _questGiverInput  = NodePath("Margin/VBox/ContentHBox/Fields/QuestGiverRow/QuestGiverInput")
@@ -52,6 +53,11 @@ theme_override_font_sizes/font_size = 18
 layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2

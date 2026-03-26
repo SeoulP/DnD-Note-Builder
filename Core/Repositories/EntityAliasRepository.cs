@@ -15,6 +15,18 @@ namespace DndBuilder.Core.Repositories
 
         public void Migrate()
         {
+            // If the table exists with the old campaign-wide unique constraint, recreate it.
+            // Safe: this table was introduced 2026-03-25 and has no legacy user data.
+            var check = _conn.CreateCommand();
+            check.CommandText = "SELECT sql FROM sqlite_master WHERE type='table' AND name='entity_aliases'";
+            var existingSql = check.ExecuteScalar() as string;
+            if (existingSql != null && existingSql.Contains("UNIQUE (campaign_id, alias)"))
+            {
+                var drop = _conn.CreateCommand();
+                drop.CommandText = "DROP TABLE entity_aliases";
+                drop.ExecuteNonQuery();
+            }
+
             var cmd = _conn.CreateCommand();
             cmd.CommandText = @"CREATE TABLE IF NOT EXISTS entity_aliases (
                 id          INTEGER PRIMARY KEY,
@@ -22,7 +34,7 @@ namespace DndBuilder.Core.Repositories
                 entity_type TEXT    NOT NULL,
                 entity_id   INTEGER NOT NULL,
                 alias       TEXT    NOT NULL,
-                UNIQUE (campaign_id, alias)
+                UNIQUE (entity_type, entity_id, alias)
             )";
             cmd.ExecuteNonQuery();
         }
@@ -53,8 +65,8 @@ namespace DndBuilder.Core.Repositories
         }
 
         /// <summary>
-        /// Inserts the alias if unique within the campaign.
-        /// Returns the id of the row (new or existing on conflict).
+        /// Inserts the alias. The same alias text can exist on different entities within a campaign.
+        /// Silently skips if the exact same alias already exists on the same entity (UNIQUE on entity_type+entity_id+alias).
         /// Returns 0 if the alias text is blank.
         /// </summary>
         public int Add(EntityAlias alias)
@@ -63,7 +75,7 @@ namespace DndBuilder.Core.Repositories
             var cmd = _conn.CreateCommand();
             cmd.CommandText = @"INSERT OR IGNORE INTO entity_aliases (campaign_id, entity_type, entity_id, alias)
                                 VALUES (@cid, @type, @eid, @alias);
-                                SELECT id FROM entity_aliases WHERE campaign_id = @cid AND alias = @alias";
+                                SELECT last_insert_rowid()";
             cmd.Parameters.AddWithValue("@cid",   alias.CampaignId);
             cmd.Parameters.AddWithValue("@type",  alias.EntityType);
             cmd.Parameters.AddWithValue("@eid",   alias.EntityId);

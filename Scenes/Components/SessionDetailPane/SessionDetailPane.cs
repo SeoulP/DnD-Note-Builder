@@ -20,6 +20,7 @@ public partial class SessionDetailPane : ScrollContainer
     [Export] private LineEdit      _playedOnInput;
     [Export] private WikiNotes     _notes;
     [Export] private Button        _deleteButton;
+    [Export] private VBoxContainer _aliasChipsRow;
     [Export] private ImageCarousel _imageCarousel;
     [Export] private VBoxContainer _relatedLinksContainer;
 
@@ -72,6 +73,46 @@ public partial class SessionDetailPane : ScrollContainer
 
         _lastLinkNames.Clear();
         RefreshRelatedLinks();
+        LoadAliases();
+    }
+
+    private void LoadAliases()
+    {
+        if (_session == null || _aliasChipsRow == null) return;
+        foreach (Node child in _aliasChipsRow.GetChildren()) child.QueueFree();
+        var chipsRow = new HBoxContainer();
+        chipsRow.AddThemeConstantOverride("separation", 4);
+        _aliasChipsRow.AddChild(chipsRow);
+        foreach (var alias in _db.EntityAliases.GetForEntity("session", _session.Id))
+        {
+            int capturedId  = alias.Id;
+            var normalStyle = new StyleBoxFlat { BgColor = new Color(0.18f, 0.18f, 0.18f) };
+            normalStyle.SetCornerRadiusAll(4);
+            normalStyle.ContentMarginLeft = 6; normalStyle.ContentMarginRight = 4;
+            normalStyle.ContentMarginTop  = 2; normalStyle.ContentMarginBottom = 2;
+            var hoverStyle  = new StyleBoxFlat { BgColor = new Color(0.45f, 0.10f, 0.10f) };
+            hoverStyle.SetCornerRadiusAll(4);
+            hoverStyle.ContentMarginLeft = 6; hoverStyle.ContentMarginRight = 4;
+            hoverStyle.ContentMarginTop  = 2; hoverStyle.ContentMarginBottom = 2;
+            var chip = new PanelContainer();
+            chip.AddThemeStyleboxOverride("panel", normalStyle);
+            var row = new HBoxContainer(); row.AddThemeConstantOverride("separation", 2);
+            var label = new Label { Text = alias.Alias }; label.AddThemeFontSizeOverride("font_size", 11);
+            var removeBtn = new Button { Text = "×", Flat = true, MouseDefaultCursorShape = CursorShape.PointingHand };
+            removeBtn.AddThemeFontSizeOverride("font_size", 11);
+            removeBtn.MouseEntered += () => chip.AddThemeStyleboxOverride("panel", hoverStyle);
+            removeBtn.MouseExited  += () => chip.AddThemeStyleboxOverride("panel", normalStyle);
+            removeBtn.Pressed      += () => { _db.EntityAliases.Delete(capturedId); LoadAliases(); };
+            row.AddChild(label); row.AddChild(removeBtn); chip.AddChild(row); chipsRow.AddChild(chip);
+        }
+        var addInput = new LineEdit { PlaceholderText = "+ alias", SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(80, 0) };
+        addInput.TextSubmitted += text =>
+        {
+            string t = text.Trim(); if (string.IsNullOrEmpty(t)) return; addInput.Text = "";
+            _db.EntityAliases.Add(new DndBuilder.Core.Models.EntityAlias { CampaignId = _session.CampaignId, EntityType = "session", EntityId = _session.Id, Alias = t });
+            LoadAliases();
+        };
+        _aliasChipsRow.AddChild(addInput);
     }
 
     private void RefreshRelatedLinks()
@@ -90,32 +131,45 @@ public partial class SessionDetailPane : ScrollContainer
         if (seen.SetEquals(_lastLinkNames)) return;
         _lastLinkNames = seen;
 
-        // Build entity lookup: name → (entityType, id)
+        // Build entity lookup: name → list of (entityType, id)
+        // Aliases may map to multiple entities (same alias on different entities is allowed).
         int cid    = _session.CampaignId;
-        var lookup = new Dictionary<string, (string type, int id)>(System.StringComparer.OrdinalIgnoreCase);
-        foreach (var x in _db.Npcs.GetAll(cid))      lookup.TryAdd(x.Name,  ("npc",      x.Id));
-        foreach (var x in _db.Factions.GetAll(cid))  lookup.TryAdd(x.Name,  ("faction",  x.Id));
-        foreach (var x in _db.Locations.GetAll(cid)) lookup.TryAdd(x.Name,  ("location", x.Id));
-        foreach (var x in _db.Sessions.GetAll(cid))  lookup.TryAdd(x.Title, ("session",  x.Id));
-        foreach (var x in _db.Items.GetAll(cid))     lookup.TryAdd(x.Name,  ("item",     x.Id));
-        foreach (var x in _db.Quests.GetAll(cid))    lookup.TryAdd(x.Name,  ("quest",    x.Id));
-        // Aliases resolve to the same entity; entity name takes precedence on conflict
-        foreach (var a in _db.EntityAliases.GetAll(cid))
-            lookup.TryAdd(a.Alias, (a.EntityType, a.EntityId));
+        var lookup      = new Dictionary<string, List<(string type, int id)>>(System.StringComparer.OrdinalIgnoreCase);
+        var entityNames = new Dictionary<(string type, int id), string>();
 
-        // Group links by entity type
+        void AddEntry(string key, string type, int id)
+        {
+            if (!lookup.TryGetValue(key, out var list)) { list = new List<(string, int)>(); lookup[key] = list; }
+            if (!list.Contains((type, id))) list.Add((type, id));
+        }
+
+        foreach (var x in _db.Npcs.GetAll(cid))      { entityNames[("npc",             x.Id)] = x.Name;  AddEntry(x.Name,  "npc",             x.Id); }
+        foreach (var x in _db.Factions.GetAll(cid))  { entityNames[("faction",         x.Id)] = x.Name;  AddEntry(x.Name,  "faction",         x.Id); }
+        foreach (var x in _db.Locations.GetAll(cid)) { entityNames[("location",        x.Id)] = x.Name;  AddEntry(x.Name,  "location",        x.Id); }
+        foreach (var x in _db.Sessions.GetAll(cid))  { entityNames[("session",         x.Id)] = x.Title; AddEntry(x.Title, "session",         x.Id); }
+        foreach (var x in _db.Items.GetAll(cid))     { entityNames[("item",            x.Id)] = x.Name;  AddEntry(x.Name,  "item",            x.Id); }
+        foreach (var x in _db.Quests.GetAll(cid))    { entityNames[("quest",           x.Id)] = x.Name;  AddEntry(x.Name,  "quest",           x.Id); }
+        foreach (var a in _db.EntityAliases.GetAll(cid)) AddEntry(a.Alias, a.EntityType, a.EntityId);
+
+        // Group links by entity type — one row per resolved (name, entityId) pair
         var groups     = new Dictionary<string, List<(string name, int id)>>();
         foreach (var (type, _) in TypeOrder) groups[type] = new List<(string, int)>();
         var unresolved = new List<string>();
 
         foreach (var name in orderedNames)
         {
-            if (lookup.TryGetValue(name, out var entry) && groups.TryGetValue(entry.type, out var bucket))
-                bucket.Add((name, entry.id));
-            else if (lookup.ContainsKey(name))
-                unresolved.Add(name); // known entity but type not in TypeOrder — shouldn't happen
+            if (lookup.TryGetValue(name, out var entries))
+            {
+                foreach (var (type, id) in entries)
+                {
+                    if (groups.TryGetValue(type, out var bucket))
+                        bucket.Add((name, id));
+                }
+            }
             else
+            {
                 unresolved.Add(name);
+            }
         }
 
         // Rebuild UI
@@ -128,19 +182,19 @@ public partial class SessionDetailPane : ScrollContainer
             var items = groups[type];
             if (items.Count == 0) continue;
             any = true;
-            _relatedLinksContainer.AddChild(BuildLinkSection(label, items, type));
+            _relatedLinksContainer.AddChild(BuildLinkSection(label, items, type, entityNames));
         }
         if (unresolved.Count > 0)
         {
             any = true;
             _relatedLinksContainer.AddChild(BuildLinkSection("Not Found",
-                unresolved.ConvertAll(n => (n, 0)), null));
+                unresolved.ConvertAll(n => (n, 0)), null, entityNames));
         }
 
         _relatedLinksContainer.Visible = any;
     }
 
-    private VBoxContainer BuildLinkSection(string label, List<(string name, int id)> items, string entityType)
+    private VBoxContainer BuildLinkSection(string label, List<(string name, int id)> items, string entityType, Dictionary<(string type, int id), string> entityNames = null)
     {
         var section = new VBoxContainer();
         section.AddThemeConstantOverride("separation", 0);
@@ -197,6 +251,9 @@ public partial class SessionDetailPane : ScrollContainer
                 btn.AddThemeColorOverride("font_color",         new Color(0.83f, 0.67f, 0.44f));
                 btn.AddThemeColorOverride("font_hover_color",   new Color(0.91f, 0.78f, 0.49f));
                 btn.AddThemeColorOverride("font_pressed_color", new Color(0.83f, 0.67f, 0.44f));
+                if (entityNames != null && entityNames.TryGetValue((entityType, id), out var actualName)
+                    && !string.Equals(actualName, name, System.StringComparison.OrdinalIgnoreCase))
+                    btn.TooltipText = actualName;
                 string capturedType = entityType;
                 int    capturedId   = id;
                 btn.Pressed += () => EmitSignal(SignalName.NavigateTo, capturedType, capturedId);
