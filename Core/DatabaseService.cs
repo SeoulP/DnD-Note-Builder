@@ -36,6 +36,7 @@ public partial class DatabaseService : Node
     public DnD5eSkillRepository           DnD5eSkills           { get; private set; }
     public DnD5eBackgroundRepository      DnD5eBackgrounds      { get; private set; }
     public DnD5eCharacterSkillRepository  DnD5eCharacterSkills  { get; private set; }
+    public EntityAliasRepository          EntityAliases         { get; private set; }
 
     public string DbPath { get; private set; }
     public string ImgDir { get; private set; }
@@ -107,6 +108,7 @@ public partial class DatabaseService : Node
         DnD5eSkills          = new DnD5eSkillRepository(_conn);
         DnD5eBackgrounds     = new DnD5eBackgroundRepository(_conn);
         DnD5eCharacterSkills = new DnD5eCharacterSkillRepository(_conn);
+        EntityAliases        = new EntityAliasRepository(_conn);
 
         RunMigrations();
     }
@@ -143,6 +145,7 @@ public partial class DatabaseService : Node
         DnD5eSkills         .Migrate();  // references campaigns
         DnD5eBackgrounds    .Migrate();  // references campaigns; background_id FK on player_characters resolves at runtime
         DnD5eCharacterSkills.Migrate();  // references player_characters, dnd5e_skills
+        EntityAliases       .Migrate();  // references campaigns; no other FK dependencies
 
         MigrateLegacyPortraits();
 

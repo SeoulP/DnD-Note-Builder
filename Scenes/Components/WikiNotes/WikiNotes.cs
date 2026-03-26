@@ -484,6 +484,21 @@ public override void _ExitTree()
         foreach (var x in _db.Items.GetAll(_campaignId))     Add(x.Name,  "Item");
         foreach (var x in _db.Quests.GetAll(_campaignId))    Add(x.Name,  "Quest");
 
+        // Alias matches — show as "Alias (→ EntityName)" so the DM knows what they resolve to
+        var entityNames = new System.Collections.Generic.Dictionary<string, string>();
+        foreach (var x in _db.Npcs.GetAll(_campaignId))      entityNames[$"npc:{x.Id}"]      = x.Name;
+        foreach (var x in _db.Factions.GetAll(_campaignId))  entityNames[$"faction:{x.Id}"]  = x.Name;
+        foreach (var x in _db.Locations.GetAll(_campaignId)) entityNames[$"location:{x.Id}"] = x.Name;
+        foreach (var x in _db.Sessions.GetAll(_campaignId))  entityNames[$"session:{x.Id}"]  = x.Title;
+        foreach (var x in _db.Items.GetAll(_campaignId))     entityNames[$"item:{x.Id}"]     = x.Name;
+        foreach (var x in _db.Quests.GetAll(_campaignId))    entityNames[$"quest:{x.Id}"]    = x.Name;
+        foreach (var a in _db.EntityAliases.GetAll(_campaignId))
+        {
+            if (q.Length > 0 && !a.Alias.ToLowerInvariant().Contains(q)) continue;
+            string entityName = entityNames.TryGetValue($"{a.EntityType}:{a.EntityId}", out var n) ? n : a.EntityType;
+            results.Add((a.Alias, $"→ {entityName}"));
+        }
+
         return results;
     }
 

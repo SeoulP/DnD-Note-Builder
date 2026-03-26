@@ -28,12 +28,13 @@ public partial class SessionDetailPane : ScrollContainer
 
     private static readonly (string type, string label)[] TypeOrder =
     {
-        ("npc",      "NPCs"),
-        ("faction",  "Factions"),
-        ("location", "Locations"),
-        ("session",  "Sessions"),
-        ("item",     "Items"),
-        ("quest",    "Quests"),
+        ("npc",             "NPCs"),
+        ("faction",         "Factions"),
+        ("location",        "Locations"),
+        ("session",         "Sessions"),
+        ("item",            "Items"),
+        ("quest",           "Quests"),
+        ("playercharacter", "Characters"),
     };
 
     public override void _Ready()
@@ -98,6 +99,9 @@ public partial class SessionDetailPane : ScrollContainer
         foreach (var x in _db.Sessions.GetAll(cid))  lookup.TryAdd(x.Title, ("session",  x.Id));
         foreach (var x in _db.Items.GetAll(cid))     lookup.TryAdd(x.Name,  ("item",     x.Id));
         foreach (var x in _db.Quests.GetAll(cid))    lookup.TryAdd(x.Name,  ("quest",    x.Id));
+        // Aliases resolve to the same entity; entity name takes precedence on conflict
+        foreach (var a in _db.EntityAliases.GetAll(cid))
+            lookup.TryAdd(a.Alias, (a.EntityType, a.EntityId));
 
         // Group links by entity type
         var groups     = new Dictionary<string, List<(string name, int id)>>();
@@ -106,8 +110,10 @@ public partial class SessionDetailPane : ScrollContainer
 
         foreach (var name in orderedNames)
         {
-            if (lookup.TryGetValue(name, out var entry))
-                groups[entry.type].Add((name, entry.id));
+            if (lookup.TryGetValue(name, out var entry) && groups.TryGetValue(entry.type, out var bucket))
+                bucket.Add((name, entry.id));
+            else if (lookup.ContainsKey(name))
+                unresolved.Add(name); // known entity but type not in TypeOrder — shouldn't happen
             else
                 unresolved.Add(name);
         }

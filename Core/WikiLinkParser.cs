@@ -35,6 +35,13 @@ public static class WikiLinkParser
         foreach (var x in db.Sessions.GetAll(campaignId))  d[x.Title.ToLowerInvariant()] = $"session:{x.Id}";
         foreach (var x in db.Items.GetAll(campaignId))     d[x.Name.ToLowerInvariant()]  = $"item:{x.Id}";
         foreach (var x in db.Quests.GetAll(campaignId))    d[x.Name.ToLowerInvariant()]  = $"quest:{x.Id}";
+        // Aliases resolve to the same URL as the entity; entity name takes precedence on conflict
+        foreach (var a in db.EntityAliases.GetAll(campaignId))
+        {
+            string key = a.Alias.ToLowerInvariant();
+            if (!d.ContainsKey(key))
+                d[key] = $"{a.EntityType}:{a.EntityId}";
+        }
         return d;
     }
 }

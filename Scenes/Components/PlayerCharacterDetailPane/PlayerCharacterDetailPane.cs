@@ -67,6 +67,7 @@ public partial class PlayerCharacterDetailPane : VBoxContainer
     [Export] private WikiNotes     _notes;
     [Export] private ImageCarousel _imageCarousel;
     [Export] private Button        _deleteButton;
+    [Export] private VBoxContainer    _aliasChipsRow;
     [Export] private Button           _addManualAbilityBtn;
     [Export] private Button        _statsTabBtn;
     [Export] private Button        _actionsTabBtn;
@@ -182,6 +183,7 @@ public partial class PlayerCharacterDetailPane : VBoxContainer
         _imageCarousel.Setup(EntityType.PlayerCharacter, pc.Id, _db);
         _loading = false;
         LoadBackground();
+        LoadAliases();
         LoadSkills();
         LoadAbilityChoices();
         LoadResources();
@@ -295,6 +297,86 @@ public partial class PlayerCharacterDetailPane : VBoxContainer
         Save();
         LoadBackground();
         LoadSkills();
+    }
+
+    private void LoadAliases()
+    {
+        if (_pc == null || _aliasChipsRow == null) return;
+        foreach (Node child in _aliasChipsRow.GetChildren())
+            child.QueueFree();
+
+        // ── chips row (above the input) ───────────────────────────────────────
+        var chipsRow = new HBoxContainer();
+        chipsRow.AddThemeConstantOverride("separation", 4);
+        _aliasChipsRow.AddChild(chipsRow);
+
+        var aliases = _db.EntityAliases.GetForEntity("playercharacter", _pc.Id);
+        foreach (var alias in aliases)
+        {
+            int    capturedId = alias.Id;
+
+            var normalStyle = new StyleBoxFlat { BgColor = new Color(0.18f, 0.18f, 0.18f) };
+            normalStyle.SetCornerRadiusAll(4);
+            normalStyle.ContentMarginLeft   = 6;
+            normalStyle.ContentMarginRight  = 4;
+            normalStyle.ContentMarginTop    = 2;
+            normalStyle.ContentMarginBottom = 2;
+
+            var hoverStyle = new StyleBoxFlat { BgColor = new Color(0.45f, 0.10f, 0.10f) };
+            hoverStyle.SetCornerRadiusAll(4);
+            hoverStyle.ContentMarginLeft   = 6;
+            hoverStyle.ContentMarginRight  = 4;
+            hoverStyle.ContentMarginTop    = 2;
+            hoverStyle.ContentMarginBottom = 2;
+
+            var chip = new PanelContainer();
+            chip.AddThemeStyleboxOverride("panel", normalStyle);
+
+            var row = new HBoxContainer();
+            row.AddThemeConstantOverride("separation", 2);
+
+            var label = new Label { Text = alias.Alias };
+            label.AddThemeFontSizeOverride("font_size", 11);
+
+            var removeBtn = new Button
+            {
+                Text                     = "×",
+                Flat                     = true,
+                MouseDefaultCursorShape  = CursorShape.PointingHand,
+            };
+            removeBtn.AddThemeFontSizeOverride("font_size", 11);
+            removeBtn.MouseEntered += () => chip.AddThemeStyleboxOverride("panel", hoverStyle);
+            removeBtn.MouseExited  += () => chip.AddThemeStyleboxOverride("panel", normalStyle);
+            removeBtn.Pressed      += () => { _db.EntityAliases.Delete(capturedId); LoadAliases(); };
+
+            row.AddChild(label);
+            row.AddChild(removeBtn);
+            chip.AddChild(row);
+            chipsRow.AddChild(chip);
+        }
+
+        // ── add input (below the chips) ───────────────────────────────────────
+        var addInput = new LineEdit
+        {
+            PlaceholderText     = "+ alias",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            CustomMinimumSize   = new Vector2(80, 0),
+        };
+        addInput.TextSubmitted += text =>
+        {
+            string trimmed = text.Trim();
+            if (string.IsNullOrEmpty(trimmed)) return;
+            addInput.Text = "";
+            _db.EntityAliases.Add(new DndBuilder.Core.Models.EntityAlias
+            {
+                CampaignId = _pc.CampaignId,
+                EntityType = "playercharacter",
+                EntityId   = _pc.Id,
+                Alias      = trimmed,
+            });
+            LoadAliases();
+        };
+        _aliasChipsRow.AddChild(addInput);
     }
 
     private void LoadBackground()
