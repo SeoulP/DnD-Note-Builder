@@ -4,15 +4,16 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public partial class PlayerCharacterDetailPane : ScrollContainer
+public partial class PlayerCharacterDetailPane : VBoxContainer
 {
     private DatabaseService          _db;
     private PlayerCharacter          _pc;
     private ConfirmationDialog       _confirmDialog;
-    private int                      _subclassUnlockLevel  = 3;
-    private bool                     _loading              = false;
-    private HashSet<int>             _openAbilityDropdowns = new();
-    private HashSet<string>          _openAbilitySections  = new();
+    private int                      _subclassUnlockLevel   = 3;
+    private bool                     _loading               = false;
+    private string                   _activeTab             = "Stats";
+    private HashSet<int>             _openAbilityDropdowns  = new();
+    private HashSet<string>          _closedAbilitySections = new();
     private SkillExpectationService  _skillExpectations;
     private BackgroundPickerModal    _backgroundModal;
     private EffectPreviewPopup       _effectPreview;
@@ -66,6 +67,15 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     [Export] private WikiNotes     _notes;
     [Export] private ImageCarousel _imageCarousel;
     [Export] private Button        _deleteButton;
+    [Export] private Button           _addManualAbilityBtn;
+    [Export] private Button        _statsTabBtn;
+    [Export] private Button        _actionsTabBtn;
+    [Export] private Button        _inventoryTabBtn;
+    [Export] private Button        _flavorTabBtn;
+    [Export] private Control       _statsTab;
+    [Export] private Control       _actionsTab;
+    [Export] private Control       _inventoryTab;
+    [Export] private Control       _flavorTab;
 
     public override void _Ready()
     {
@@ -125,12 +135,32 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         AddChild(_confirmDialog);
         _confirmDialog.Confirmed += () => EmitSignal(SignalName.Deleted, "playercharacter", _pc?.Id ?? 0);
         _deleteButton.Pressed    += () => DialogHelper.Show(_confirmDialog, $"Delete \"{_pc?.Name}\"? This cannot be undone.");
+
+        _statsTabBtn.Pressed     += () => SetActiveTab("Stats");
+        _actionsTabBtn.Pressed   += () => SetActiveTab("Actions");
+        _inventoryTabBtn.Pressed += () => SetActiveTab("Inventory");
+        _flavorTabBtn.Pressed    += () => SetActiveTab("Flavor");
+        _addManualAbilityBtn.Pressed += ShowAbilityPicker;
+    }
+
+    private void SetActiveTab(string name)
+    {
+        _activeTab = name;
+        _statsTab.Visible     = name == "Stats";
+        _actionsTab.Visible   = name == "Actions";
+        _inventoryTab.Visible = name == "Inventory";
+        _flavorTab.Visible    = name == "Flavor";
+        _statsTabBtn.SetPressedNoSignal(name == "Stats");
+        _actionsTabBtn.SetPressedNoSignal(name == "Actions");
+        _inventoryTabBtn.SetPressedNoSignal(name == "Inventory");
+        _flavorTabBtn.SetPressedNoSignal(name == "Flavor");
     }
 
     public void Load(PlayerCharacter pc)
     {
         _loading = true;
         _pc = pc;
+        _closedAbilitySections.Clear();
         var vocab = SystemVocabulary.For(_db.Campaigns.Get(pc.CampaignId)?.System);
         _speciesLabel.Text = vocab.Species;
         _classLabel.Text   = vocab.Class;
@@ -558,7 +588,8 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 
         if (_pc == null) { _abilityChoicesSection.Visible = false; return; }
 
-        var abilities = GetAllOwnedAbilities();
+        var abilities  = GetAllOwnedAbilities();
+        var manualIds  = new HashSet<int>(_db.PlayerCharacters.GetManualAbilityIds(_pc.Id));
 
         // Current resource amounts for greying out depleted Use buttons, and names for tooltips
         var resourceAmounts = new Dictionary<int, int>();
@@ -614,7 +645,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         var abilitiesBySection = GroupAbilitiesByAction(abilities);
         foreach (var sectionName in GetOrderedAbilitySectionNames(abilitiesBySection.Keys))
         {
-            bool isOpen = _openAbilitySections.Contains(sectionName);
+            bool isOpen = !_closedAbilitySections.Contains(sectionName);
 
             var sectionContainer = new VBoxContainer();
             sectionContainer.AddThemeConstantOverride("separation", 4);
@@ -625,7 +656,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 
             var sectionToggle = new Button
             {
-                Text                = $"{(isOpen ? "▲" : "▼")}  {sectionName}",
+                Text                = $"{(isOpen ? "−" : "+")}  {sectionName}",
                 ToggleMode          = true,
                 ButtonPressed       = isOpen,
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
@@ -646,14 +677,14 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 
             sectionToggle.Toggled += pressed =>
             {
-                if (pressed) _openAbilitySections.Add(sectionName);
-                else _openAbilitySections.Remove(sectionName);
+                if (!pressed) _closedAbilitySections.Add(sectionName);
+                else _closedAbilitySections.Remove(sectionName);
                 bodyMargin.Visible = pressed;
-                sectionToggle.Text = $"{(pressed ? "▲" : "▼")}  {sectionName}";
+                sectionToggle.Text = $"{(pressed ? "−" : "+")}  {sectionName}";
             };
 
             foreach (var ability in abilitiesBySection[sectionName])
-                sectionBody.AddChild(BuildAbilityBlock(ability, resourceAmounts, resourceNames));
+                sectionBody.AddChild(BuildAbilityBlock(ability, resourceAmounts, resourceNames, manualIds.Contains(ability.Id)));
 
             sectionContainer.AddChild(sectionToggle);
             sectionContainer.AddChild(bodyMargin);
@@ -840,6 +871,41 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 #pragma warning restore CS0162
     }
 
+    private void ShowAbilityPicker()
+    {
+        if (_pc == null) return;
+        var ownedIds = new HashSet<int>(GetAllOwnedAbilities().ConvertAll(a => a.Id));
+
+        // Create a hidden TypeOptionButton child sized to match the + button so its
+        // popup positions correctly via GetGlobalRect().
+        var picker = new TypeOptionButton
+        {
+            NoneText          = "— Cancel —",
+            AutoSelectOnAdd   = true,
+            ShowDeleteButtons = false,
+            Size              = _addManualAbilityBtn.Size,
+            Position          = _addManualAbilityBtn.Position,
+            Visible           = false,
+        };
+        _addManualAbilityBtn.AddChild(picker);
+        picker.Setup(
+            () => _db.Abilities.GetAll(_pc.CampaignId)
+                    .FindAll(a => !ownedIds.Contains(a.Id))
+                    .ConvertAll(a => (a.Id, a.Name)),
+            null, null);
+        picker.TypeSelected += id =>
+        {
+            if (id >= 0)
+            {
+                _db.PlayerCharacters.AddManualAbility(_pc.Id, id);
+                LoadAbilityChoices();
+                LoadResources();
+            }
+        };
+        picker.PopupClosed += () => picker.QueueFree();
+        picker.ShowPopup();
+    }
+
     private static string CostTooltip(List<AbilityCost> costs, Dictionary<int, string> resourceNames)
     {
         var parts = new System.Text.StringBuilder();
@@ -852,20 +918,28 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return parts.ToString();
     }
 
-    private VBoxContainer BuildAbilityBlock(Ability ability, Dictionary<int, int> resourceAmounts, Dictionary<int, string> resourceNames)
+    private VBoxContainer BuildAbilityBlock(Ability ability, Dictionary<int, int> resourceAmounts, Dictionary<int, string> resourceNames, bool isManual = false)
     {
         var abilityBlock = new VBoxContainer();
         abilityBlock.AddThemeConstantOverride("separation", 2);
 
         if (ability.ChoicePoolType != "fixed")
         {
+            int capturedId = ability.Id;
             var row = new EntityRow
             {
-                ShowDelete      = false,
+                ShowDelete      = isManual,
                 Text            = ability.Name,
                 ShowDescription = !string.IsNullOrWhiteSpace(ability.Trigger),
                 Description     = ability.Trigger,
             };
+            if (isManual)
+                row.DeletePressed += () =>
+                {
+                    _db.PlayerCharacters.RemoveManualAbility(_pc.Id, capturedId);
+                    LoadAbilityChoices();
+                    LoadResources();
+                };
             int navId = ability.Id;
             row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo, "ability", navId);
             row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "ability", navId);
@@ -1199,6 +1273,9 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         if (_pc.SubspeciesId.HasValue)
             foreach (var abilityId in _db.Abilities.GetAbilityIdsForSubspecies(_pc.SubspeciesId.Value))
                 ids.Add(abilityId);
+
+        foreach (var abilityId in _db.PlayerCharacters.GetManualAbilityIds(_pc.Id))
+            ids.Add(abilityId);
 
         var abilities = new List<Ability>();
         foreach (var id in ids)

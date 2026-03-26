@@ -101,6 +101,39 @@ namespace DndBuilder.Core.Repositories
             }
         }
 
+        // ── Manual abilities ──────────────────────────────────────────────────
+
+        public void AddManualAbility(int characterId, int abilityId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"INSERT INTO character_abilities (character_id, ability_id, source)
+                                VALUES (@cid, @aid, 'manual')
+                                ON CONFLICT(character_id, ability_id) DO NOTHING";
+            cmd.Parameters.AddWithValue("@cid", characterId);
+            cmd.Parameters.AddWithValue("@aid", abilityId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void RemoveManualAbility(int characterId, int abilityId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM character_abilities WHERE character_id = @cid AND ability_id = @aid AND source = 'manual'";
+            cmd.Parameters.AddWithValue("@cid", characterId);
+            cmd.Parameters.AddWithValue("@aid", abilityId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<int> GetManualAbilityIds(int characterId)
+        {
+            var list = new List<int>();
+            var cmd  = _conn.CreateCommand();
+            cmd.CommandText = "SELECT ability_id FROM character_abilities WHERE character_id = @cid AND source = 'manual'";
+            cmd.Parameters.AddWithValue("@cid", characterId);
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(r.GetInt32(0));
+            return list;
+        }
+
         // ── Character resources CRUD ──────────────────────────────────────────
 
         public void MigrateResources()

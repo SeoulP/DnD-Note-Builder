@@ -1,5 +1,5 @@
 # TTRPG Companion App — Master Action Plan
-*March 2026 · v1.1 · Consolidated from Model, UI, Session Feedback, and Navigation/UX plans*
+*March 2026 · v1.2 · Active tasks only — see Completed_Action_Plan.md for completed work**
 
 ---
 
@@ -21,6 +21,16 @@
 | ⬜ | To do |
 | 🔶 | Partial / in progress |
 | 🚫 | Parked / no decision yet |
+
+---
+
+## Sub-Plans
+
+Large active workstreams have their own dedicated plan files. These are linked here and should be kept in sync with the task entries below.
+
+| File | Scope |
+|------|-------|
+| [`PC_Detail_Pane_Action_Plan.md`](PC_Detail_Pane_Action_Plan.md) | All PC Detail Pane QOL work — layout restructure, aliases, backgrounds, species resources, rest buttons, skill chips, scaling usages |
 
 ---
 
@@ -53,6 +63,7 @@
 | F16 | Call SeedDefaults on campaign load (+ add God/Worship seeds) | Schema | Medium | ⬜ |
 | F17 | WikiNotes — Items and Quests included in WikiLink autocomplete | Feature | High | ✅ |
 | F18 | WikiNotes — stub creation via `[[+NoteType]]` syntax | Feature | High | ✅ |
+| M1 | Agents folder cleanup — delete stale files | Maintenance | Low | ⬜ |
 
 ---
 
@@ -345,6 +356,25 @@ These will reach existing campaigns automatically once F16 is wired in.
 
 ---
 
+### M1 — Agents Folder Cleanup ⬜
+
+Delete the following stale files and folders from the `Agents/` directory. All content has either been completed (logged in `Completed_Action_Plan.md`), superseded, or absorbed into active plans.
+
+**Files to delete:**
+- `WAL_Urgent_Action_Plan.md` — complete, wired in codebase
+- `AppLogger_Action_Plan.md` — complete, `AppLogger.cs` + `Toast` exist
+- `Abilities_Refactor_Action_Plan.md` — fully superseded by current architecture
+- `System_Layer_Action_Plan.md` — fully superseded; all work in completed log
+- `party_character_skills_action_plan.md` — absorbed into completed log
+
+**Folders to delete:**
+- `Agents/Graush/` — temporary ability reference docs used during seeding; data now in DB
+- `Agents/Classes/` — temporary class reference docs; data now in DB
+- `Agents/Species/` — temporary species reference docs; data now in DB
+- `memory/` (project root) — replaced by `Agents/Memory/`
+
+---
+
 ## Implementation Order
 
 ### Short-term
@@ -424,89 +454,8 @@ These will reach existing campaigns automatically once F16 is wired in.
 
 ## Completed Work Log
 
-All items below are done and require no further action unless noted.
-
-### Model (pre-alpha)
-- ✅ `Faction.Headquarters` removed
-- ✅ `Location.FactionIds` → `LocationFaction` join model
-- ✅ `LocationFactionRole` seeded model created
-- ✅ `NpcRelationship` enum → `NpcRelationshipType` seeded model
-- ✅ `Npc` refactored into `Character` base + `Npc` + `PlayerCharacter` (Table-Per-Type)
-- ✅ `NpcStatus` enum → `NpcStatus` seeded model
-- ✅ Item system: `Item`, `ItemType`, `SystemItem`, `DnD5eItemMechanics`, `CharacterItem`, `LocationItem`
-
-### UI / Compile fixes
-- ✅ `FactionDetailPane` — Headquarters removed
-- ✅ `LocationDetailPane` — `FactionIds` → `Factions.Select(f => f.FactionId)`
-- ✅ `NpcDetailPane` — enum dropdowns replaced with DB-loaded dropdowns (Status + RelationshipType)
-- ✅ Item list + detail pane
-- ✅ Entity image carousel system (`ImageCarousel`, `ImageLightbox`, `EntityImageRepository`, all five detail panes wired)
-
-### UX Polish (2026-03-19)
-- ✅ U2 — EntityRow pointer cursor: `MouseDefaultCursorShape = CursorShape.PointingHand` on `navBtn` and `delBtn` inside `EntityRow._Ready()`.
-- ✅ U1 — WikiNotes click-to-edit fully resolved: scroll position saved/restored around `GrabFocus`; caret placed at click position via `GetLineColumnAtPos`; `ScrollFitContentHeight = true` prevents scrollbar flicker; fonts/sizes matched between `TextEdit` and `RichTextLabel` via theme API; renderer stylebox tuned to match focused TextEdit layout (left margin = `focusSb.ContentMarginLeft`, top margin = `focusSb.ContentMarginTop + focusSb.BorderWidthTop * 2` to compensate for the 2 px layout shift when focus border activates); `caret_blink = true` added to `wiki_notes.tscn`.
-
-### Image loading (2026-03-19)
-- ✅ B1 — Image load bug fixed: `ImageCarousel` and `ImageLightbox` now read raw bytes via `System.IO.File.ReadAllBytes` and detect format from magic bytes (PNG/JPEG/WebP), bypassing Godot's extension-based loader. Handles files with mismatched extensions (e.g. WebP saved as .png).
-- ✅ B2 — Drag-and-drop now works via `Window.FilesDropped` signal. Godot 4 does not route OS file drops through `_CanDropData`/`_DropData` — those are internal-only. Drop hover overlay was investigated and dropped: Godot 4 exposes no OS drag hover events, so reliable visual feedback during drag is not possible without platform-specific hooks.
-
-### Visual / Theme polish (2026-03-20)
-- ✅ U3 — Project-wide Godot theme (`theme.tres`): TextEdit + LineEdit steel-blue bg (`#334155`), violet focus ring (`#6d28d9`), rounded corners (r=5), transparent resting border; warm light text; `Label/colors/font_color` set globally.
-- ✅ ThemeManager — `Core/ThemeManager.cs` autoload; HSV hue-shift approach: all themes are Slate's dark profile rotated to any hue (0–359°). Free hue slider + Dark/Light toggle + 4-stop saturation selector (Greyscale · Muted · Default · Vivid) in Settings → Appearance popup. Persisted via `SettingsRepository` (`app_settings` table, keys: `theme_hue`, `theme_dark`, `theme_sat`). NavBar bg and ImageCarousel bg (Component/700) update live via `ThemeChanged` signal. Special-case: hue=215 + dark + Default sat → exact Slate Tailwind hex values.
-- ✅ App background `#1e293b` via `rendering/environment/defaults/default_clear_color` in `project.godot` (no Panel nodes in scene tree — clear colour is the correct mechanism).
-- ✅ NavBar background `#0f172a` via inline StyleBoxFlat override in `nav_bar.tscn`.
-- ✅ EntityRow + TypeOptionButton hover states read from `DndBuilder/styles/row_hover` + `delete_hover` in theme; fallback to hardcoded colours if theme lookup fails (prevents silent null-stylebox override bug).
-- ✅ TypeOptionButton popup background from `PopupPanel/styles/panel` in theme.
-- ✅ ImageCarousel background changed to `#1e293b` (app background), border to `#334155`; border width set to 0 (user preference).
-- ✅ `margin_top = 8` restored on `Margin` node in all five detail panes that were missing it (npc, faction, location, session, item).
-- ✅ `caret_blink = true` added to every LineEdit and TextEdit node across all detail panes, the dashboard search field, the new-campaign modal, and dynamically created TypeOptionButton search/add inputs.
-- ✅ Global unfocus on blank click — `App._Input` override releases focus when a left-click lands outside the currently focused control. (`_UnhandledInput` was insufficient because detail panes are `ScrollContainer` roots which absorb mouse events before they reach unhandled input.)
-
-### Session feedback
-- ✅ Spacebar opens image importer from lightbox — fixed via `GetViewport().GuiReleaseFocus()` in `OpenLightbox()`
-- ✅ Session sidebar — title only, no index prefix
-- ✅ Wasted space left/right of app — `app.tscn` margins corrected; `SetMargins()` in `App.cs`
-- ✅ Import / Export — Backup, Restore, Export Campaign Data, Import Campaign Data; `.dndx` JSON format
-- ✅ All text areas auto-expand in edit mode (`WikiNotes`)
-- ✅ Entity name fields select-all on focus (all detail panes)
-- ✅ Lightbox cursor — pointer hand on carousel, Move cursor in lightbox
-- ✅ OS-native file dialog (`DisplayServer.FileDialogShow()`)
-- ✅ Navbar built out — campaign name, back button, settings menu
-- ✅ "Acquainted with" NPC relationship seed added
-- ✅ Notes last in all detail panes
-- ✅ Detail pane footer — 24px breathing room at window bottom
-- ✅ New sessions always append to end of sidebar list
-- ✅ Settings menu tooltips
-- ✅ Three-column layout (sidebar / detail / wiki panel)
-- ✅ Quests entity + Quest History sub-feature
-- ✅ NPC–NPC relationships — `character_relationships` table, full CRUD, `NpcDetailPane` panel with type/NPC pickers, add/remove/navigate. Both directions surface on both NPC panes via `OR related_character_id = @cid` query. Directionality display is a separate open design question (F15).
-
-### UX Polish (2026-03-20)
-- ✅ U4 — TypeOptionButton auto-select on add: `AutoSelectOnAdd = true` added before `Setup()` on all type dropdowns — `_speciesInput`, `_statusInput`, `_relationshipInput`, `_roleSelect`, `_relTypeSelect` (NPC); `_typeInput` (Item); `_statusInput` (Quest); `_roleSelect`, `_relFactionTypeSelect` (Faction); `_roleSelect` (Location). Entity-picker dropdowns already had it.
-
-### Tab system (2026-03-20)
-- ✅ F13 — Full tab system for the detail pane. `TabEntry` class with `ActionBtn` (combined pin/close), color swatch, per-tab `StyleBoxFlat` refs for live theme updates. `BuildTabWidget` + `BuildAddTabWidget` (mini-tab `+` at end of list). Navigation priority: existing tab → unpinned current → unpinned other → new tab. Right-click context menu: Close, Close All, Close All to Right, Pin/Unpin. Drag-and-drop reorder with ghost preview (`ZIndex=100` root-level control). Tab scrollbar hidden (`horizontal_scroll_mode = 3`). All tab colors sourced from `ThemeManager`; `OnTabThemeChanged` mutates `StyleBoxFlat.BgColor` in-place for live theme switching. `DeleteHoverColor` = dark crimson `Color(0.55f, 0.12f, 0.12f)` applied app-wide (tabs, EntityRow, TypeOptionButton).
-- ✅ F14 — "Remember Tabs" setting. Full tab state (type, id, pinned, active index) serialized to JSON and persisted per-campaign via `app_settings`. `SaveTabs()` on every navigation; `RestoreTabs()` at end of `_Ready()`. Toggled via checkable Settings menu item; `HideOnCheckableItemSelection = false` keeps menu open on toggle.
-
-### NPC Relationships (2026-03-22)
-- ✅ F15 — NPC–NPC relationship directionality. Relationships are now **one-directional and independent per NPC**: each NPC manages their own rows (`WHERE character_id = @cid` only). Jorge adds "Master of Harold" from his pane; Harold separately adds "Friend of Jorge" from his pane — two unrelated DB rows. Schema: migration guard adds `to_type_id` column (unused, kept for additive-only rule); `relationship_type_id` remains the single type field. `RemoveRelationship` deletes only the specific directional row. Display always reads `"{currentNpc}, {type} {otherNpc}"`. NPC picker filter checks `RelatedCharacterId` only (not both directions). `RelationshipTypeOptionButton` component was built then abandoned in favour of keeping the standard `TypeOptionButton`. `TypeOptionButton` hover-×-disappear bug fixed: `delBtn.MouseExited` now resets `Modulate` to transparent.
-
-### Image standardization + Backup/Restore + Export/Import images (2026-03-22)
-- ✅ F1 — Images now copied to a managed `img/{campaignName}/` folder next to the executable (editor builds use `OS.GetUserDataDir()`). GUID filenames prevent collisions. `CopyToImgDir()` in `ImageCarousel.cs` handles the copy; returns a **relative path** (`img/{campaign}/abc.png`) stored in DB. `ResolveToAbsolute()` in `ImageCarousel` converts relative → absolute at load time; legacy absolute paths pass through unchanged for backwards compatibility. Lightbox receives pre-resolved paths. `DatabaseService` exposes `ImgDir` property. Deleting an image from the carousel also deletes the file from disk if it lives inside `ImgDir`.
-- ✅ Legacy image path migration — `DatabaseService.MigrateLegacyImagePaths(campaignId)` runs on every campaign open (called from `CampaignDashboard._Ready()`). For each entity image with an absolute path: copies the file to `img/{campaignName}/` with a GUID name, updates the DB record to the new relative path. Missing files are skipped silently. Fully idempotent — no-ops on rows that are already relative. `EntityImageRepository.UpdatePath(id, newPath)` added to support this.
-- ✅ Backup with images — `NavBar.OpenBackupDialog()` replaced with a programmatic `Window` popup (mirrors Export flow). Includes an "Include Images" checkbox. Backup creates a `.zip` via `System.IO.Compression.ZipFile`: `campaign.db` + `-wal`/`-shm` sidecars (if present) + entire `img/` folder recursively (if opted in). Restore accepts `.zip` (extracts all entries preserving relative paths) or legacy `.db` (file copy). `File.Delete` before zip creation prevents `ZipArchiveMode.Create` from throwing on existing file. `SqliteConnection.ClearAllPools()` added to `Disconnect()` — required to flush the connection pool and release the file handle before backup or restore can access `campaign.db`. Without this, `CreateEntryFromFile` throws `IOException: file in use`.
-- ✅ F10 — Image export/import in `.dndx` packages. `EntityImageExport` model (`EntityType`, `OldEntityId`, `Extension`, `DataBase64`, `SortOrder`). `ExportPackage.Images` list. `BuildPackage()` resolves stored paths to absolute before reading bytes. `ApplyPackage()` writes decoded bytes to `img/{campaignName}/` and stores a relative path in DB. `itemMap` and `questMap` added to `ApplyPackage()` for complete entity coverage. `ImportExportModal` shows "Include Images" checkbox (export: always; import: only if package contains images, shows count). All detail panes updated to pass `campaignId` as 4th arg to `_imageCarousel.Setup()`.
-
-### Session Related-Links Panel (2026-03-22)
-- ✅ F3 — Session related-links panel. `RefreshRelatedLinks()` parses all `[[...]]` links from session notes, deduplicates in order of first appearance, and builds a name→(type, id) lookup across all six entity types. Links are grouped into collapsible sections (▼/▶ toggle, showing count) in fixed type order: NPCs → Factions → Locations → Sessions → Items → Quests → Not Found. Resolved links render as flat gold buttons (`#d4aa70`) with pointing-hand cursor and emit `NavigateTo` on press. Unresolved links render as grey disabled buttons (arrow cursor). All buttons have `StyleBoxEmpty` padding stripped so height matches font size, with `TextOverrunBehavior.TrimEllipsis` overflow protection. Items are indented 24px under their section header via a `MarginContainer`. Panel is hidden when no links are present. Fires live on every `_notes.TextChanged`; skips rebuild if the set of link names is unchanged.
-
-### UX Polish (2026-03-22)
-- ✅ U5 — WikiNotes bullet continuation: `- ` prefix on a line auto-continues on Enter (new `- ` line inserted). Enter on an empty `- ` body removes the prefix. `OnInputKey` early-return guard relaxed — `HandleBulletContinuation()` now fires when autocomplete is not visible; autocomplete-only keys (Escape, Up, Down, Tab) guard themselves individually.
-
-### WikiNotes improvements (2026-03-20)
-- ✅ F17 — Items and Quests added to `[[` autocomplete (`WikiNotes.GetEntityMatches()`) and to link rendering (`WikiLinkParser.BuildLookup()`). All six entity types now suggest and render as navigable gold links.
-- ✅ F18 — Stub creation via `[[+NoteType]]` syntax. Typing `[[+NPC]]`, `[[+Location]]`, `[[+Item]]`, `[[+Faction]]`, or `[[+Quest]]` (closing `]]` triggers the modal) opens a name-prompt popup. Confirming creates a stub record, replaces the trigger with `[[Name]]`, and refreshes the sidebar via `EntityCreated` signal wired through all six detail panes and `CampaignDashboard`. Escape removes the trigger text. Footer hint added to `wiki_notes.tscn`: `[[Name]] links to a note  ·  [[+NoteType]] creates a new one  (NPC, Location, Item, Faction, Quest)`.
+All completed tasks have been moved to [`Completed_Action_Plan.md`](Completed_Action_Plan.md).
 
 ---
 
-*Generated March 2026 · TTRPG Companion App · Master Action Plan · v1.1*
+*Generated March 2026 · TTRPG Companion App · Master Action Plan · v1.2*
