@@ -2,18 +2,36 @@
 
 [ext_resource type="Script" path="res://Scenes/Modals/BackgroundPickerModal/BackgroundPickerModal.cs" id="1_script"]
 
-[node name="BackgroundPickerModal" type="Window" unique_id=100 node_paths=PackedStringArray("_listContainer", "_detailName", "_detailSkills", "_detailSkillsRow", "_detailDesc", "_confirmButton", "_cancelButton")]
-size = Vector2i(700, 480)
-min_size = Vector2i(600, 400)
+[node name="BackgroundPickerModal" type="Window" unique_id=100 node_paths=PackedStringArray("_listContainer", "_confirmButton", "_cancelButton", "_addCustomButton", "_emptyHint", "_standardDetail", "_standardName", "_standardAttrsLabel", "_standardSkillsLabel", "_standardFeatButton", "_standardToolsLabel", "_standardDesc", "_customDetail", "_customNameInput", "_customSkillCheckboxes", "_customFeatRow", "_customToolsRow", "_customDescEdit", "_deleteCustomButton", "_standardAsiBon1", "_standardAsiBon2", "_standardAsiBon3", "_customAsiBon1", "_customAsiBon2", "_customAsiBon3")]
+size = Vector2i(720, 560)
+min_size = Vector2i(620, 440)
 title = "Choose Background"
 script = ExtResource("1_script")
-_listContainer    = NodePath("VBox/ContentHBox/LeftScroll/ListContainer")
-_detailName       = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/DetailName")
-_detailSkills     = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/DetailSkillsRow/DetailSkills")
-_detailSkillsRow  = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/DetailSkillsRow")
-_detailDesc       = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/DetailDesc")
-_confirmButton    = NodePath("VBox/ButtonsMargin/ButtonsHBox/ConfirmButton")
-_cancelButton     = NodePath("VBox/ButtonsMargin/ButtonsHBox/CancelButton")
+_listContainer       = NodePath("VBox/ContentHBox/LeftVBox/LeftScroll/ListContainer")
+_confirmButton       = NodePath("VBox/ButtonsMargin/ButtonsHBox/ConfirmButton")
+_cancelButton        = NodePath("VBox/ButtonsMargin/ButtonsHBox/CancelButton")
+_addCustomButton     = NodePath("VBox/ContentHBox/LeftVBox/AddCustomButton")
+_emptyHint           = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/EmptyHint")
+_standardDetail      = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail")
+_standardName        = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardName")
+_standardAttrsLabel  = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAttrsRow/StandardAttrsLabel")
+_standardSkillsLabel = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardSkillsRow/StandardSkillsLabel")
+_standardFeatButton  = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardFeatRow/StandardFeatButton")
+_standardToolsLabel  = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardToolsRow/StandardToolsLabel")
+_standardDesc         = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardDesc")
+_standardAsiBon1      = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAsiBonusRow/StandardAsiBon1")
+_standardAsiBon2      = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAsiBonusRow/StandardAsiBon2")
+_standardAsiBon3      = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAsiBonusRow/StandardAsiBon3")
+_customAsiBon1        = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomAsiBonusRow/CustomAsiBon1")
+_customAsiBon2        = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomAsiBonusRow/CustomAsiBon2")
+_customAsiBon3        = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomAsiBonusRow/CustomAsiBon3")
+_customDetail        = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail")
+_customNameInput     = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomNameRow/CustomNameInput")
+_customSkillCheckboxes = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomSkillCheckboxes")
+_customFeatRow       = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomFeatRow")
+_customToolsRow      = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomToolsRow")
+_customDescEdit      = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomDesc")
+_deleteCustomButton  = NodePath("VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/DeleteCustomButton")
 
 
 [node name="VBox" type="VBoxContainer" parent="." unique_id=101]
@@ -44,20 +62,31 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="LeftScroll" type="ScrollContainer" parent="VBox/ContentHBox" unique_id=106]
+[node name="LeftVBox" type="VBoxContainer" parent="VBox/ContentHBox" unique_id=106]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 0
 
-[node name="ListContainer" type="VBoxContainer" parent="VBox/ContentHBox/LeftScroll" unique_id=107]
+[node name="LeftScroll" type="ScrollContainer" parent="VBox/ContentHBox/LeftVBox" unique_id=107]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ListContainer" type="VBoxContainer" parent="VBox/ContentHBox/LeftVBox/LeftScroll" unique_id=108]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="VSep" type="VSeparator" parent="VBox/ContentHBox" unique_id=108]
+[node name="AddCustomButton" type="Button" parent="VBox/ContentHBox/LeftVBox" unique_id=109]
+layout_mode = 2
+text = "+ Custom Background"
+flat = true
+
+[node name="VSep" type="VSeparator" parent="VBox/ContentHBox" unique_id=110]
 layout_mode = 2
 
-[node name="RightMargin" type="MarginContainer" parent="VBox/ContentHBox" unique_id=109]
+[node name="RightMargin" type="MarginContainer" parent="VBox/ContentHBox" unique_id=111]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -66,61 +95,222 @@ theme_override_constants/margin_right = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="DetailVBox" type="VBoxContainer" parent="VBox/ContentHBox/RightMargin" unique_id=110]
+[node name="DetailVBox" type="VBoxContainer" parent="VBox/ContentHBox/RightMargin" unique_id=112]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="EmptyHint" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox" unique_id=113]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Select a background"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StandardDetail" type="VBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox" unique_id=114]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="DetailName" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox" unique_id=111]
+[node name="StandardName" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=115]
 layout_mode = 2
-text = "Select a background"
 theme_override_font_sizes/font_size = 15
 
-[node name="DetailSkillsRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox" unique_id=112]
-visible = false
+[node name="StandardAttrsRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=116]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="SkillsKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/DetailSkillsRow" unique_id=113]
+[node name="StandardAttrsKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAttrsRow" unique_id=117]
 layout_mode = 2
-text = "Skills:"
+custom_minimum_size = Vector2(80, 0)
+text = "Attributes:"
 
-[node name="DetailSkills" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/DetailSkillsRow" unique_id=114]
+[node name="StandardAttrsLabel" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAttrsRow" unique_id=118]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="DetailDesc" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox" unique_id=115]
+[node name="StandardAsiBonusRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=154]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="StandardAsiBonKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAsiBonusRow" unique_id=155]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "ASI:"
+
+[node name="StandardAsiBon1" type="OptionButton" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAsiBonusRow" unique_id=157]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StandardAsiBon2" type="OptionButton" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAsiBonusRow" unique_id=159]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StandardAsiBon3" type="OptionButton" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardAsiBonusRow" unique_id=161]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StandardSkillsRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=119]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StandardSkillsKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardSkillsRow" unique_id=120]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Skills:"
+
+[node name="StandardSkillsLabel" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardSkillsRow" unique_id=121]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StandardFeatRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=122]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StandardFeatKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardFeatRow" unique_id=123]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Origin Feat:"
+
+[node name="StandardFeatButton" type="Button" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardFeatRow" unique_id=124]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+alignment = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+
+[node name="StandardToolsRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=125]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StandardToolsKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardToolsRow" unique_id=126]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Tools:"
+
+[node name="StandardToolsLabel" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail/StandardToolsRow" unique_id=127]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StandardDesc" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=128]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 autowrap_mode = 3
 
-[node name="DetailSpacer" type="Control" parent="VBox/ContentHBox/RightMargin/DetailVBox" unique_id=116]
+[node name="StandardSpacer" type="Control" parent="VBox/ContentHBox/RightMargin/DetailVBox/StandardDetail" unique_id=129]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HSep2" type="HSeparator" parent="VBox" unique_id=117]
+[node name="CustomDetail" type="VBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox" unique_id=130]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CustomNameRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=131]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CustomNameKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomNameRow" unique_id=132]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Name:"
+
+[node name="CustomNameInput" type="LineEdit" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomNameRow" unique_id=133]
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="CustomAsiBonusRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=163]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CustomAsiBonKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomAsiBonusRow" unique_id=164]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "ASI:"
+
+[node name="CustomAsiBon1" type="OptionButton" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomAsiBonusRow" unique_id=165]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CustomAsiBon2" type="OptionButton" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomAsiBonusRow" unique_id=166]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CustomAsiBon3" type="OptionButton" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomAsiBonusRow" unique_id=167]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CustomSkillsKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=139]
+layout_mode = 2
+text = "Skills (pick 2):"
+
+[node name="CustomSkillCheckboxes" type="FlowContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=140]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 2
+
+[node name="CustomFeatRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=141]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CustomFeatKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomFeatRow" unique_id=142]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Origin Feat:"
+
+[node name="CustomToolsRow" type="HBoxContainer" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=143]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CustomToolsKey" type="Label" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail/CustomToolsRow" unique_id=144]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Tools:"
+
+[node name="CustomDesc" type="TextEdit" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=145]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 80)
+wrap_mode = 1
+placeholder_text = "Background description..."
+
+[node name="CustomSpacer" type="Control" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=146]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DeleteCustomButton" type="Button" parent="VBox/ContentHBox/RightMargin/DetailVBox/CustomDetail" unique_id=147]
+layout_mode = 2
+text = "Delete Background"
+
+[node name="HSep2" type="HSeparator" parent="VBox" unique_id=148]
 layout_mode = 2
 
-[node name="ButtonsMargin" type="MarginContainer" parent="VBox" unique_id=118]
+[node name="ButtonsMargin" type="MarginContainer" parent="VBox" unique_id=149]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_bottom = 6
 
-[node name="ButtonsHBox" type="HBoxContainer" parent="VBox/ButtonsMargin" unique_id=119]
+[node name="ButtonsHBox" type="HBoxContainer" parent="VBox/ButtonsMargin" unique_id=150]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ButtonSpacer" type="Control" parent="VBox/ButtonsMargin/ButtonsHBox" unique_id=121]
+[node name="ButtonSpacer" type="Control" parent="VBox/ButtonsMargin/ButtonsHBox" unique_id=151]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CancelButton" type="Button" parent="VBox/ButtonsMargin/ButtonsHBox" unique_id=122]
+[node name="CancelButton" type="Button" parent="VBox/ButtonsMargin/ButtonsHBox" unique_id=152]
 layout_mode = 2
 text = "Cancel"
 
-[node name="ConfirmButton" type="Button" parent="VBox/ButtonsMargin/ButtonsHBox" unique_id=123]
+[node name="ConfirmButton" type="Button" parent="VBox/ButtonsMargin/ButtonsHBox" unique_id=153]
 layout_mode = 2
 text = "Confirm"

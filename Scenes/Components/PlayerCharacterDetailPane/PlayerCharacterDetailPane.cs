@@ -4,7 +4,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public partial class PlayerCharacterDetailPane : VBoxContainer
+public partial class PlayerCharacterDetailPane : ScrollContainer
 {
     private DatabaseService          _db;
     private PlayerCharacter          _pc;
@@ -83,7 +83,8 @@ public partial class PlayerCharacterDetailPane : VBoxContainer
         _db = GetNode<DatabaseService>("/root/DatabaseService");
         _skillExpectations = new SkillExpectationService(_db.Classes, _db.Abilities, _db.DnD5eBackgrounds);
         _backgroundModal   = GetNode<BackgroundPickerModal>("BackgroundPickerModal");
-        _backgroundModal.Confirmed += OnBackgroundSelected;
+        _backgroundModal.Confirmed   += OnBackgroundSelected;
+        _backgroundModal.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
         // CanvasLayer renders above the ScrollContainer without being clipped by it.
         // EffectPreviewPopup uses MouseFilter=Ignore so it never steals scroll events.
@@ -95,7 +96,7 @@ public partial class PlayerCharacterDetailPane : VBoxContainer
         _nameInput.TextChanged  += name => { Save(); EmitSignal(SignalName.NameChanged, "playercharacter", _pc?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Character" : name); };
         _nameInput.FocusExited  += () => { if (_nameInput.Text == "") _nameInput.Text = "New Character"; };
         _nameInput.FocusEntered += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
-        _backgroundButton.Pressed     += () => _backgroundModal.Open(_pc.CampaignId, _pc.BackgroundId);
+        _backgroundButton.Pressed     += () => _backgroundModal.Open(_pc.CampaignId, _pc.BackgroundId, _pc.BackgroundAsi ?? "");
         _speciesInput.ItemSelected    += idx => { Save(); RefreshSubspecies(_speciesInput.GetItemId((int)idx)); LoadAbilityChoices(); LoadResources(); };
         _subspeciesInput.ItemSelected += _ => { Save(); LoadAbilityChoices(); LoadResources(); };
         _classInput.ItemSelected      += idx => { Save(); RefreshSubclass(_classInput.GetItemId((int)idx)); LoadAbilityChoices(); LoadResources(); };
@@ -290,13 +291,70 @@ public partial class PlayerCharacterDetailPane : VBoxContainer
 
     // ── Background ────────────────────────────────────────────────────────────
 
-    private void OnBackgroundSelected(int? backgroundId)
+    private void OnBackgroundSelected(int? backgroundId, string asi)
     {
         if (_pc == null) return;
-        _pc.BackgroundId = backgroundId;
+        SyncBackgroundAsi(_pc.BackgroundAsi, asi);
+        _pc.BackgroundId  = backgroundId;
+        _pc.BackgroundAsi = asi;
+        // Update score inputs so Save() reads the ASI-adjusted values
+        _loading = true;
+        _strInput.Text = _pc.Strength.ToString();
+        _dexInput.Text = _pc.Dexterity.ToString();
+        _conInput.Text = _pc.Constitution.ToString();
+        _intInput.Text = _pc.Intelligence.ToString();
+        _wisInput.Text = _pc.Wisdom.ToString();
+        _chaInput.Text = _pc.Charisma.ToString();
+        _loading = false;
+        UpdateModLabels();
         Save();
         LoadBackground();
+        SyncBackgroundFeat(backgroundId);
         LoadSkills();
+        LoadAbilityChoices();
+    }
+
+    private void SyncBackgroundAsi(string oldAsi, string newAsi)
+    {
+        foreach (var kv in ParseAsi(oldAsi))
+            ApplyAsiDelta(kv.Key, -kv.Value);
+        foreach (var kv in ParseAsi(newAsi))
+            ApplyAsiDelta(kv.Key, kv.Value);
+    }
+
+    private void ApplyAsiDelta(string abbrev, int delta)
+    {
+        switch (abbrev.ToLowerInvariant())
+        {
+            case "str": _pc.Strength     = Math.Clamp(_pc.Strength     + delta, 1, 30); break;
+            case "dex": _pc.Dexterity    = Math.Clamp(_pc.Dexterity    + delta, 1, 30); break;
+            case "con": _pc.Constitution = Math.Clamp(_pc.Constitution + delta, 1, 30); break;
+            case "int": _pc.Intelligence = Math.Clamp(_pc.Intelligence + delta, 1, 30); break;
+            case "wis": _pc.Wisdom       = Math.Clamp(_pc.Wisdom       + delta, 1, 30); break;
+            case "cha": _pc.Charisma     = Math.Clamp(_pc.Charisma     + delta, 1, 30); break;
+        }
+    }
+
+    private static Dictionary<string, int> ParseAsi(string asi)
+    {
+        var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(asi)) return result;
+        foreach (var part in asi.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kv = part.Split(':');
+            if (kv.Length == 2 && int.TryParse(kv[1], out int val))
+                result[kv[0].Trim()] = val;
+        }
+        return result;
+    }
+
+    private void SyncBackgroundFeat(int? backgroundId)
+    {
+        _db.PlayerCharacters.RemoveBackgroundAbilities(_pc.Id);
+        if (!backgroundId.HasValue) return;
+        var bg = _db.DnD5eBackgrounds.Get(backgroundId.Value);
+        if (bg?.FeatAbilityId == null) return;
+        _db.PlayerCharacters.AddBackgroundAbility(_pc.Id, bg.FeatAbilityId.Value);
     }
 
     private void LoadAliases()
@@ -1357,6 +1415,9 @@ public partial class PlayerCharacterDetailPane : VBoxContainer
                 ids.Add(abilityId);
 
         foreach (var abilityId in _db.PlayerCharacters.GetManualAbilityIds(_pc.Id))
+            ids.Add(abilityId);
+
+        foreach (var abilityId in _db.PlayerCharacters.GetBackgroundAbilityIds(_pc.Id))
             ids.Add(abilityId);
 
         var abilities = new List<Ability>();

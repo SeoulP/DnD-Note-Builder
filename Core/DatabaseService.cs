@@ -165,6 +165,7 @@ public partial class DatabaseService : Node
             AbilityTypes        .SeedDefaults(campaign.Id);
             AbilityResourceTypes.SeedDefaults(campaign.Id);
             Abilities           .SeedDefaults(campaign.Id);
+            DnD5eBackgrounds    .LinkBackgroundFeats(campaign.Id);
             LocationFactionRoles.SeedDefaults(campaign.Id);
             NpcRelationshipTypes.SeedDefaults(campaign.Id);
             NpcStatuses         .SeedDefaults(campaign.Id);

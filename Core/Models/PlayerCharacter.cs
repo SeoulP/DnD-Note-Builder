@@ -15,6 +15,7 @@ namespace DndBuilder.Core.Models
         public int               Intelligence { get; set; } = 10;
         public int               Wisdom       { get; set; } = 10;
         public int               Charisma     { get; set; } = 10;
+        public string            BackgroundAsi { get; set; } = ""; // e.g. "str:2,dex:1" or "int:1,wis:1,cha:1"
         public List<CharacterAbility> Abilities { get; set; } = new();
     }
 }

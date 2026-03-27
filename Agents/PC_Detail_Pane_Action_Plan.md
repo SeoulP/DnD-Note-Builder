@@ -31,7 +31,7 @@
 | P1 | PC Detail Pane layout restructure (header + nav tabs) | UI | High | ⬜ |
 | P2 | Add / remove abilities on PC | Feature | High | ✅ |
 | P3 | Aliases / Nicknames | Feature | High | ✅ |
-| P4 | Background — feats, proficiencies, choices, write-back | Feature | High | ⬜ |
+| P4 | Background — feats, proficiencies, choices, write-back | Feature | High | ✅ |
 | P5 | Species resource pools + level progression | Feature | High | ⬜ |
 | P6 | Sections open by default + per-session state memory | UX | Medium | ⬜ |
 | P7 | Missing system fields: HP, Initiative, Weapon Attacks, Items | Feature | Medium | ⬜ |
@@ -184,7 +184,7 @@ Register in `DatabaseService` after `SessionRepository` (no FK dependencies on n
 
 ---
 
-### P4 — Background: Feats, Proficiencies, Choices, Write-Back ⬜
+### P4 — Background: Feats, Proficiencies, Choices, Write-Back ✅
 
 **Context:** The current `DnD5eBackground` model only stores `SkillNames` as a comma-separated string. The 2024 PHB Background system grants: a feat (Origin feat), skill proficiencies, tool/instrument/language proficiency, and starting equipment. Write-back means selecting a background populates the character sheet with those grants.
 

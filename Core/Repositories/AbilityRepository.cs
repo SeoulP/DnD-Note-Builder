@@ -792,11 +792,68 @@ namespace DndBuilder.Core.Repositories
             SeedSpeciesAbilityLinks(campaignId, "Orc", new[] { "Relentless Endurance", "Adrenaline Rush" });
 
             // ── Origin Feats ──────────────────────────────────────────────────────
-            SeedAbility(campaignId, "Savage Attacker",
-                type:    "Feat",
+            SeedAbility(campaignId, "Alert",
+                type:    "Feat – Origin",
                 action:  "Passive",
-                trigger: "Hit a target with a weapon",
-                effect:  "Once per turn when you hit a target with a weapon, you can roll the weapon's damage dice twice and use either roll against the target.");
+                effect:  "When you roll Initiative, you can add your Proficiency Bonus to the roll. Immediately after you roll Initiative, you can swap your Initiative with the Initiative of one willing ally in the same combat. You can't make this swap if you or the ally is Incapacitated.");
+
+            SeedAbility(campaignId, "Crafter",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "You gain Tool Proficiency with three different Artisan's Tools of your choice. Whenever you buy a nonmagical item, you receive a 20 percent discount on it. When you finish a Long Rest, you can craft one item using a tool with which you have Tool Proficiency (if you have the tools). The item lasts until you finish another Long Rest.");
+
+            SeedAbility(campaignId, "Healer",
+                type:    "Feat – Origin",
+                action:  "Utilize",
+                trigger: "Creature within 5 feet; Healer's Kit available",
+                effect:  "Expend one use of a Healer's Kit to tend to a creature within 5 feet (Utilize Action). That creature can expend one Hit Die; you roll it, and the creature regains Hit Points equal to the roll plus your Proficiency Bonus. Whenever you roll a die to restore Hit Points with a spell or this feat, you can reroll a 1 and must use the new roll.");
+
+            SeedAbility(campaignId, "Lucky",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "You have Luck Points equal to your Proficiency Bonus, regained on a Long Rest. Spend 1 to give yourself Advantage on a d20 Test, or spend 1 to impose Disadvantage on an attack roll made against you.");
+
+            SeedAbility(campaignId, "Magic Initiate (Cleric)",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "You learn two cantrips and one 1st-level spell from the Cleric spell list. Choose Intelligence, Wisdom, or Charisma as your spellcasting ability for these spells. You can cast the 1st-level spell once without a spell slot per Long Rest, and can also cast it using any spell slots you have. When you gain a new level, you can replace one chosen spell with another from the Cleric list at the same level.");
+
+            SeedAbility(campaignId, "Magic Initiate (Druid)",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "You learn two cantrips and one 1st-level spell from the Druid spell list. Choose Intelligence, Wisdom, or Charisma as your spellcasting ability for these spells. You can cast the 1st-level spell once without a spell slot per Long Rest, and can also cast it using any spell slots you have. When you gain a new level, you can replace one chosen spell with another from the Druid list at the same level.");
+
+            SeedAbility(campaignId, "Magic Initiate (Wizard)",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "You learn two cantrips and one 1st-level spell from the Wizard spell list. Choose Intelligence, Wisdom, or Charisma as your spellcasting ability for these spells. You can cast the 1st-level spell once without a spell slot per Long Rest, and can also cast it using any spell slots you have. When you gain a new level, you can replace one chosen spell with another from the Wizard list at the same level.");
+
+            SeedAbility(campaignId, "Musician",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "You gain Tool Proficiency with three Musical Instruments of your choice. As you finish a Short Rest or Long Rest, you can play a song on a Musical Instrument you're proficient with and give Inspiration to allies who hear the song. The number of allies you can affect equals your Proficiency Bonus.");
+
+            SeedAbility(campaignId, "Savage Attacker",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                trigger: "Hit a target with a weapon on your turn",
+                effect:  "Once per turn when you hit a target with a weapon as part of the Attack Action, you can roll the weapon's damage dice twice and use either roll against the target.");
+
+            SeedAbility(campaignId, "Skilled",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                notes:   "Repeatable.",
+                effect:  "You gain Proficiency in any combination of three Skills or Tools of your choice.");
+
+            SeedAbility(campaignId, "Tavern Brawler",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "Your Unarmed Strikes can deal Bludgeoning Damage equal to 1d4 + your Strength modifier instead of the normal damage. Whenever you roll a damage die for an Unarmed Strike, you can reroll a 1 and must use the new roll. You have Proficiency with improvised weapons. When you hit a creature with an Unarmed Strike as part of the Attack Action on your turn, you can push it 5 feet away (once per turn).");
+
+            SeedAbility(campaignId, "Tough",
+                type:    "Feat – Origin",
+                action:  "Passive",
+                effect:  "Your Hit Point Maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a level thereafter, your Hit Point Maximum increases by an additional 2 Hit Points.");
         }
 
         private void SeedAbility(int campaignId, string name,

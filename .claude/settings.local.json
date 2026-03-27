@@ -2,7 +2,19 @@
   "permissions": {
     "allow": [
       "Read(//c/Users/Seoul/AppData/Roaming/Godot/app_userdata/**)",
-      "Read(//c/Users/Seoul/Desktop/Game Development/WIP Games/Godot/dnd-builder/$APPDATA/Godot/app_userdata/**)"
+      "Read(//c/Users/Seoul/Desktop/Game Development/WIP Games/Godot/dnd-builder/$APPDATA/Godot/app_userdata/**)",
+      "WebSearch",
+      "WebFetch(domain:dnd2024.wikidot.com)",
+      "WebFetch(domain:www.wargamer.com)",
+      "WebFetch(domain:pages.roll20.net)",
+      "WebFetch(domain:dungeonsanddragonsfan.com)",
+      "WebFetch(domain:forums.giantitp.com)",
+      "WebFetch(domain:arcaneeye.com)",
+      "WebFetch(domain:roll20.net)",
+      "WebFetch(domain:www.enworld.org)",
+      "WebFetch(domain:www.worldanvil.com)",
+      "WebFetch(domain:screenrant.com)",
+      "WebFetch(domain:rpgbot.net)"
     ]
   }
 }
