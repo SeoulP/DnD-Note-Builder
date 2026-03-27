@@ -190,6 +190,16 @@ namespace DndBuilder.Core.Repositories
             )";
             progressionCmd.ExecuteNonQuery();
 
+            var usageProgressionCmd = _conn.CreateCommand();
+            usageProgressionCmd.CommandText = @"CREATE TABLE IF NOT EXISTS ability_usage_progression (
+                id             INTEGER PRIMARY KEY,
+                ability_id     INTEGER NOT NULL REFERENCES abilities(id) ON DELETE CASCADE,
+                required_level INTEGER NOT NULL,
+                usages         INTEGER NOT NULL,
+                UNIQUE (ability_id, required_level)
+            )";
+            usageProgressionCmd.ExecuteNonQuery();
+
             var characterChoicesCmd = _conn.CreateCommand();
             characterChoicesCmd.CommandText = @"CREATE TABLE IF NOT EXISTS character_ability_choices (
                 character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
@@ -1678,6 +1688,70 @@ namespace DndBuilder.Core.Repositories
             }
 
             return Math.Max(0, picks);
+        }
+
+        // ── Usage Progression ─────────────────────────────────────────────────
+
+        public List<AbilityUsageProgression> GetUsageProgressionForAbility(int abilityId)
+        {
+            var list = new List<AbilityUsageProgression>();
+            var cmd  = _conn.CreateCommand();
+            cmd.CommandText = @"SELECT id, ability_id, required_level, usages
+                                FROM ability_usage_progression
+                                WHERE ability_id = @aid
+                                ORDER BY required_level ASC";
+            cmd.Parameters.AddWithValue("@aid", abilityId);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+                list.Add(new AbilityUsageProgression
+                {
+                    Id            = reader.GetInt32(0),
+                    AbilityId     = reader.GetInt32(1),
+                    RequiredLevel = reader.GetInt32(2),
+                    Usages        = reader.GetInt32(3),
+                });
+            return list;
+        }
+
+        public void AddUsageProgression(AbilityUsageProgression entry)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"INSERT INTO ability_usage_progression (ability_id, required_level, usages)
+                                VALUES (@aid, @level, @usages)
+                                ON CONFLICT(ability_id, required_level) DO UPDATE SET usages = excluded.usages";
+            cmd.Parameters.AddWithValue("@aid",   entry.AbilityId);
+            cmd.Parameters.AddWithValue("@level", entry.RequiredLevel);
+            cmd.Parameters.AddWithValue("@usages",entry.Usages);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void ClearUsageProgression(int abilityId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM ability_usage_progression WHERE ability_id = @aid";
+            cmd.Parameters.AddWithValue("@aid", abilityId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void DeleteUsageProgression(int id)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM ability_usage_progression WHERE id = @id";
+            cmd.Parameters.AddWithValue("@id", id);
+            cmd.ExecuteNonQuery();
+        }
+
+        public int ResolveUsagesAtLevel(int abilityId, int characterLevel)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"SELECT usages FROM ability_usage_progression
+                                WHERE ability_id = @aid AND required_level <= @level
+                                ORDER BY required_level DESC
+                                LIMIT 1";
+            cmd.Parameters.AddWithValue("@aid",   abilityId);
+            cmd.Parameters.AddWithValue("@level", characterLevel);
+            var result = cmd.ExecuteScalar();
+            return result == null ? 0 : (int)(long)result;
         }
 
         private static int AbilityMod(int score) => (int)Math.Floor((score - 10) / 2.0);

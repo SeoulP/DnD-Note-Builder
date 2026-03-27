@@ -302,6 +302,11 @@ namespace DndBuilder.Core.Repositories
             return ids;
         }
 
+        private static int EvaluateUsesFormula(string formula, PlayerCharacter pc) =>
+            UsesFormula.Evaluate(formula, pc.Level,
+                pc.Strength, pc.Dexterity, pc.Constitution,
+                pc.Intelligence, pc.Wisdom, pc.Charisma);
+
         private HashSet<int> GetResourceTypesForAbilities(HashSet<int> abilityIds)
         {
             var rtIds = new HashSet<int>();
@@ -341,12 +346,10 @@ namespace DndBuilder.Core.Repositories
                     foreach (var seg in data.Split(',', StringSplitOptions.RemoveEmptyEntries))
                     {
                         var p = seg.Split(':', 2);
-                        if (p.Length == 2
-                            && int.TryParse(p[0].Trim(), out int abilityId)
-                            && costAbilityIds.Contains(abilityId)
-                            && int.TryParse(p[1].Trim(), out int uses)
-                            && uses > 0)
-                            max = uses;
+                        if (p.Length != 2 || !int.TryParse(p[0].Trim(), out int abilityId) || !costAbilityIds.Contains(abilityId))
+                            continue;
+                        int resolved = EvaluateUsesFormula(p[1].Trim(), pc);
+                        if (resolved > 0) max = resolved;
                     }
                 }
             }
@@ -365,10 +368,9 @@ namespace DndBuilder.Core.Repositories
                 {
                     int    abilityId = r.GetInt32(0);
                     string usesStr   = r.IsDBNull(1) ? "" : r.GetString(1);
-                    if (costAbilityIds.Contains(abilityId)
-                        && int.TryParse(usesStr, out int uses)
-                        && uses > 0)
-                        max = uses;
+                    if (!costAbilityIds.Contains(abilityId)) continue;
+                    int resolved = EvaluateUsesFormula(usesStr, pc);
+                    if (resolved > 0) max = resolved;
                 }
             }
 
@@ -389,12 +391,10 @@ namespace DndBuilder.Core.Repositories
                     foreach (var seg in data.Split(',', StringSplitOptions.RemoveEmptyEntries))
                     {
                         var p = seg.Split(':', 2);
-                        if (p.Length == 2
-                            && int.TryParse(p[0].Trim(), out int abilityId)
-                            && costAbilityIds.Contains(abilityId)
-                            && int.TryParse(p[1].Trim(), out int uses)
-                            && uses > 0)
-                            max = uses;
+                        if (p.Length != 2 || !int.TryParse(p[0].Trim(), out int abilityId) || !costAbilityIds.Contains(abilityId))
+                            continue;
+                        int resolved = EvaluateUsesFormula(p[1].Trim(), pc);
+                        if (resolved > 0) max = resolved;
                     }
                 }
             }

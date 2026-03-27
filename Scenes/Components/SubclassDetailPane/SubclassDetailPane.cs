@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using Godot;
 
@@ -135,21 +136,25 @@ public partial class SubclassDetailPane : ScrollContainer
                 };
                 nameBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "ability", capId);
 
-                int usesInt = usesStr == "--"
-                    ? -1
-                    : (int.TryParse(usesStr, out int uv) ? uv : -1);
-                var usesBox = new SpinBox { MinValue = -1, MaxValue = 999, Step = 1, Value = usesInt, CustomMinimumSize = new Vector2(80, 0) };
-                if (usesInt < 0) Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
-                usesBox.ValueChanged += val =>
+                var usesBtn = new Button
                 {
-                    string newUses = val < 0 ? "--" : ((int)val).ToString();
-                    _db.Abilities.UpdateSubclassAbilityUses(_subclass.Id, capId, newUses);
-                    if (val < 0) Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
+                    Text              = UsesFormula.FormatForDisplay(usesStr),
+                    CustomMinimumSize = new Vector2(80, 0),
+                    TooltipText       = "Click to edit usage scaling",
                 };
-                usesBox.GetLineEdit().FocusExited += () =>
+                string currentFormula = usesStr;
+                usesBtn.Pressed += () =>
                 {
-                    if (usesBox.Value < 0)
-                        Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
+                    var popup = new UsageProgressionPopup();
+                    AddChild(popup);
+                    popup.Setup(ability.Name, currentFormula);
+                    popup.Saved += formula =>
+                    {
+                        currentFormula = formula;
+                        _db.Abilities.UpdateSubclassAbilityUses(_subclass.Id, capId, formula);
+                        usesBtn.Text = UsesFormula.FormatForDisplay(formula);
+                    };
+                    popup.PopupCentered();
                 };
 
                 var delBtn = new Button { Text = "×", Flat = true };
@@ -160,7 +165,7 @@ public partial class SubclassDetailPane : ScrollContainer
                 };
 
                 row.AddChild(nameBtn);
-                row.AddChild(usesBox);
+                row.AddChild(usesBtn);
                 row.AddChild(delBtn);
                 abilityRows.AddChild(row);
             }

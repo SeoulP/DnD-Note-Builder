@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using Godot;
 
@@ -242,22 +243,24 @@ public partial class SpeciesDetailPane : ScrollContainer
                 };
                 nameBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "ability", capId);
 
-                int usesInt = usesMap[capId] == "--"
-                    ? -1
-                    : (int.TryParse(usesMap[capId], out int uv) ? uv : -1);
-                var usesBox = new SpinBox { MinValue = -1, MaxValue = 999, Step = 1, Value = usesInt };
-                usesBox.CustomMinimumSize = new Vector2(80, 0);
-                if (usesInt < 0) Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
-                usesBox.ValueChanged += val =>
+                var usesBtn = new Button
                 {
-                    usesMap[capId] = val < 0 ? "--" : ((int)val).ToString();
-                    SaveUsesMap();
-                    if (val < 0) Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
+                    Text              = UsesLabel(usesMap.GetValueOrDefault(capId, "--")),
+                    CustomMinimumSize = new Vector2(80, 0),
+                    TooltipText       = "Click to edit usage scaling",
                 };
-                usesBox.GetLineEdit().FocusExited += () =>
+                usesBtn.Pressed += () =>
                 {
-                    if (usesBox.Value < 0)
-                        Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
+                    var popup = new UsageProgressionPopup();
+                    AddChild(popup);
+                    popup.Setup(ability.Name, usesMap.GetValueOrDefault(capId, "--"));
+                    popup.Saved += formula =>
+                    {
+                        usesMap[capId] = formula;
+                        SaveUsesMap();
+                        usesBtn.Text = UsesFormula.FormatForDisplay(formula);
+                    };
+                    popup.PopupCentered();
                 };
 
                 var delBtn = new Button { Text = "×", Flat = true };
@@ -270,7 +273,7 @@ public partial class SpeciesDetailPane : ScrollContainer
                 };
 
                 row.AddChild(nameBtn);
-                row.AddChild(usesBox);
+                row.AddChild(usesBtn);
                 row.AddChild(delBtn);
                 abilityRows.AddChild(row);
             }
@@ -314,6 +317,8 @@ public partial class SpeciesDetailPane : ScrollContainer
     }
 
     private static string FormatLevelHeader(SpeciesLevel lvl) => $"Level {lvl.Level,2}";
+
+    private static string UsesLabel(string val) => UsesFormula.FormatForDisplay(val);
 
     private static void WireSectionToggle(Button toggle, Control content, bool startCollapsed = false)
     {

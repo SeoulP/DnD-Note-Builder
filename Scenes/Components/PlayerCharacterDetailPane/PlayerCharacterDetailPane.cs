@@ -158,6 +158,12 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _flavorTabBtn.SetPressedNoSignal(name == "Flavor");
     }
 
+    public override void _Notification(int what)
+    {
+        if (what == NotificationVisibilityChanged && IsVisibleInTree() && _pc != null && !_loading)
+            LoadResources();
+    }
+
     public void Load(PlayerCharacter pc)
     {
         _loading = true;
