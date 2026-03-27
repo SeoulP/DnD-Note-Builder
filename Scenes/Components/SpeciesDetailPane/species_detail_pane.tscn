@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
 
-[node name="SpeciesDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_descInput","_notes","_subspeciesContainer","_addSubspeciesButton","_abilitiesContainer","_addAbilityButton","_deleteButton","_imageCarousel")]
+[node name="SpeciesDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_descInput","_notes","_subspeciesContainer","_addSubspeciesButton","_abilitiesContainer","_addAbilityButton","_levelsToggle","_levelsInset","_initLevelsButton","_levelsContainer","_deleteButton","_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -20,6 +20,10 @@ _subspeciesContainer  = NodePath("Margin/VBox/ContentHBox/Fields/SubspeciesConta
 _addSubspeciesButton  = NodePath("Margin/VBox/ContentHBox/Fields/SubspeciesContainer/AddSubspeciesButton")
 _abilitiesContainer   = NodePath("Margin/VBox/ContentHBox/Fields/AbilitiesContainer")
 _addAbilityButton     = NodePath("Margin/VBox/ContentHBox/Fields/AbilitiesContainer/AddAbilityButton")
+_levelsToggle         = NodePath("Margin/VBox/ContentHBox/Fields/LevelsToggle")
+_levelsInset          = NodePath("Margin/VBox/ContentHBox/Fields/LevelsInset")
+_initLevelsButton     = NodePath("Margin/VBox/ContentHBox/Fields/LevelsInset/InitLevelsButton")
+_levelsContainer      = NodePath("Margin/VBox/ContentHBox/Fields/LevelsInset/LevelsContainer")
 _notes                = NodePath("Margin/VBox/ContentHBox/Fields/Notes")
 _imageCarousel        = NodePath("Margin/VBox/ContentHBox/CarouselColumn/ImageCarousel")
 
@@ -107,6 +111,27 @@ theme_override_constants/separation = 2
 [node name="AddAbilityButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/AbilitiesContainer"]
 layout_mode = 2
 script = ExtResource("3_typeopt")
+
+[node name="LevelsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+
+[node name="LevelsToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+text = "Level Progression"
+flat = true
+alignment = 0
+
+[node name="LevelsInset" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="InitLevelsButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/LevelsInset"]
+layout_mode = 2
+text = "Initialize 20 Levels"
+
+[node name="LevelsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/LevelsInset"]
+layout_mode = 2
+theme_override_constants/separation = 2
 
 [node name="Notes" parent="Margin/VBox/ContentHBox/Fields" instance=ExtResource("4_wikinotes")]
 layout_mode = 2

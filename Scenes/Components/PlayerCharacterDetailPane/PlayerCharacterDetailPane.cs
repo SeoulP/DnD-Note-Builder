@@ -1417,8 +1417,16 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
                 ids.Add(abilityId);
 
         if (_pc.SpeciesId.HasValue)
+        {
             foreach (var abilityId in _db.Abilities.GetAbilityIdsForSpecies(_pc.SpeciesId.Value))
                 ids.Add(abilityId);
+            foreach (var level in _db.Species.GetLevelsForSpecies(_pc.SpeciesId.Value))
+            {
+                if (level.Level > _pc.Level) break;
+                foreach (var abilityId in _db.Abilities.GetAbilityIdsForSpeciesLevel(level.Id))
+                    ids.Add(abilityId);
+            }
+        }
 
         if (_pc.SubspeciesId.HasValue)
             foreach (var abilityId in _db.Abilities.GetAbilityIdsForSubspecies(_pc.SubspeciesId.Value))

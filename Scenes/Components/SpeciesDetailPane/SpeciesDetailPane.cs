@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
@@ -21,6 +23,10 @@ public partial class SpeciesDetailPane : ScrollContainer
     [Export] private Button           _addSubspeciesButton;
     [Export] private VBoxContainer    _abilitiesContainer;
     [Export] private TypeOptionButton _addAbilityButton;
+    [Export] private Button           _levelsToggle;
+    [Export] private Control          _levelsInset;
+    [Export] private Button           _initLevelsButton;
+    [Export] private VBoxContainer    _levelsContainer;
     [Export] private Button           _deleteButton;
     [Export] private ImageCarousel    _imageCarousel;
 
@@ -36,6 +42,14 @@ public partial class SpeciesDetailPane : ScrollContainer
         _notes.NavigateTo       += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
         _addSubspeciesButton.Pressed += AddSubspecies;
+
+        WireSectionToggle(_levelsToggle, _levelsInset);
+        _initLevelsButton.Pressed += () =>
+        {
+            if (_species == null) return;
+            _db.Species.InitializeLevels(_species.Id);
+            LoadLevelProgression();
+        };
 
         _confirmDialog = DialogHelper.Make("Delete Species");
         AddChild(_confirmDialog);
@@ -53,6 +67,7 @@ public partial class SpeciesDetailPane : ScrollContainer
         LoadSubspecies();
         LoadAbilities();
         SetupAddAbilityButton();
+        LoadLevelProgression();
     }
 
     private void Save()
@@ -145,5 +160,170 @@ public partial class SpeciesDetailPane : ScrollContainer
         _db.Abilities.AddSpeciesAbility(_species.Id, id);
         LoadAbilities();
         SetupAddAbilityButton();
+    }
+
+    // ── Level Progression ─────────────────────────────────────────────────────
+
+    private void LoadLevelProgression()
+    {
+        foreach (Node child in _levelsContainer.GetChildren())
+            child.QueueFree();
+
+        var levels = _db.Species.GetLevelsForSpecies(_species.Id);
+        _initLevelsButton.Visible = levels.Count == 0;
+
+        foreach (var lvl in levels)
+            _levelsContainer.AddChild(BuildLevelRow(lvl));
+    }
+
+    private Control BuildLevelRow(SpeciesLevel lvl)
+    {
+        var box = new VBoxContainer();
+        box.AddThemeConstantOverride("separation", 2);
+
+        var content = new VBoxContainer { Visible = false };
+        content.AddThemeConstantOverride("separation", 4);
+
+        var headerRow = new HBoxContainer();
+        var header = new Button
+        {
+            Text                    = "▶  " + FormatLevelHeader(lvl),
+            Flat                    = true,
+            Alignment               = HorizontalAlignment.Left,
+            MouseDefaultCursorShape = CursorShape.PointingHand,
+            SizeFlagsHorizontal     = SizeFlags.ExpandFill,
+        };
+
+        var abilityRows   = new VBoxContainer();
+        abilityRows.AddThemeConstantOverride("separation", 2);
+
+        var addAbilityBtn = new TypeOptionButton();
+
+        var usesMap = new Dictionary<int, string>();
+        foreach (var seg in lvl.ClassData.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var p = seg.Split(':', 2);
+            if (p.Length == 2 && int.TryParse(p[0].Trim(), out int uid) && uid > 0)
+                usesMap[uid] = p[1].Trim();
+        }
+
+        void SaveUsesMap()
+        {
+            lvl.ClassData = usesMap.Count > 0
+                ? string.Join(",", usesMap.Select(kv => $"{kv.Key}:{kv.Value}"))
+                : "";
+            _db.Species.SaveLevel(lvl);
+        }
+
+        void Refresh()
+        {
+            foreach (Node child in abilityRows.GetChildren()) child.QueueFree();
+
+            var linkedIds = new HashSet<int>(_db.Abilities.GetAbilityIdsForSpeciesLevel(lvl.Id));
+
+            foreach (var key in usesMap.Keys.Except(linkedIds).ToList()) usesMap.Remove(key);
+
+            foreach (int abilId in linkedIds)
+            {
+                var ability = _db.Abilities.Get(abilId);
+                if (ability == null) continue;
+                int capId = abilId;
+
+                if (!usesMap.ContainsKey(capId)) usesMap[capId] = "--";
+
+                var row     = new HBoxContainer();
+                var nameBtn = new Button
+                {
+                    Text                    = ability.Name,
+                    Flat                    = true,
+                    Alignment               = HorizontalAlignment.Left,
+                    SizeFlagsHorizontal     = SizeFlags.ExpandFill,
+                    MouseDefaultCursorShape = CursorShape.PointingHand,
+                };
+                nameBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "ability", capId);
+
+                int usesInt = usesMap[capId] == "--"
+                    ? -1
+                    : (int.TryParse(usesMap[capId], out int uv) ? uv : -1);
+                var usesBox = new SpinBox { MinValue = -1, MaxValue = 999, Step = 1, Value = usesInt };
+                usesBox.CustomMinimumSize = new Vector2(80, 0);
+                if (usesInt < 0) Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
+                usesBox.ValueChanged += val =>
+                {
+                    usesMap[capId] = val < 0 ? "--" : ((int)val).ToString();
+                    SaveUsesMap();
+                    if (val < 0) Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
+                };
+                usesBox.GetLineEdit().FocusExited += () =>
+                {
+                    if (usesBox.Value < 0)
+                        Callable.From(() => usesBox.GetLineEdit().Text = "--").CallDeferred();
+                };
+
+                var delBtn = new Button { Text = "×", Flat = true };
+                delBtn.Pressed += () =>
+                {
+                    _db.Abilities.RemoveSpeciesLevelAbility(lvl.Id, capId);
+                    usesMap.Remove(capId);
+                    SaveUsesMap();
+                    Refresh();
+                };
+
+                row.AddChild(nameBtn);
+                row.AddChild(usesBox);
+                row.AddChild(delBtn);
+                abilityRows.AddChild(row);
+            }
+
+            addAbilityBtn.NoneText = "(Add ability...)";
+            addAbilityBtn.Setup(
+                () => _db.Abilities.GetAll(_species.CampaignId)
+                        .FindAll(a => !linkedIds.Contains(a.Id))
+                        .ConvertAll(a => (a.Id, a.Name)),
+                null, null);
+            addAbilityBtn.SelectById(null);
+
+            header.Text = (content.Visible ? "▼  " : "▶  ") + FormatLevelHeader(lvl);
+        }
+
+        addAbilityBtn.TypeSelected += id =>
+        {
+            if (id < 0) return;
+            _db.Abilities.AddSpeciesLevelAbility(lvl.Id, id);
+            usesMap[id] = "--";
+            SaveUsesMap();
+            Refresh();
+        };
+
+        headerRow.AddChild(header);
+
+        Refresh();
+
+        content.AddChild(abilityRows);
+        content.AddChild(addAbilityBtn);
+
+        header.Pressed += () =>
+        {
+            content.Visible = !content.Visible;
+            header.Text     = (content.Visible ? "▼  " : "▶  ") + FormatLevelHeader(lvl);
+        };
+
+        box.AddChild(headerRow);
+        box.AddChild(content);
+        return box;
+    }
+
+    private static string FormatLevelHeader(SpeciesLevel lvl) => $"Level {lvl.Level,2}";
+
+    private static void WireSectionToggle(Button toggle, Control content, bool startCollapsed = false)
+    {
+        content.Visible = !startCollapsed;
+        string label    = toggle.Text;
+        toggle.Text     = (startCollapsed ? "▶  " : "▼  ") + label;
+        toggle.Pressed += () =>
+        {
+            content.Visible = !content.Visible;
+            toggle.Text     = (content.Visible ? "▼  " : "▶  ") + label;
+        };
     }
 }

@@ -76,6 +76,15 @@ namespace DndBuilder.Core.Repositories
             )";
             cmd.ExecuteNonQuery();
 
+            // ability_species_levels — join: species_level ↔ ability
+            cmd = _conn.CreateCommand();
+            cmd.CommandText = @"CREATE TABLE IF NOT EXISTS ability_species_levels (
+                species_level_id INTEGER NOT NULL REFERENCES species_levels(id) ON DELETE CASCADE,
+                ability_id       INTEGER NOT NULL REFERENCES abilities(id)      ON DELETE CASCADE,
+                PRIMARY KEY (species_level_id, ability_id)
+            )";
+            cmd.ExecuteNonQuery();
+
             // character_abilities — per-PC ability assignments
             cmd = _conn.CreateCommand();
             cmd.CommandText = @"CREATE TABLE IF NOT EXISTS character_abilities (
@@ -1397,6 +1406,37 @@ namespace DndBuilder.Core.Repositories
             cmd.CommandText = "DELETE FROM species_abilities WHERE species_id = @sid AND ability_id = @aid";
             cmd.Parameters.AddWithValue("@sid", speciesId);
             cmd.Parameters.AddWithValue("@aid", abilityId);
+            cmd.ExecuteNonQuery();
+        }
+
+        // ── Species level ability links ───────────────────────────────────────
+
+        public List<int> GetAbilityIdsForSpeciesLevel(int speciesLevelId)
+        {
+            var list = new List<int>();
+            var cmd  = _conn.CreateCommand();
+            cmd.CommandText = "SELECT ability_id FROM ability_species_levels WHERE species_level_id = @slid";
+            cmd.Parameters.AddWithValue("@slid", speciesLevelId);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read()) list.Add(reader.GetInt32(0));
+            return list;
+        }
+
+        public void AddSpeciesLevelAbility(int speciesLevelId, int abilityId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "INSERT OR IGNORE INTO ability_species_levels (species_level_id, ability_id) VALUES (@slid, @aid)";
+            cmd.Parameters.AddWithValue("@slid", speciesLevelId);
+            cmd.Parameters.AddWithValue("@aid",  abilityId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void RemoveSpeciesLevelAbility(int speciesLevelId, int abilityId)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM ability_species_levels WHERE species_level_id = @slid AND ability_id = @aid";
+            cmd.Parameters.AddWithValue("@slid", speciesLevelId);
+            cmd.Parameters.AddWithValue("@aid",  abilityId);
             cmd.ExecuteNonQuery();
         }
 

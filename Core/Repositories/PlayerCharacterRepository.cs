@@ -277,6 +277,17 @@ namespace DndBuilder.Core.Repositories
                 cmd.Parameters.AddWithValue("@sid", pc.SpeciesId.Value);
                 using var r = cmd.ExecuteReader();
                 while (r.Read()) ids.Add(r.GetInt32(0));
+
+                // Species level abilities — up to character level
+                var slCmd = _conn.CreateCommand();
+                slCmd.CommandText = @"SELECT asl.ability_id
+                                      FROM ability_species_levels asl
+                                      JOIN species_levels sl ON sl.id = asl.species_level_id
+                                      WHERE sl.species_id = @sid AND sl.level <= @level";
+                slCmd.Parameters.AddWithValue("@sid",   pc.SpeciesId.Value);
+                slCmd.Parameters.AddWithValue("@level", pc.Level);
+                using var slr = slCmd.ExecuteReader();
+                while (slr.Read()) ids.Add(slr.GetInt32(0));
             }
 
             if (pc.SubspeciesId.HasValue)
@@ -358,6 +369,33 @@ namespace DndBuilder.Core.Repositories
                         && int.TryParse(usesStr, out int uses)
                         && uses > 0)
                         max = uses;
+                }
+            }
+
+            // Species levels — iterate ASC so higher levels overwrite lower
+            if (pc.SpeciesId.HasValue)
+            {
+                var slCmd = _conn.CreateCommand();
+                slCmd.CommandText = @"SELECT sl.class_data
+                                      FROM species_levels sl
+                                      WHERE sl.species_id = @sid AND sl.level <= @level
+                                      ORDER BY sl.level ASC";
+                slCmd.Parameters.AddWithValue("@sid",   pc.SpeciesId.Value);
+                slCmd.Parameters.AddWithValue("@level", pc.Level);
+                using var r = slCmd.ExecuteReader();
+                while (r.Read())
+                {
+                    var data = r.IsDBNull(0) ? "" : r.GetString(0);
+                    foreach (var seg in data.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var p = seg.Split(':', 2);
+                        if (p.Length == 2
+                            && int.TryParse(p[0].Trim(), out int abilityId)
+                            && costAbilityIds.Contains(abilityId)
+                            && int.TryParse(p[1].Trim(), out int uses)
+                            && uses > 0)
+                            max = uses;
+                    }
                 }
             }
 
