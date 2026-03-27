@@ -1123,6 +1123,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
                          : selectedIds.Count > 0 ? $"{selectedIds.Count} selected"
                          : "0 picks";
         bool isOpen = _openAbilityDropdowns.Contains(ability.Id);
+        bool incomplete = allowed > 0 && selectedIds.Count < allowed;
         var toggleBtn = new Button
         {
             Text                = $"{(isOpen ? "▲" : "▼")}  {ability.Name}  [{countText}]",
@@ -1131,6 +1132,15 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             Alignment           = HorizontalAlignment.Left,
         };
+        if (incomplete)
+        {
+            var redBorder = toggleBtn.GetThemeStylebox("normal") is StyleBoxFlat existing
+                ? (StyleBoxFlat)existing.Duplicate()
+                : new StyleBoxFlat();
+            redBorder.BorderColor = new Color(0.85f, 0.15f, 0.15f);
+            redBorder.SetBorderWidthAll(2);
+            toggleBtn.AddThemeStyleboxOverride("normal", redBorder);
+        }
 
         if (!string.IsNullOrWhiteSpace(ability.Effect))
         {
