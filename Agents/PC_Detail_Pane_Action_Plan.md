@@ -28,15 +28,15 @@
 
 | # | Task | Category | Priority | Status |
 |---|------|----------|----------|--------|
-| P1 | PC Detail Pane layout restructure (header + nav tabs) | UI | High | ⬜ |
+| P1 | PC Detail Pane layout restructure (header + nav tabs) | UI | High | ✅ |
 | P2 | Add / remove abilities on PC | Feature | High | ✅ |
 | P3 | Aliases / Nicknames | Feature | High | ✅ |
 | P4 | Background — feats, proficiencies, choices, write-back | Feature | High | ✅ |
-| P5 | Species resource pools + level progression | Feature | High | ⬜ |
+| P5 | Species resource pools + level progression | Feature | High | ✅ |
 | P6 | Sections open by default + per-session state memory | UX | Medium | ⬜ |
 | P7 | Missing system fields: HP, Initiative, Weapon Attacks, Items | Feature | Medium | ⬜ |
-| P8 | Skill chips — granular sourcing with state icons | UX | Medium | ⬜ |
-| P9 | Level Progression Usages — scaling popup (replaces flat SpinBox) | Feature | Medium | ⬜ |
+| P8 | Skill chips — granular sourcing with state icons | UX | Medium | ✅ |
+| P9 | Level Progression Usages — scaling popup (replaces flat SpinBox) | Feature | Medium | ✅ |
 | P10 | Rest Buttons | Feature | Low | ⬜ |
 
 ---
@@ -45,7 +45,7 @@
 
 ---
 
-### P1 — PC Detail Pane Layout Restructure ⬜
+### P1 — PC Detail Pane Layout Restructure ✅
 
 **Context:** The current pane is a single vertical scroll. It needs to be restructured into a persistent header area and a nav-tab-driven content region, matching the agreed sketch.
 
@@ -228,7 +228,7 @@ All 16 seeded PHB backgrounds need `feat_ability_id` set. Since these are per-ca
 
 ---
 
-### P5 — Species Resource Pools + Level Progression ⬜
+### P5 — Species Resource Pools + Level Progression ✅
 
 **Context:** Species currently has no resource pool or level progression system. Classes have both. Species should have the same capability (e.g. Orc's Relentless Endurance, Aasimar's Healing Hands).
 
@@ -367,7 +367,7 @@ Wire `_shortRestButton.Pressed += OnShortRest` and `_longRestButton.Pressed += O
 
 ---
 
-### P8 — Skill Chips: Granular Sourcing with State Icons ⬜
+### P8 — Skill Chips: Granular Sourcing with State Icons ✅
 
 **Context:** The current skill chip row shows a single chip per source with a count and a ⚠/✓/! icon. The request is for chips to show state icons that, on hover, reveal exactly where the skill points come from.
 
@@ -399,7 +399,7 @@ Wire `_shortRestButton.Pressed += OnShortRest` and `_longRestButton.Pressed += O
 
 ---
 
-### P9 — Level Progression Usages: Scaling Popup ⬜
+### P9 — Level Progression Usages: Scaling Popup ✅
 
 **Context:** The current usages field in Class (and soon Species) level progression is a flat `SpinBox` with a single integer. This cannot express "2 uses at level 3, 3 uses at level 7, 4 uses at level 15" — the common D&D pattern. The fix is a scaling table popup, replacing the flat SpinBox. This should also replace the existing `# of Picks` formula popup if there is enough overlap.
 
@@ -540,12 +540,14 @@ Priority as discussed — items are ordered for implementation, not just importa
 | `PlayerCharacterDetailPane.cs` | Verify `GetAllOwnedAbilities` traverses species levels; extend `SyncResources` | P5 |
 | `player_character_detail_pane.tscn` | Short Rest + Long Rest buttons in header | P10 |
 | `PlayerCharacterDetailPane.cs` | `OnShortRest()`, `OnLongRest()` | P10 |
-| `PlayerCharacterDetailPane.cs` | `BuildSourceChips` — improved tooltip text + icon hover | P8 |
-| `PlayerCharacterDetailPane.cs` | `BuildSkillRow` — per-row source state icon + tooltip | P8 |
-| `Core/Models/AbilityUsageProgression.cs` | **New** | P9 |
-| `Core/Repositories/AbilityRepository.cs` | `ability_usage_progression` table migration; `GetUsageProgressionForAbility`, `SaveUsageProgression`, `ResolveUsagesAtLevel` | P9 |
-| `Scenes/Components/ClassDetailPane/ClassDetailPane.cs` | Replace SpinBox with scaling popup button; sentinel `"prog"` in ClassData | P9 |
-| `Scenes/Components/SpeciesDetailPane/SpeciesDetailPane.cs` | Same scaling popup button for species levels | P9 |
+| `PlayerCharacterDetailPane.cs` | `BuildSourceChips` — single icon+count chip, per-source breakdown tooltip incl. background; `LoadSkills` precomputes source states | P8 |
+| `PlayerCharacterDetailPane.cs` | `BuildSkillRow` — per-row ✓/! state icon with source tooltip | P8 |
+| `Scenes/Modals/UsageProgressionPopup/UsageProgressionPopup.cs` | **New** — formula popup: Base SpinBox, Level Scale option (full/half↓/half↑/double), Prof checkbox, Attr modifier option; preview label; Save/Clear/Cancel | P9 |
+| `Core/UsesFormula.cs` | **New** — `Evaluate()` + `FormatForDisplay()` for formula strings `"base\|level\|prof\|attr"` | P9 |
+| `Scenes/Components/ClassDetailPane/ClassDetailPane.cs` | Level ability rows: SpinBox replaced with UsageProgressionPopup button | P9 |
+| `Scenes/Components/SpeciesDetailPane/SpeciesDetailPane.cs` | Same UsageProgressionPopup button for species level rows | P9 |
+| `Scenes/Components/SubclassDetailPane/SubclassDetailPane.cs` | Same UsageProgressionPopup button for subclass level rows | P9 |
+| `Core/Repositories/PlayerCharacterRepository.cs` | `CalculateResourceMax` — subclass branch uses `EvaluateUsesFormula` instead of `int.TryParse` | P9 |
 | `Core/Models/PlayerCharacter.cs` | Add `MaxHp`, `CurrentHp`, `TempHp`, `ArmorClass`, `InitiativeBonus`, `Speed` | P7 |
 | `Core/Repositories/PlayerCharacterRepository.cs` | Additive migrations for HP/AC/Initiative/Speed columns | P7 |
 | `PlayerCharacterDetailPane.cs` | HP fields in Stats tab; AC/Speed/Initiative in persistent header | P7 |

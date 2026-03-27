@@ -892,20 +892,20 @@ namespace DndBuilder.Core.Repositories
             {
                 abilityId = (int)(long)existing;
                 var upd = _conn.CreateCommand();
+                // Only update content/description fields — never clobber user-edited choice
+                // settings (max_choices, choice_pool_type, pick_count_mode, etc.) that may
+                // have been customised in the UI after the seed was first applied.
                 upd.CommandText = @"UPDATE abilities
                     SET type=@type, action=@action, trigger=@trigger,
-                        recovery=@recovery, effect=@effect, notes=@notes,
-                        max_choices=@maxchoices, choice_pool_type=@pooltype
+                        recovery=@recovery, effect=@effect, notes=@notes
                     WHERE id=@id";
-                upd.Parameters.AddWithValue("@id",         abilityId);
-                upd.Parameters.AddWithValue("@type",       type);
-                upd.Parameters.AddWithValue("@action",     action);
-                upd.Parameters.AddWithValue("@trigger",    trigger);
-                upd.Parameters.AddWithValue("@recovery",   recovery);
-                upd.Parameters.AddWithValue("@effect",     effect);
-                upd.Parameters.AddWithValue("@notes",      notes);
-                upd.Parameters.AddWithValue("@maxchoices", maxChoices);
-                upd.Parameters.AddWithValue("@pooltype",   choicePoolType);
+                upd.Parameters.AddWithValue("@id",       abilityId);
+                upd.Parameters.AddWithValue("@type",     type);
+                upd.Parameters.AddWithValue("@action",   action);
+                upd.Parameters.AddWithValue("@trigger",  trigger);
+                upd.Parameters.AddWithValue("@recovery", recovery);
+                upd.Parameters.AddWithValue("@effect",   effect);
+                upd.Parameters.AddWithValue("@notes",    notes);
                 upd.ExecuteNonQuery();
             }
             else

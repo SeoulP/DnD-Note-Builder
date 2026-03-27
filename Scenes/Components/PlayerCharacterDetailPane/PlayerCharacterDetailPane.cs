@@ -161,7 +161,11 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     public override void _Notification(int what)
     {
         if (what == NotificationVisibilityChanged && IsVisibleInTree() && _pc != null && !_loading)
+        {
+            LoadSkills();
+            LoadAbilityChoices();
             LoadResources();
+        }
     }
 
     public void Load(PlayerCharacter pc)
@@ -169,6 +173,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _loading = true;
         _pc = pc;
         _closedAbilitySections.Clear();
+        SetActiveTab("Stats");
         var vocab = SystemVocabulary.For(_db.Campaigns.Get(pc.CampaignId)?.System);
         _speciesLabel.Text = vocab.Species;
         _classLabel.Text   = vocab.Class;
@@ -497,28 +502,45 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     {
         if (_pc == null) return;
 
-        var allSkills      = _db.DnD5eSkills.GetAll(_pc.CampaignId);
+        var allSkills       = _db.DnD5eSkills.GetAll(_pc.CampaignId);
         var characterSkills = _db.DnD5eCharacterSkills.GetForCharacter(_pc.Id);
-        var skillMap       = new Dictionary<int, DnD5eCharacterSkill>();
+        var skillMap        = new Dictionary<int, DnD5eCharacterSkill>();
         foreach (var cs in characterSkills)
             skillMap[cs.SkillId] = cs;
 
-        var expectations   = _skillExpectations.GetExpectations(_pc);
+        var expectations = _skillExpectations.GetExpectations(_pc);
+
+        // Precompute source states once — used by both chips and skill row icons
+        var actualCounts   = new Dictionary<string, int>();
+        var expectedCounts = new Dictionary<string, int>();
+        var sourceNames    = new Dictionary<string, string>();
+        foreach (var cs in skillMap.Values)
+        {
+            if (!actualCounts.ContainsKey(cs.Source)) actualCounts[cs.Source] = 0;
+            actualCounts[cs.Source]++;
+        }
+        foreach (var exp in expectations)
+        {
+            if (!expectedCounts.ContainsKey(exp.Source)) expectedCounts[exp.Source] = 0;
+            expectedCounts[exp.Source] += exp.ExpectedCount;
+            sourceNames[exp.Source] = exp.SourceName;
+        }
+
+        string bgName = _pc.BackgroundId.HasValue
+            ? _db.DnD5eBackgrounds.Get(_pc.BackgroundId.Value)?.Name ?? "Background"
+            : "Background";
+        sourceNames["background"] = bgName;
 
         // Rebuild chips
         foreach (Node child in _skillsChipsContainer.GetChildren())
             child.QueueFree();
-        BuildSourceChips(expectations, skillMap);
+        BuildSourceChips(expectations, actualCounts, expectedCounts);
 
         // Rebuild skill rows
         foreach (Node child in _skillsListContainer.GetChildren())
             child.QueueFree();
 
         int profBonus = CalcProfBonus(_pc.Level);
-
-        string bgName = _pc.BackgroundId.HasValue
-            ? _db.DnD5eBackgrounds.Get(_pc.BackgroundId.Value)?.Name ?? "Background"
-            : "Background";
 
         foreach (var skill in allSkills)
         {
@@ -527,7 +549,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             bool isExpertise  = cs?.IsExpertise ?? false;
             int  bonus        = CalcSkillBonus(skill.Attribute, _pc, profBonus, isProficient, isExpertise);
 
-            var row = BuildSkillRow(skill, cs, bonus, profBonus, skillMap, expectations, allSkills, bgName);
+            var row = BuildSkillRow(skill, cs, bonus, profBonus, skillMap, expectations, allSkills, bgName, actualCounts, expectedCounts, sourceNames);
             _skillsListContainer.AddChild(row);
         }
     }
@@ -540,7 +562,10 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         Dictionary<int, DnD5eCharacterSkill> skillMap,
         List<SkillExpectation> expectations,
         List<DnD5eSkill> allSkills,
-        string bgName = "Background")
+        string bgName,
+        Dictionary<string, int> actualCounts,
+        Dictionary<string, int> expectedCounts,
+        Dictionary<string, string> sourceNames)
     {
         bool isProficient = cs != null;
         bool isExpertise  = cs?.IsExpertise ?? false;
@@ -548,6 +573,33 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 
         var row = new HBoxContainer();
         row.AddThemeConstantOverride("separation", 4);
+
+        // State icon — shows source validity, only visible when proficient
+        string stateIcon    = "";
+        string stateTooltip = "";
+        Color? stateColor   = null;
+        if (cs != null)
+        {
+            string src     = cs.Source;
+            string srcName = sourceNames.TryGetValue(src, out string sn) ? sn : src;
+            actualCounts.TryGetValue(src, out int actual);
+            expectedCounts.TryGetValue(src, out int expected);
+            bool isOverBudget = expected > 0 && src != "background" && actual > expected;
+            stateIcon    = isOverBudget ? "!" : "✓";
+            stateTooltip = isOverBudget
+                ? $"Over {srcName} limit — review your selections"
+                : $"Source: {srcName}";
+            if (isOverBudget) stateColor = new Color(0.9f, 0.25f, 0.25f);
+        }
+        var stateLabel = new Label
+        {
+            Text                = stateIcon,
+            CustomMinimumSize   = new Vector2(14, 0),
+            TooltipText         = stateTooltip,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MouseFilter         = Control.MouseFilterEnum.Stop,
+        };
+        if (stateColor.HasValue) stateLabel.AddThemeColorOverride("font_color", stateColor.Value);
 
         // Proficiency checkbox — locked for background skills
         var profCb = new CheckBox
@@ -611,6 +663,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             LoadSkills();
         };
 
+        row.AddChild(stateLabel);
         row.AddChild(profCb);
         row.AddChild(expCb);
         row.AddChild(nameLabel);
@@ -618,64 +671,49 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return row;
     }
 
-    private void BuildSourceChips(List<SkillExpectation> expectations, Dictionary<int, DnD5eCharacterSkill> skillMap)
+    private void BuildSourceChips(List<SkillExpectation> expectations, Dictionary<string, int> actualCounts, Dictionary<string, int> expectedCounts)
     {
-        // Count actual selections per source — background is auto-applied and never shown as a chip
-        var actualCounts = new Dictionary<string, int> { ["class"] = 0, ["feat"] = 0 };
-        foreach (var cs in skillMap.Values)
-        {
-            if (actualCounts.ContainsKey(cs.Source))
-                actualCounts[cs.Source]++;
-        }
-
-        // Merge expectations with same source, skipping background
-        var classTotals = new Dictionary<string, int>();
-        foreach (var exp in expectations)
-        {
-            if (exp.Source == "background") continue;
-            if (!classTotals.ContainsKey(exp.Source)) classTotals[exp.Source] = 0;
-            classTotals[exp.Source] += exp.ExpectedCount;
-        }
+        int totalActual   = 0;
+        int totalExpected = 0;
+        var tooltipLines  = new System.Text.StringBuilder();
+        var seenSources   = new HashSet<string>();
 
         foreach (var exp in expectations)
         {
-            if (exp.Source == "background") continue;
-            int expected = classTotals.TryGetValue(exp.Source, out int t) ? t : exp.ExpectedCount;
+            if (!seenSources.Add(exp.Source)) continue;
+
             actualCounts.TryGetValue(exp.Source, out int actual);
-            int diff = expected - actual;  // positive = under, 0 = met, negative = over
+            expectedCounts.TryGetValue(exp.Source, out int expected);
 
-            string icon, tooltip;
-            Color? color = null;
-
-            if (diff > 0)
+            // Background is auto-granted — include in tooltip but not in the selectable totals
+            if (exp.Source != "background")
             {
-                icon    = "⚠";
-                tooltip = $"Select {diff} more";
-            }
-            else if (diff < 0)
-            {
-                icon    = "!";
-                tooltip = $"{-diff} over limit";
-                color   = new Color(0.9f, 0.25f, 0.25f);
-            }
-            else
-            {
-                icon    = "✓";
-                tooltip = "";
+                totalActual   += actual;
+                totalExpected += expected;
             }
 
-            var chip = new Label
-            {
-                Text        = $"{icon} {exp.SourceName} ({actual}/{expected})",
-                TooltipText = tooltip,
-                MouseFilter = Control.MouseFilterEnum.Stop,
-            };
-            if (color.HasValue)
-                chip.AddThemeColorOverride("font_color", color.Value);
-
-            _skillsChipsContainer.AddChild(chip);
-            classTotals.Remove(exp.Source);
+            int diff = expected - actual;
+            string status = diff > 0 ? $"(need {diff} more)"
+                          : diff < 0 ? $"({-diff} over limit)"
+                          : "(✓)";
+            if (tooltipLines.Length > 0) tooltipLines.Append('\n');
+            tooltipLines.Append($"{exp.SourceName}: {actual}/{expected} {status}");
         }
+
+        if (totalExpected == 0 && tooltipLines.Length == 0) return;
+
+        int totalDiff = totalExpected - totalActual;
+        string icon   = totalDiff > 0 ? "⚠" : totalDiff < 0 ? "!" : "✓";
+        Color? color  = totalDiff < 0 ? new Color(0.9f, 0.25f, 0.25f) : null;
+
+        var chip = new Label
+        {
+            Text        = $"{icon} {totalActual}/{totalExpected}",
+            TooltipText = tooltipLines.ToString(),
+            MouseFilter = Control.MouseFilterEnum.Stop,
+        };
+        if (color.HasValue) chip.AddThemeColorOverride("font_color", color.Value);
+        _skillsChipsContainer.AddChild(chip);
     }
 
     private string InferSource(int skillId, Dictionary<int, DnD5eCharacterSkill> skillMap,
