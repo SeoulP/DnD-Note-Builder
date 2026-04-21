@@ -8,6 +8,7 @@ using Godot;
 public partial class CampaignDashboard : Control
 {
     private int             _campaignId;
+    private Campaign        _campaign;
     private DatabaseService _db;
     private string          _currentPanel       = "notes";
     private HashSet<int>    _collapsedLocations = new();
@@ -80,7 +81,7 @@ public partial class CampaignDashboard : Control
     [Signal] public delegate void SidebarPanelChangedEventHandler(string panel);
 
     private static bool IsSystemEntity(string et) =>
-        et is "class" or "subclass" or "species" or "subspecies" or "ability";
+        et is "class" or "subclass" or "species" or "subspecies" or "ability" or "pf2e_creature";
 
     private sealed class TabEntry
     {
@@ -131,11 +132,16 @@ public partial class CampaignDashboard : Control
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
         if (_campaignId > 0)
-            _vocab = SystemVocabulary.For(_db.Campaigns.Get(_campaignId)?.System);
+        {
+            _campaign = _db.Campaigns.Get(_campaignId);
+            _vocab    = SystemVocabulary.For(_campaign?.System);
+        }
         ApplySidebarWidth();
 
         _addPartyButton.Pressed += () =>
         {
+            if (_campaign?.System == "pathfinder2e")
+                return; // Pf2eCharacterRepository wired in Phase 3
             var pc = new PlayerCharacter { CampaignId = _campaignId, Name = "New Character" };
             int id = _db.PlayerCharacters.Add(pc);
             LoadParty();
@@ -269,6 +275,8 @@ public partial class CampaignDashboard : Control
     public void SetCampaign(int campaignId)
     {
         _campaignId = campaignId;
+        _campaign   = _db.Campaigns.Get(campaignId);
+        _vocab      = SystemVocabulary.For(_campaign?.System);
         _collapsedLocations.Clear();
         _collapsedClasses.Clear();
         _collapsedSpecies.Clear();
@@ -310,6 +318,8 @@ public partial class CampaignDashboard : Control
     private void LoadParty()
     {
         ClearItems(_partyContainer, _addPartyButton);
+        if (_campaign?.System == "pathfinder2e")
+            return; // Pf2eCharacterRepository wired in Phase 3
         foreach (var pc in _db.PlayerCharacters.GetAll(_campaignId))
         {
             int id = pc.Id;
@@ -828,6 +838,16 @@ public partial class CampaignDashboard : Control
                 var p = _playerCharacterDetailPaneScene.Instantiate<PlayerCharacterDetailPane>();
                 p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 return (p, string.IsNullOrEmpty(e.Name) ? "New Character" : e.Name, () => p.Load(e));
+            }
+            case "pf2e_pc":
+            {
+                var label = new Label { Text = "P2e Character Sheet — Phase 3", HorizontalAlignment = HorizontalAlignment.Center };
+                return (label, "Character", null);
+            }
+            case "pf2e_creature":
+            {
+                var label = new Label { Text = "P2e Creature — Phase 4", HorizontalAlignment = HorizontalAlignment.Center };
+                return (label, "Creature", null);
             }
             default:
                 return (null, null, null);
