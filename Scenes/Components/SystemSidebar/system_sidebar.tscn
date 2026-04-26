@@ -1,0 +1,75 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Components/SystemSidebar/SystemSidebar.cs" id="1_script"]
+
+[node name="SystemSidebar" type="VBoxContainer" node_paths=PackedStringArray("_addClassesButton", "_addSpeciesButton", "_addAbilitiesButton", "_addCreaturesButton", "_classesContainer", "_speciesContainer", "_abilitiesContainer", "_creaturesContainer")]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_script")
+_addClassesButton   = NodePath("ClassesPanel/VBoxContainer/AddClassesButton")
+_addSpeciesButton   = NodePath("SpeciesPanel/VBoxContainer/AddSpeciesButton")
+_addAbilitiesButton = NodePath("AbilitiesPanel/VBoxContainer/AddAbilitiesButton")
+_addCreaturesButton = NodePath("CreaturesPanel/VBoxContainer/AddCreaturesButton")
+_classesContainer   = NodePath("ClassesPanel/VBoxContainer")
+_speciesContainer   = NodePath("SpeciesPanel/VBoxContainer")
+_abilitiesContainer = NodePath("AbilitiesPanel/VBoxContainer")
+_creaturesContainer = NodePath("CreaturesPanel/VBoxContainer")
+
+[node name="SystemSearchInput" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search..."
+clear_button_enabled = true
+caret_blink = true
+
+[node name="ClassesPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Classes"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ClassesPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddClassesButton" type="Button" parent="ClassesPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="SpeciesPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Species"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SpeciesPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddSpeciesButton" type="Button" parent="SpeciesPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="AbilitiesPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Abilities"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AbilitiesPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddAbilitiesButton" type="Button" parent="AbilitiesPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="CreaturesPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Creatures"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CreaturesPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddCreaturesButton" type="Button" parent="CreaturesPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"

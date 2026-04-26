@@ -1,0 +1,120 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Components/NotesSidebar/NotesSidebar.cs" id="1_script"]
+
+[node name="NotesSidebar" type="VBoxContainer" node_paths=PackedStringArray("_addPartyButton", "_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_addQuestsButton", "_partyContainer", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_questsContainer")]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_script")
+_addPartyButton     = NodePath("PartyPanel/VBoxContainer/AddPartyButton")
+_partyContainer     = NodePath("PartyPanel/VBoxContainer")
+_addNpcsButton      = NodePath("NpcsPanel/VBoxContainer/AddNpcsButton")
+_npcsContainer      = NodePath("NpcsPanel/VBoxContainer")
+_addFactionButton   = NodePath("FactionsPanel/VBoxContainer/AddFactionButton")
+_factionsContainer  = NodePath("FactionsPanel/VBoxContainer")
+_addLocationsButton = NodePath("LocationsFoldableContainer/VBoxContainer/AddLocationsButton")
+_locationsContainer = NodePath("LocationsFoldableContainer/VBoxContainer")
+_addSessionsButton  = NodePath("SessionsPanel/VBoxContainer/AddSessionsButton")
+_sessionsContainer  = NodePath("SessionsPanel/VBoxContainer")
+_addItemsButton     = NodePath("ItemsPanel/VBoxContainer/AddItemsButton")
+_itemsContainer     = NodePath("ItemsPanel/VBoxContainer")
+_addQuestsButton    = NodePath("QuestsPanel/VBoxContainer/AddQuestsButton")
+_questsContainer    = NodePath("QuestsPanel/VBoxContainer")
+
+[node name="SearchInput" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search..."
+clear_button_enabled = true
+caret_blink = true
+
+[node name="PartyPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Party"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PartyPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddPartyButton" type="Button" parent="PartyPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="NpcsPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "NPCs"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="NpcsPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddNpcsButton" type="Button" parent="NpcsPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="FactionsPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Factions"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="FactionsPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddFactionButton" type="Button" parent="FactionsPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="LocationsFoldableContainer" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Locations"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="LocationsFoldableContainer"]
+visible = false
+layout_mode = 2
+
+[node name="AddLocationsButton" type="Button" parent="LocationsFoldableContainer/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="SessionsPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Sessions"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SessionsPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddSessionsButton" type="Button" parent="SessionsPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="ItemsPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Items"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ItemsPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddItemsButton" type="Button" parent="ItemsPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"
+
+[node name="QuestsPanel" type="FoldableContainer" parent="."]
+layout_mode = 2
+folded = true
+title = "Quests"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="QuestsPanel"]
+visible = false
+layout_mode = 2
+
+[node name="AddQuestsButton" type="Button" parent="QuestsPanel/VBoxContainer"]
+layout_mode = 2
+text = "New +"

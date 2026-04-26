@@ -1,0 +1,97 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Panes/Pf2eCreatureDetailPane/Pf2eCreatureDetailPane.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+
+[node name="Pf2eCreatureDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_deleteButton", "_statsTabBtn", "_abilitiesTabBtn", "_descriptionTabBtn", "_statsTab", "_abilitiesTab", "_descriptionTab")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 3
+script = ExtResource("1_script")
+_nameInput        = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/NameLabel")
+_deleteButton     = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/DeleteButton")
+_statsTabBtn      = NodePath("MainVBox/NavTabStrip/StatsTabBtn")
+_abilitiesTabBtn  = NodePath("MainVBox/NavTabStrip/AbilitiesTabBtn")
+_descriptionTabBtn = NodePath("MainVBox/NavTabStrip/DescriptionTabBtn")
+_statsTab         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab")
+_abilitiesTab     = NodePath("MainVBox/ContentMargin/ContentVBox/AbilitiesTab")
+_descriptionTab   = NodePath("MainVBox/ContentMargin/ContentVBox/DescriptionTab")
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="HeaderMargin" type="MarginContainer" parent="MainVBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="HeaderVBox" type="VBoxContainer" parent="MainVBox/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NameRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+
+[node name="NameLabel" type="LineEdit" parent="MainVBox/HeaderMargin/HeaderVBox/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Creature Name"
+theme_override_font_sizes/font_size = 18
+caret_blink = true
+
+[node name="DeleteButton" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/NameRow"]
+layout_mode = 2
+flat = true
+icon = ExtResource("2_trash")
+
+[node name="NavTabStrip" type="HBoxContainer" parent="MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="StatsTabBtn" type="Button" parent="MainVBox/NavTabStrip"]
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+text = "Stats"
+
+[node name="AbilitiesTabBtn" type="Button" parent="MainVBox/NavTabStrip"]
+layout_mode = 2
+toggle_mode = true
+text = "Abilities"
+
+[node name="DescriptionTabBtn" type="Button" parent="MainVBox/NavTabStrip"]
+layout_mode = 2
+toggle_mode = true
+text = "Description"
+
+[node name="ContentMargin" type="MarginContainer" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_bottom = 8
+
+[node name="ContentVBox" type="VBoxContainer" parent="MainVBox/ContentMargin"]
+layout_mode = 2
+
+[node name="StatsTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="AbilitiesTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox"]
+layout_mode = 2
+visible = false
+theme_override_constants/separation = 6
+
+[node name="DescriptionTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox"]
+layout_mode = 2
+visible = false
+theme_override_constants/separation = 4

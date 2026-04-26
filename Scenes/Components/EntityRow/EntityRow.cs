@@ -32,9 +32,11 @@ public partial class EntityRow : PanelContainer
 
     public bool ShowDelete      { get; set; } = true;
     public bool ShowDescription { get; set; } = false;
+    public float ChipWidth      { get; set; } = 0;
 
     public override void _Ready()
     {
+        if (ChipWidth > 0) CustomMinimumSize = new Vector2(ChipWidth, 0);
         _rowHoverBox    = GetThemeStylebox("row_hover",    "DndBuilder") as StyleBoxFlat ?? MakeBox(ThemeManager.Instance.Current.Hover);
         _deleteHoverBox = GetThemeStylebox("delete_hover", "DndBuilder") as StyleBoxFlat ?? MakeBox(ThemeManager.DeleteHoverColor);
 

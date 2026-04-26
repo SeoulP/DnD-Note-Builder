@@ -105,6 +105,12 @@ public partial class DatabaseService : Node
     public Pf2eCharacterStrikeDamageRepository Pf2eCharacterStrikeDamage  { get; private set; }
     public Pf2eCharacterStrikeTraitRepository  Pf2eCharacterStrikeTraits  { get; private set; }
 
+    // ── Encounters (Battle Tracker) ───────────────────────────────────────────
+    public EncounterRepository                           Encounters                       { get; private set; }
+    public Pf2eEncounterCombatantRepository              Pf2eEncounterCombatants          { get; private set; }
+    public Pf2eEncounterCombatantHpLogRepository         Pf2eEncounterCombatantHpLog      { get; private set; }
+    public Pf2eEncounterCombatantConditionRepository     Pf2eEncounterCombatantConditions { get; private set; }
+
     public string DbPath { get; private set; }
     public string ImgDir { get; private set; }
 
@@ -244,6 +250,12 @@ public partial class DatabaseService : Node
         Pf2eCharacterStrikeDamage = new Pf2eCharacterStrikeDamageRepository(_conn);
         Pf2eCharacterStrikeTraits = new Pf2eCharacterStrikeTraitRepository(_conn);
 
+        // ── Encounters ────────────────────────────────────────────────────────
+        Pf2eEncounterCombatantHpLog      = new Pf2eEncounterCombatantHpLogRepository(_conn);
+        Pf2eEncounterCombatants          = new Pf2eEncounterCombatantRepository(_conn, Pf2eEncounterCombatantHpLog);
+        Pf2eEncounterCombatantConditions = new Pf2eEncounterCombatantConditionRepository(_conn);
+        Encounters                       = new EncounterRepository(_conn);
+
         RunMigrations();
     }
 
@@ -347,6 +359,12 @@ public partial class DatabaseService : Node
         Pf2eCharacterStrikes      .Migrate();  // references characters, pathfinder_area_types
         Pf2eCharacterStrikeDamage .Migrate();  // references pathfinder_character_strikes, pathfinder_damage_types, pathfinder_die_types
         Pf2eCharacterStrikeTraits .Migrate();  // references pathfinder_character_strikes, pathfinder_trait_types, pathfinder_die_types, pathfinder_damage_types
+
+        // ── Encounters ────────────────────────────────────────────────────────
+        Encounters                      .Migrate();  // references campaigns, sessions
+        Pf2eEncounterCombatantHpLog     .Migrate();  // must precede combatants (FK in repo logic)
+        Pf2eEncounterCombatants         .Migrate();  // references encounters, characters, pathfinder_creatures
+        Pf2eEncounterCombatantConditions.Migrate();  // references pf2e_encounter_combatants, pathfinder_condition_types
 
         MigrateLegacyPortraits();
 

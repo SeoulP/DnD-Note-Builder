@@ -1,0 +1,130 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Views/CampaignView/CampaignView.cs" id="0_campviewscr"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/NpcDetailPane/npc_detail_pane.tscn" id="1_npcdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/FactionDetailPane/faction_detail_pane.tscn" id="2_facdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/LocationDetailPane/location_detail_pane.tscn" id="3_locdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/SessionDetailPane/session_detail_pane.tscn" id="4_sesdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/ItemDetailPane/item_detail_pane.tscn" id="5_itemdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/QuestDetailPane/quest_detail_pane.tscn" id="6_questdet"]
+[ext_resource type="Texture2D" uid="uid://daj28u7pdj06j" path="res://Scenes/Icons/Left Arrow.svg" id="7_leftarrow"]
+[ext_resource type="Texture2D" uid="uid://lah0ysxhtina" path="res://Scenes/Icons/Right Arrow.svg" id="8_rightarrow"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/AbilityDetailPane/ability_detail_pane.tscn" id="9_abildet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/ClassDetailPane/class_detail_pane.tscn" id="10_classdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/SubclassDetailPane/subclass_detail_pane.tscn" id="11_subclassdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/SpeciesDetailPane/species_detail_pane.tscn" id="12_speciesdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/SubspeciesDetailPane/subspecies_detail_pane.tscn" id="13_subspeciesdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/PlayerCharacterDetailPane/player_character_detail_pane.tscn" id="14_pcdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/Pf2eCharacterDetailPane/pf2e_character_detail_pane.tscn" id="15_pf2epcdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/Pf2eCreatureDetailPane/pf2e_creature_detail_pane.tscn" id="16_pf2ecreatdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Panes/Pf2eEncounterDetailPane/pf2e_encounter_detail_pane.tscn" id="17_encounterdet"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/NotesSidebar/notes_sidebar.tscn" id="18_notessidebar"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/SystemSidebar/system_sidebar.tscn" id="19_systemsidebar"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/TrackerSidebar/tracker_sidebar.tscn" id="20_trackersidebar"]
+
+[node name="CampaignView" type="Control" node_paths=PackedStringArray("_notesSidebarControl", "_systemSidebarControl", "_trackerSidebarControl", "_detailPanel", "_paneContainer", "_tabList", "_tabScroll", "_backButton", "_forwardButton")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("0_campviewscr")
+_notesSidebarControl   = NodePath("ScrollContainer/VBoxContainer/NotesSidebar")
+_systemSidebarControl  = NodePath("ScrollContainer/VBoxContainer/SystemSidebar")
+_trackerSidebarControl = NodePath("ScrollContainer/VBoxContainer/TrackerSidebar")
+_detailPanel           = NodePath("DetailPanel")
+_paneContainer         = NodePath("DetailPanel/PaneContainer")
+_tabList               = NodePath("DetailPanel/TabRow/TabScroll/TabList")
+_tabScroll             = NodePath("DetailPanel/TabRow/TabScroll")
+_backButton            = NodePath("DetailPanel/TabRow/BackButton")
+_forwardButton         = NodePath("DetailPanel/TabRow/ForwardButton")
+_npcDetailPaneScene                = ExtResource("1_npcdet")
+_factionDetailPaneScene            = ExtResource("2_facdet")
+_locationDetailPaneScene           = ExtResource("3_locdet")
+_sessionDetailPaneScene            = ExtResource("4_sesdet")
+_itemDetailPaneScene               = ExtResource("5_itemdet")
+_questDetailPaneScene              = ExtResource("6_questdet")
+_abilityDetailPaneScene            = ExtResource("9_abildet")
+_classDetailPaneScene              = ExtResource("10_classdet")
+_subclassDetailPaneScene           = ExtResource("11_subclassdet")
+_speciesDetailPaneScene            = ExtResource("12_speciesdet")
+_subspeciesDetailPaneScene         = ExtResource("13_subspeciesdet")
+_playerCharacterDetailPaneScene    = ExtResource("14_pcdet")
+_pf2eCharacterDetailPaneScene      = ExtResource("15_pf2epcdet")
+_pf2eCreatureDetailPaneScene       = ExtResource("16_pf2ecreatdet")
+_pf2eEncounterDetailPaneScene      = ExtResource("17_encounterdet")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NotesSidebar" parent="ScrollContainer/VBoxContainer" instance=ExtResource("18_notessidebar")]
+layout_mode = 2
+
+[node name="SystemSidebar" parent="ScrollContainer/VBoxContainer" instance=ExtResource("19_systemsidebar")]
+visible = false
+layout_mode = 2
+
+[node name="TrackerSidebar" parent="ScrollContainer/VBoxContainer" instance=ExtResource("20_trackersidebar")]
+visible = false
+layout_mode = 2
+
+[node name="DetailPanel" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TabRow" type="HBoxContainer" parent="DetailPanel"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="BackButton" type="Button" parent="DetailPanel/TabRow"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("7_leftarrow")
+flat = true
+expand_icon = true
+
+[node name="ForwardButton" type="Button" parent="DetailPanel/TabRow"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("8_rightarrow")
+flat = true
+expand_icon = true
+
+[node name="NavSpacer" type="Control" parent="DetailPanel/TabRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(8, 0)
+
+[node name="TabScroll" type="ScrollContainer" parent="DetailPanel/TabRow"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 0
+
+[node name="TabList" type="HBoxContainer" parent="DetailPanel/TabRow/TabScroll"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="PaneContainer" type="Control" parent="DetailPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

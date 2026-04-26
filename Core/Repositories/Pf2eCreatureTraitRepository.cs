@@ -45,6 +45,25 @@ namespace DndBuilder.Core.Repositories
             return (int)(long)cmd.ExecuteScalar();
         }
 
+        public Dictionary<int, List<int>> GetTraitTypeIdsByCreature(int campaignId)
+        {
+            var map = new Dictionary<int, List<int>>();
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"SELECT t.creature_id, t.trait_type_id
+                                FROM pathfinder_creature_traits t
+                                JOIN pathfinder_creatures c ON c.id = t.creature_id
+                                WHERE c.campaign_id = @cid";
+            cmd.Parameters.AddWithValue("@cid", campaignId);
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                int cid = r.GetInt32(0), tid = r.GetInt32(1);
+                if (!map.ContainsKey(cid)) map[cid] = new List<int>();
+                map[cid].Add(tid);
+            }
+            return map;
+        }
+
         public void Delete(int id)
         {
             var cmd = _conn.CreateCommand();

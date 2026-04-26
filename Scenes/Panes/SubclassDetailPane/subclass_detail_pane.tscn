@@ -1,0 +1,116 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Panes/SubclassDetailPane/SubclassDetailPane.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
+
+[node name="SubclassDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_parentClassContainer","_descInput","_notes","_levelsToggle","_levelsInset","_levelsContainer","_deleteButton","_imageCarousel")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+_nameInput              = NodePath("Margin/VBox/NameRow/NameInput")
+_deleteButton           = NodePath("Margin/VBox/NameRow/DeleteButton")
+_parentClassContainer   = NodePath("Margin/VBox/ContentHBox/Fields/ParentRow/ParentClassContainer")
+_descInput              = NodePath("Margin/VBox/ContentHBox/Fields/DescInput")
+_levelsToggle    = NodePath("Margin/VBox/ContentHBox/Fields/LevelsToggle")
+_levelsInset     = NodePath("Margin/VBox/ContentHBox/Fields/LevelsInset")
+_levelsContainer = NodePath("Margin/VBox/ContentHBox/Fields/LevelsInset/LevelsContainer")
+_notes           = NodePath("Margin/VBox/ContentHBox/Fields/Notes")
+_imageCarousel   = NodePath("Margin/VBox/ContentHBox/CarouselColumn/ImageCarousel")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left   = 8
+theme_override_constants/margin_right  = 8
+theme_override_constants/margin_top    = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="NameRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="NameInput" type="LineEdit" parent="Margin/VBox/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+placeholder_text = "Subclass Name"
+theme_override_font_sizes/font_size = 18
+
+[node name="DeleteButton" type="Button" parent="Margin/VBox/NameRow"]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="ContentHBox" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Fields" type="VBoxContainer" parent="Margin/VBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ParentRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ParentLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ParentRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Class"
+
+[node name="ParentClassContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ParentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DescLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+text = "Description"
+
+[node name="DescInput" type="TextEdit" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+caret_blink = true
+custom_minimum_size = Vector2(0, 80)
+placeholder_text = "Subclass description..."
+wrap_mode = 1
+
+[node name="LevelsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+
+[node name="LevelsToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 0
+flat = true
+text = "Level Progression"
+
+[node name="LevelsInset" type="MarginContainer" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+
+[node name="LevelsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/LevelsInset"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Notes" parent="Margin/VBox/ContentHBox/Fields" instance=ExtResource("4_wikinotes")]
+layout_mode = 2
+
+[node name="CarouselColumn" type="VBoxContainer" parent="Margin/VBox/ContentHBox"]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="Margin/VBox/ContentHBox/CarouselColumn" instance=ExtResource("5_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="Margin/VBox/ContentHBox/CarouselColumn"]
+layout_mode = 2
+size_flags_vertical = 3

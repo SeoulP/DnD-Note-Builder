@@ -16,6 +16,7 @@ public partial class NavBar : PanelContainer
     [Export] private Button      _backButton;
     [Export] private Button      _notesButton;
     [Export] private Button      _systemButton;
+    [Export] private Button      _trackerButton;
     [Export] private MenuButton  _settingsButton;
     [Export] private PackedScene _importExportModalScene;
 
@@ -35,8 +36,9 @@ public partial class NavBar : PanelContainer
         _db = GetNode<DatabaseService>("/root/DatabaseService");
 
         _backButton.Pressed  += () => EmitSignal(SignalName.BackPressed);
-        _notesButton.Pressed += () => SwitchPanel("notes");
-        _systemButton.Pressed += () => SwitchPanel("system");
+        _notesButton.Pressed   += () => SwitchPanel("notes");
+        _systemButton.Pressed  += () => SwitchPanel("system");
+        _trackerButton.Pressed += () => SwitchPanel("tracker");
 
         _panelActiveSb   = new StyleBoxFlat { BgColor = ThemeManager.Instance.Current.Hover };
         _panelActiveSb.SetCornerRadiusAll(4);
@@ -106,8 +108,9 @@ public partial class NavBar : PanelContainer
         _campaignId = campaignId;
         bool hasCampaign = campaignId.HasValue;
 
-        _notesButton.Visible  = hasCampaign;
-        _systemButton.Visible = hasCampaign;
+        _notesButton.Visible   = hasCampaign;
+        _systemButton.Visible  = hasCampaign;
+        _trackerButton.Visible = hasCampaign;
         if (!hasCampaign)
             _activePanel = "notes";
         UpdatePanelButtons();
@@ -126,8 +129,9 @@ public partial class NavBar : PanelContainer
 
     private void UpdatePanelButtons()
     {
-        ApplyPanelButtonStyle(_notesButton,  _activePanel == "notes");
-        ApplyPanelButtonStyle(_systemButton, _activePanel == "system");
+        ApplyPanelButtonStyle(_notesButton,   _activePanel == "notes");
+        ApplyPanelButtonStyle(_systemButton,  _activePanel == "system");
+        ApplyPanelButtonStyle(_trackerButton, _activePanel == "tracker");
     }
 
     private void ApplyPanelButtonStyle(Button btn, bool active)

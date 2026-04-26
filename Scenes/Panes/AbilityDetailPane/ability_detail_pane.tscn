@@ -1,0 +1,311 @@
+[gd_scene format=3 uid="uid://d0a78l3bgbb31"]
+
+[ext_resource type="Script"  path="res://Scenes/Panes/AbilityDetailPane/AbilityDetailPane.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="3_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
+[ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="5_typeopt"]
+
+[node name="AbilityDetailPane" type="ScrollContainer" unique_id=198427409 node_paths=PackedStringArray("_nameInput", "_typeInput", "_actionInput", "_triggerInput", "_recoveryIntervalInput", "_recoveryAmountInput", "_costsContainer", "_addCostButton", "_effectInput", "_notes", "_deleteButton", "_imageCarousel", "_poolTypeInput", "_pickCountModeRow", "_pickCountModeInput", "_formulaRow", "_choiceCountBaseInput", "_choiceCountAttrInput", "_choiceCountProfInput", "_choiceCountLevelInput", "_fixedOptionsSection", "_optionsContainer", "_choiceProgressionSection", "_choiceProgressionContainer", "_addChoiceProgressionButton")]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+_nameInput = NodePath("Margin/VBox/NameRow/NameInput")
+_typeInput = NodePath("Margin/VBox/ContentHBox/Fields/TypeRow/TypeInput")
+_actionInput = NodePath("Margin/VBox/ContentHBox/Fields/ActionRow/ActionInput")
+_triggerInput = NodePath("Margin/VBox/ContentHBox/Fields/TriggerRow/TriggerInput")
+_recoveryIntervalInput = NodePath("Margin/VBox/ContentHBox/Fields/RecoveryRow/RecoveryIntervalInput")
+_recoveryAmountInput = NodePath("Margin/VBox/ContentHBox/Fields/RecoveryRow/RecoveryAmountInput")
+_costsContainer = NodePath("Margin/VBox/ContentHBox/Fields/ResourceCostsSection/CostsContainer")
+_addCostButton = NodePath("Margin/VBox/ContentHBox/Fields/ResourceCostsSection/AddCostButton")
+_effectInput = NodePath("Margin/VBox/ContentHBox/Fields/EffectInput")
+_notes = NodePath("Margin/VBox/ContentHBox/Fields/Notes")
+_deleteButton = NodePath("Margin/VBox/NameRow/DeleteButton")
+_imageCarousel = NodePath("Margin/VBox/ContentHBox/CarouselColumn/ImageCarousel")
+_poolTypeInput = NodePath("Margin/VBox/ContentHBox/Fields/PoolTypeRow/PoolTypeInput")
+_pickCountModeRow = NodePath("Margin/VBox/ContentHBox/Fields/PickCountModeRow")
+_pickCountModeInput = NodePath("Margin/VBox/ContentHBox/Fields/PickCountModeRow/PickCountModeInput")
+_formulaRow = NodePath("Margin/VBox/ContentHBox/Fields/FormulaRow")
+_choiceCountBaseInput = NodePath("Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer/BaseInput")
+_choiceCountAttrInput = NodePath("Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer2/AttrInput")
+_choiceCountProfInput = NodePath("Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer3/ProfInput")
+_choiceCountLevelInput = NodePath("Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer4/LevelInput")
+_fixedOptionsSection = NodePath("Margin/VBox/ContentHBox/Fields/FixedOptionsSection")
+_optionsContainer = NodePath("Margin/VBox/ContentHBox/Fields/FixedOptionsSection/OptionsContainer")
+_choiceProgressionSection = NodePath("Margin/VBox/ContentHBox/Fields/ChoiceProgressionSection")
+_choiceProgressionContainer = NodePath("Margin/VBox/ContentHBox/Fields/ChoiceProgressionSection/ChoiceProgressionContainer")
+_addChoiceProgressionButton = NodePath("Margin/VBox/ContentHBox/Fields/ChoiceProgressionSection/AddChoiceProgressionButton")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=432948731]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=789939156]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="NameRow" type="HBoxContainer" parent="Margin/VBox" unique_id=1235688677]
+layout_mode = 2
+
+[node name="NameInput" type="LineEdit" parent="Margin/VBox/NameRow" unique_id=296576237]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Ability Name"
+caret_blink = true
+
+[node name="DeleteButton" type="Button" parent="Margin/VBox/NameRow" unique_id=774968303]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="ContentHBox" type="HBoxContainer" parent="Margin/VBox" unique_id=964242504]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Fields" type="VBoxContainer" parent="Margin/VBox/ContentHBox" unique_id=1284303850]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="TypeRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=2114209256]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TypeLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/TypeRow" unique_id=1332866431]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Type"
+
+[node name="TypeInput" type="Button" parent="Margin/VBox/ContentHBox/Fields/TypeRow" unique_id=675322520]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("5_typeopt")
+
+[node name="ActionRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1926417270]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ActionLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ActionRow" unique_id=776400403]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Action"
+
+[node name="ActionInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/ActionRow" unique_id=1738998942]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TriggerRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1459625368]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TriggerLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/TriggerRow" unique_id=1411990165]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Trigger"
+
+[node name="TriggerInput" type="LineEdit" parent="Margin/VBox/ContentHBox/Fields/TriggerRow" unique_id=2039116625]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "When does this trigger?"
+
+[node name="ResourceCostsSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1564199226]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ResourceCostsSectionHeader" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ResourceCostsSection" unique_id=1132083981]
+layout_mode = 2
+
+[node name="ResourceCostsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ResourceCostsSection/ResourceCostsSectionHeader" unique_id=1462842311]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Resource Costs"
+
+[node name="AddCostButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/ResourceCostsSection" unique_id=1915861741]
+layout_mode = 2
+text = "+ Add Cost"
+
+[node name="CostsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ResourceCostsSection" unique_id=649875723]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="RecoveryRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1104025961]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RecoveryLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/RecoveryRow" unique_id=842861475]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Recovery"
+
+[node name="RecoveryIntervalInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/RecoveryRow" unique_id=303557566]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RecoveryAmountInput" type="SpinBox" parent="Margin/VBox/ContentHBox/Fields/RecoveryRow" unique_id=309924476]
+visible = false
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+max_value = 99.0
+
+[node name="ChoicesSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=73194569]
+layout_mode = 2
+
+[node name="ChoicesHeader" type="Label" parent="Margin/VBox/ContentHBox/Fields" unique_id=730731367]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Choices"
+
+[node name="PoolTypeRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=883658452]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PoolTypeLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/PoolTypeRow" unique_id=2096474199]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Pool"
+
+[node name="PoolTypeInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/PoolTypeRow" unique_id=1683801272]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PickCountModeRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 8
+visible = false
+
+[node name="PickCountModeLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/PickCountModeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Pick Count"
+
+[node name="PickCountModeInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/PickCountModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FormulaRow" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=387002501]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FormulaLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/FormulaRow" unique_id=1777236761]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "# of Picks"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/FormulaRow" unique_id=928485930]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer" unique_id=1049149338]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer" unique_id=1228514402]
+layout_mode = 2
+text = "Base Amount"
+
+[node name="BaseInput" type="SpinBox" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer" unique_id=28269699]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+min_value = -10.0
+max_value = 20.0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer" unique_id=1264949427]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label2" type="Label" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer2" unique_id=1671090126]
+layout_mode = 2
+text = "Add Attribute"
+
+[node name="AttrInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer2" unique_id=1930040474]
+layout_mode = 2
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer" unique_id=734253251]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label3" type="Label" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer3" unique_id=2137065405]
+layout_mode = 2
+text = "Use Proficiency"
+
+[node name="ProfInput" type="CheckBox" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer3" unique_id=1893663514]
+layout_mode = 2
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer" unique_id=1432725908]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label4" type="Label" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer4" unique_id=622317353]
+layout_mode = 2
+text = "Add Level"
+
+[node name="LevelInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer4" unique_id=1168113188]
+layout_mode = 2
+
+[node name="FixedOptionsSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=125035767]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="OptionsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/FixedOptionsSection" unique_id=1784937160]
+layout_mode = 2
+text = "Options"
+
+[node name="OptionsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/FixedOptionsSection" unique_id=567055353]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ChoiceProgressionSection" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1760379305]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ChoiceProgressionLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ChoiceProgressionSection" unique_id=1137568896]
+layout_mode = 2
+text = "Choice Progression"
+
+[node name="ChoiceProgressionContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ChoiceProgressionSection" unique_id=1798888083]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="AddChoiceProgressionButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/ChoiceProgressionSection" unique_id=442831373]
+layout_mode = 2
+text = "+ Add Progression Step"
+
+[node name="ChoicesSep2" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=1047082940]
+layout_mode = 2
+
+[node name="EffectLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields" unique_id=1821711262]
+layout_mode = 2
+text = "Effect"
+
+[node name="EffectInput" type="TextEdit" parent="Margin/VBox/ContentHBox/Fields" unique_id=298817958]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+placeholder_text = "What does this ability do?"
+wrap_mode = 1
+caret_blink = true
+
+[node name="Notes" parent="Margin/VBox/ContentHBox/Fields" unique_id=518445021 instance=ExtResource("3_wikinotes")]
+
+[node name="CarouselColumn" type="VBoxContainer" parent="Margin/VBox/ContentHBox" unique_id=416111614]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="Margin/VBox/ContentHBox/CarouselColumn" unique_id=1231121015 instance=ExtResource("4_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="Margin/VBox/ContentHBox/CarouselColumn" unique_id=630256260]
+layout_mode = 2
+size_flags_vertical = 3
