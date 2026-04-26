@@ -80,7 +80,10 @@ function Convert-Creature($raw) {
     }
     $senses = @()
     if ($sys.perception.senses) {
-        foreach ($sn in $sys.perception.senses) { $senses += [PSCustomObject]@{ type=$sn.type } }
+        foreach ($sn in $sys.perception.senses) {
+            $rng = if ($sn.range -and "$($sn.range)" -ne '' -and [int]$sn.range -gt 0) { [int]$sn.range } else { $null }
+            $senses += [PSCustomObject]@{ type=$sn.type; range=$rng }
+        }
     }
     $imm  = @()
     if ($sys.attributes.immunities)  { $imm  = @($sys.attributes.immunities  | ForEach-Object { $_.type }) }

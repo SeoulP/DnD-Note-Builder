@@ -4,6 +4,8 @@
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wiki"]
+[ext_resource type="Theme" uid="uid://serwwl5j7fdu" path="res://theme.tres" id="5_theme"]
+[ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]
 
 [node name="Pf2eCharacterDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_ancestryInput", "_heritageInput", "_classInput", "_levelInput", "_currentHpInput", "_maxHpInput", "_heroPip1", "_heroPip2", "_heroPip3", "_deleteButton", "_aliasChipsRow", "_imageCarousel", "_statsTabBtn", "_skillsTabBtn", "_flavorTabBtn", "_statsTab", "_skillsTab", "_flavorTab", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_acInput", "_speedInput", "_fortRank", "_refRank", "_willRank", "_percRank", "_fortMod", "_refMod", "_willMod", "_percMod", "_skillsContainer", "_descInput", "_notes")]
 anchors_preset = 15
@@ -137,11 +139,12 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Level"
 
-[node name="LevelInput" type="SpinBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow"]
+[node name="LevelInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow"]
 layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-value = 1.0
+script = ExtResource("6_intinput")
+MinValue = 1
+MaxValue = 20
+Value = 1
 
 [node name="HpRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields"]
 layout_mode = 2
@@ -152,19 +155,23 @@ custom_minimum_size = Vector2(70, 0)
 layout_mode = 2
 text = "HP"
 
-[node name="CurrentHpInput" type="SpinBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+[node name="CurrentHpInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(70, 0)
-max_value = 999.0
+script = ExtResource("6_intinput")
+MinValue = 0
+MaxValue = 999
 
 [node name="SlashLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
 layout_mode = 2
 text = "/"
 
-[node name="MaxHpInput" type="SpinBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+[node name="MaxHpInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(70, 0)
-max_value = 999.0
+script = ExtResource("6_intinput")
+MinValue = 0
+MaxValue = 999
 
 [node name="HeroLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
 layout_mode = 2
@@ -258,11 +265,15 @@ layout_mode = 2
 text = "STR"
 horizontal_alignment = 1
 
-[node name="StrInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox"]
+[node name="StrInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox"]
 layout_mode = 2
-min_value = 1.0
-max_value = 30.0
-value = 10.0
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
 
 [node name="StrMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox"]
 layout_mode = 2
@@ -281,11 +292,15 @@ layout_mode = 2
 text = "DEX"
 horizontal_alignment = 1
 
-[node name="DexInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox"]
+[node name="DexInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox"]
 layout_mode = 2
-min_value = 1.0
-max_value = 30.0
-value = 10.0
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
 
 [node name="DexMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox"]
 layout_mode = 2
@@ -304,11 +319,15 @@ layout_mode = 2
 text = "CON"
 horizontal_alignment = 1
 
-[node name="ConInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox"]
+[node name="ConInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox"]
 layout_mode = 2
-min_value = 1.0
-max_value = 30.0
-value = 10.0
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
 
 [node name="ConMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox"]
 layout_mode = 2
@@ -327,11 +346,15 @@ layout_mode = 2
 text = "INT"
 horizontal_alignment = 1
 
-[node name="IntInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox"]
+[node name="IntInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox"]
 layout_mode = 2
-min_value = 1.0
-max_value = 30.0
-value = 10.0
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
 
 [node name="IntMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox"]
 layout_mode = 2
@@ -350,11 +373,15 @@ layout_mode = 2
 text = "WIS"
 horizontal_alignment = 1
 
-[node name="WisInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox"]
+[node name="WisInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox"]
 layout_mode = 2
-min_value = 1.0
-max_value = 30.0
-value = 10.0
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
 
 [node name="WisMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox"]
 layout_mode = 2
@@ -373,11 +400,15 @@ layout_mode = 2
 text = "CHA"
 horizontal_alignment = 1
 
-[node name="ChaInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox"]
+[node name="ChaInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox"]
 layout_mode = 2
-min_value = 1.0
-max_value = 30.0
-value = 10.0
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
 
 [node name="ChaMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox"]
 layout_mode = 2
@@ -392,21 +423,23 @@ theme_override_constants/separation = 8
 layout_mode = 2
 text = "AC"
 
-[node name="AcInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
+[node name="AcInput" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(72, 0)
-max_value = 99.0
-value = 10.0
+script = ExtResource("6_intinput")
+MaxValue = 99
+Value = 10
 
 [node name="SpeedLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
 layout_mode = 2
 text = "Speed"
 
-[node name="SpeedInput" type="SpinBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
+[node name="SpeedInput" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(72, 0)
-max_value = 999.0
-value = 25.0
+script = ExtResource("6_intinput")
+MaxValue = 999
+Value = 25
 
 [node name="FtLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
 layout_mode = 2

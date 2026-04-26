@@ -41,7 +41,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     [Export] private OptionButton  _subspeciesInput;
     [Export] private OptionButton  _classInput;
     [Export] private OptionButton  _subclassInput;
-    [Export] private SpinBox       _levelInput;
+    [Export] private IntInput      _levelInput;
     [Export] private LineEdit      _strInput;
     [Export] private LineEdit      _dexInput;
     [Export] private LineEdit      _conInput;
@@ -105,9 +105,6 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _descInput.TextChanged       += () => Save();
         _notes.TextChanged           += () => Save();
         _notes.NavigateTo            += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
-
-        _levelInput.MinValue = 1;
-        _levelInput.MaxValue = 20;
 
         foreach (var (input, mod) in ScorePairs())
         {
@@ -209,7 +206,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _pc.SubspeciesId = GetOptionId(_subspeciesInput);
         _pc.ClassId      = GetOptionId(_classInput);
         _pc.SubclassId   = GetOptionId(_subclassInput);
-        _pc.Level        = (int)_levelInput.Value;
+        _pc.Level        = _levelInput.Value;
         _pc.Strength     = ParseScore(_strInput.Text);
         _pc.Dexterity    = ParseScore(_dexInput.Text);
         _pc.Constitution = ParseScore(_conInput.Text);
@@ -276,7 +273,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     private void RefreshSubclassVisibility()
     {
         _subclassInput.Visible = GetOptionId(_classInput).HasValue
-                              && (int)_levelInput.Value >= _subclassUnlockLevel;
+                              && _levelInput.Value >= _subclassUnlockLevel;
     }
 
     private void UpdateModLabels()
@@ -368,85 +365,8 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _db.PlayerCharacters.AddBackgroundAbility(_pc.Id, bg.FeatAbilityId.Value);
     }
 
-    private void LoadAliases()
-    {
-        if (_pc == null || _aliasChipsRow == null) return;
-        foreach (Node child in _aliasChipsRow.GetChildren())
-            child.QueueFree();
-
-        // ── chips row (above the input) ───────────────────────────────────────
-        var chipsRow = new HBoxContainer();
-        chipsRow.AddThemeConstantOverride("separation", 4);
-        _aliasChipsRow.AddChild(chipsRow);
-
-        var aliases = _db.EntityAliases.GetForEntity("playercharacter", _pc.Id);
-        foreach (var alias in aliases)
-        {
-            int    capturedId = alias.Id;
-
-            var normalStyle = new StyleBoxFlat { BgColor = new Color(0.18f, 0.18f, 0.18f) };
-            normalStyle.SetCornerRadiusAll(4);
-            normalStyle.ContentMarginLeft   = 6;
-            normalStyle.ContentMarginRight  = 4;
-            normalStyle.ContentMarginTop    = 2;
-            normalStyle.ContentMarginBottom = 2;
-
-            var hoverStyle = new StyleBoxFlat { BgColor = new Color(0.45f, 0.10f, 0.10f) };
-            hoverStyle.SetCornerRadiusAll(4);
-            hoverStyle.ContentMarginLeft   = 6;
-            hoverStyle.ContentMarginRight  = 4;
-            hoverStyle.ContentMarginTop    = 2;
-            hoverStyle.ContentMarginBottom = 2;
-
-            var chip = new PanelContainer();
-            chip.AddThemeStyleboxOverride("panel", normalStyle);
-
-            var row = new HBoxContainer();
-            row.AddThemeConstantOverride("separation", 2);
-
-            var label = new Label { Text = alias.Alias };
-            label.AddThemeFontSizeOverride("font_size", 11);
-
-            var removeBtn = new Button
-            {
-                Text                     = "×",
-                Flat                     = true,
-                MouseDefaultCursorShape  = CursorShape.PointingHand,
-            };
-            removeBtn.AddThemeFontSizeOverride("font_size", 11);
-            removeBtn.MouseEntered += () => chip.AddThemeStyleboxOverride("panel", hoverStyle);
-            removeBtn.MouseExited  += () => chip.AddThemeStyleboxOverride("panel", normalStyle);
-            removeBtn.Pressed      += () => { _db.EntityAliases.Delete(capturedId); LoadAliases(); };
-
-            row.AddChild(label);
-            row.AddChild(removeBtn);
-            chip.AddChild(row);
-            chipsRow.AddChild(chip);
-        }
-
-        // ── add input (below the chips) ───────────────────────────────────────
-        var addInput = new LineEdit
-        {
-            PlaceholderText     = "+ alias",
-            SizeFlagsHorizontal = SizeFlags.ExpandFill,
-            CustomMinimumSize   = new Vector2(80, 0),
-        };
-        addInput.TextSubmitted += text =>
-        {
-            string trimmed = text.Trim();
-            if (string.IsNullOrEmpty(trimmed)) return;
-            addInput.Text = "";
-            _db.EntityAliases.Add(new DndBuilder.Core.Models.EntityAlias
-            {
-                CampaignId = _pc.CampaignId,
-                EntityType = "playercharacter",
-                EntityId   = _pc.Id,
-                Alias      = trimmed,
-            });
-            LoadAliases();
-        };
-        _aliasChipsRow.AddChild(addInput);
-    }
+    private void LoadAliases() =>
+        AliasChipsHelper.Reload(_aliasChipsRow, _db, "playercharacter", _pc?.Id ?? 0, _pc?.CampaignId ?? 0, LoadAliases);
 
     private void LoadBackground()
     {

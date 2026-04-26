@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="3_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 [ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="5_typeopt"]
+[ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]
 
 [node name="AbilityDetailPane" type="ScrollContainer" unique_id=198427409 node_paths=PackedStringArray("_nameInput", "_typeInput", "_actionInput", "_triggerInput", "_recoveryIntervalInput", "_recoveryAmountInput", "_costsContainer", "_addCostButton", "_effectInput", "_notes", "_deleteButton", "_imageCarousel", "_poolTypeInput", "_pickCountModeRow", "_pickCountModeInput", "_formulaRow", "_choiceCountBaseInput", "_choiceCountAttrInput", "_choiceCountProfInput", "_choiceCountLevelInput", "_fixedOptionsSection", "_optionsContainer", "_choiceProgressionSection", "_choiceProgressionContainer", "_addChoiceProgressionButton")]
 visible = false
@@ -215,11 +216,12 @@ theme_override_constants/separation = 8
 layout_mode = 2
 text = "Base Amount"
 
-[node name="BaseInput" type="SpinBox" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer" unique_id=28269699]
+[node name="BaseInput" type="PanelContainer" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer/HBoxContainer" unique_id=28269699]
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
-min_value = -10.0
-max_value = 20.0
+script = ExtResource("6_intinput")
+MinValue = -10
+MaxValue = 20
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/FormulaRow/HBoxContainer" unique_id=1264949427]
 layout_mode = 2

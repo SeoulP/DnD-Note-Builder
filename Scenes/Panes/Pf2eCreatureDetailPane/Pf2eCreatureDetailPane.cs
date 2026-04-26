@@ -112,7 +112,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         _statsTab.AddChild(identRow);
 
         identRow.AddChild(new Label { Text = "Level" });
-        var lvlInput = MakeIntInput(_creature.Level, -1, 30, v => { _creature.Level = v; SaveCreature(); });
+        var lvlInput = IntInput.Make(_creature.Level, -1, 30, v => { _creature.Level = v; SaveCreature(); });
         lvlInput.CustomMinimumSize = new Vector2(60, 0);
         identRow.AddChild(lvlInput);
         identRow.AddChild(new Label { Text = "·" });
@@ -149,7 +149,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             (_creature.ChaMod, v => { _creature.ChaMod = v; SaveCreature(); }),
         })
         {
-            var inp = MakeIntInput(val, -99, 99, setter);
+            var inp = IntInput.Make(val, -99, 99, setter);
             inp.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             grid.AddChild(inp);
         }
@@ -203,14 +203,18 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         var chipFlow = MakeChipFlow();
         var addToggle = new Button { Text = "+", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = Control.CursorShape.PointingHand, TooltipText = "Add trait" };
 
+        section.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
+        var hdr = new HBoxContainer(); hdr.AddThemeConstantOverride("separation", 4);
+        var hdrLabel = new Label { Text = "Traits" }; hdrLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.55f, 0.55f));
+        hdr.AddChild(hdrLabel); hdr.AddChild(addToggle);
+        section.AddChild(hdr);
         section.AddChild(chipFlow);
 
         foreach (var t in traits)
         {
             int rId = t.Id; int tId = t.TraitTypeId;
-            chipFlow.AddChild(MakeTraitEntityChip(tId, () => _db.Pf2eCreatureTraits.Delete(rId)));
+            chipFlow.AddChild(MakeCompactTraitChip(tId, () => _db.Pf2eCreatureTraits.Delete(rId)));
         }
-        chipFlow.AddChild(addToggle);
 
         addToggle.Pressed += () =>
         {
@@ -234,9 +238,8 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                 {
                     int newId = _db.Pf2eCreatureTraits.Add(new Pf2eCreatureTrait { CreatureId = creatureId, TraitTypeId = tId });
                     int capId = tId; int capNewId = newId;
-                    var chip = MakeTraitEntityChip(capId, () => _db.Pf2eCreatureTraits.Delete(capNewId));
+                    var chip = MakeCompactTraitChip(capId, () => _db.Pf2eCreatureTraits.Delete(capNewId));
                     chipFlow.AddChild(chip);
-                    chipFlow.MoveChild(addToggle, chipFlow.GetChildCount() - 1);
                 }
                 catch { }
             });
@@ -263,23 +266,41 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             var row = new HBoxContainer(); row.AddThemeConstantOverride("separation", 6);
             var nameLabel = new Label { Text = L(_senseNames, senseTypeId), CustomMinimumSize = new Vector2(100, 0), VerticalAlignment = VerticalAlignment.Center };
             int capId = rowId; int capTypeId = senseTypeId; bool capPrecise = isPrecise; int? capRange = rangeFeet;
-            var rangeInp = MakeIntInput(rangeFeet ?? 0, 0, 999, v =>
+
+            void SaveSense() => _db.Pf2eCreatureSenses.Edit(new Pf2eCreatureSense { Id = capId, CreatureId = creatureId, SenseTypeId = capTypeId, IsPrecise = capPrecise, RangeFeet = capRange });
+
+            var rangeSlot = new HBoxContainer(); rangeSlot.AddThemeConstantOverride("separation", 2);
+            void ShowRangeInput(int initial)
             {
-                capRange = v > 0 ? (int?)v : null;
-                _db.Pf2eCreatureSenses.Edit(new Pf2eCreatureSense { Id = capId, CreatureId = creatureId, SenseTypeId = capTypeId, IsPrecise = capPrecise, RangeFeet = capRange });
-            }); rangeInp.CustomMinimumSize = new Vector2(60, 0);
+                foreach (Node child in rangeSlot.GetChildren()) child.QueueFree();
+                var inp = IntInput.Make(initial, 0, 999, v => { capRange = v > 0 ? (int?)v : null; SaveSense(); });
+                inp.CustomMinimumSize = new Vector2(60, 0);
+                rangeSlot.AddChild(inp);
+            }
+            if (rangeFeet.HasValue && rangeFeet.Value > 0)
+                ShowRangeInput(rangeFeet.Value);
+            else
+            {
+                var dash = new Label { Text = "—", VerticalAlignment = VerticalAlignment.Center,
+                    MouseDefaultCursorShape = CursorShape.PointingHand, MouseFilter = Control.MouseFilterEnum.Stop,
+                    TooltipText = "Click to set range (ft)" };
+                dash.AddThemeColorOverride("font_color", new Color(0.4f, 0.4f, 0.4f));
+                dash.GuiInput += e =>
+                {
+                    if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true })
+                    { dash.AcceptEvent(); ShowRangeInput(0); }
+                };
+                rangeSlot.AddChild(dash);
+            }
+
             var precChk = new CheckBox { Text = "Precise", ButtonPressed = isPrecise, FocusMode = Control.FocusModeEnum.None };
-            precChk.Toggled += v =>
-            {
-                capPrecise = v;
-                _db.Pf2eCreatureSenses.Edit(new Pf2eCreatureSense { Id = capId, CreatureId = creatureId, SenseTypeId = capTypeId, IsPrecise = capPrecise, RangeFeet = capRange });
-            };
+            precChk.Toggled += v => { capPrecise = v; SaveSense(); };
             var delBtn = new Button { Text = "×", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = CursorShape.PointingHand };
             var confirmDlg = DialogHelper.Make(text: "Remove this sense? This cannot be undone.");
             confirmDlg.Confirmed += () => { _db.Pf2eCreatureSenses.Delete(capId); row.QueueFree(); };
             row.AddChild(confirmDlg);
             delBtn.Pressed += () => DialogHelper.Show(confirmDlg);
-            row.AddChild(nameLabel); row.AddChild(rangeInp); row.AddChild(precChk); row.AddChild(delBtn);
+            row.AddChild(nameLabel); row.AddChild(rangeSlot); row.AddChild(precChk); row.AddChild(delBtn);
             senseRows.AddChild(row);
         }
 
@@ -294,7 +315,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                 senseOb.AddItem(kv.Value, kv.Key);
             if (senseOb.ItemCount == 0) return;
             int rangeVal = 0;
-            var rangeInp = MakeIntInput(0, 0, 999, v => rangeVal = v); rangeInp.CustomMinimumSize = new Vector2(60, 0);
+            var rangeInp = IntInput.Make(0, 0, 999, v => rangeVal = v); rangeInp.CustomMinimumSize = new Vector2(60, 0);
             var preciseChk = new CheckBox { Text = "Precise", ButtonPressed = true };
             var content = new HBoxContainer(); content.AddThemeConstantOverride("separation", 4);
             content.AddChild(senseOb); content.AddChild(rangeInp); content.AddChild(preciseChk);
@@ -324,7 +345,10 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         var addToggle = new Button { Text = "+", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = Control.CursorShape.PointingHand, TooltipText = "Add language" };
 
         section.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
-        section.AddChild(MakeDimLabel("Languages"));
+        var langHdr = new HBoxContainer(); langHdr.AddThemeConstantOverride("separation", 4);
+        var langHdrLabel = new Label { Text = "Languages" }; langHdrLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.55f, 0.55f));
+        langHdr.AddChild(langHdrLabel); langHdr.AddChild(addToggle);
+        section.AddChild(langHdr);
         section.AddChild(chipFlow);
 
         foreach (var lang in langs)
@@ -332,7 +356,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             int rId = lang.Id;
             chipFlow.AddChild(MakeEntityRowChip(TitleCase(L(_languageNames, lang.LanguageTypeId)), () => _db.Pf2eCreatureLanguages.Delete(rId)));
         }
-        chipFlow.AddChild(addToggle);
 
         addToggle.Pressed += () =>
         {
@@ -351,7 +374,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                     int cid = newId;
                     var chip = MakeEntityRowChip(nm, () => _db.Pf2eCreatureLanguages.Delete(cid));
                     chipFlow.AddChild(chip);
-                    chipFlow.MoveChild(addToggle, chipFlow.GetChildCount() - 1);
                 }
                 catch { }
             });
@@ -382,7 +404,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             var row = new HBoxContainer(); row.AddThemeConstantOverride("separation", 6);
             var nameLabel = new Label { Text = L(_skillNames, skillTypeId), CustomMinimumSize = new Vector2(100, 0), VerticalAlignment = VerticalAlignment.Center };
             int capRowId = rowId; int capTypeId = skillTypeId; string capNotes = notes ?? "";
-            var modInp = MakeIntInput(modifier, -99, 99, v =>
+            var modInp = IntInput.Make(modifier, -99, 99, v =>
                 _db.Pf2eCreatureSkills.Edit(new Pf2eCreatureSkill { Id = capRowId, CreatureId = creatureId, SkillTypeId = capTypeId, Modifier = v, Notes = capNotes }));
             modInp.CustomMinimumSize = new Vector2(60, 0);
             var delBtn = new Button { Text = "×", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
@@ -404,7 +426,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                 skillOb.AddItem(kv.Value, kv.Key);
             if (skillOb.ItemCount == 0) return;
             int modVal = 0;
-            var modInp = MakeIntInput(0, -99, 99, v => modVal = v); modInp.CustomMinimumSize = new Vector2(60, 0);
+            var modInp = IntInput.Make(0, -99, 99, v => modVal = v); modInp.CustomMinimumSize = new Vector2(60, 0);
             var content = new HBoxContainer(); content.AddThemeConstantOverride("separation", 4);
             content.AddChild(skillOb); content.AddChild(modInp);
             ShowAddPopup("Add Skill", content, () =>
@@ -432,7 +454,10 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         var addToggle = new Button { Text = "+", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = Control.CursorShape.PointingHand, TooltipText = "Add speed" };
 
         section.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
-        section.AddChild(MakeDimLabel("Speed"));
+        var speedHdr = new HBoxContainer(); speedHdr.AddThemeConstantOverride("separation", 4);
+        var speedHdrLabel = new Label { Text = "Speed" }; speedHdrLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.55f, 0.55f));
+        speedHdr.AddChild(speedHdrLabel); speedHdr.AddChild(addToggle);
+        section.AddChild(speedHdr);
         section.AddChild(chipFlow);
 
         foreach (var sp in speeds)
@@ -441,7 +466,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             string chipNm = TitleCase($"{L(_movementNames, sp.MovementTypeId)} {sp.SpeedFeet}ft");
             chipFlow.AddChild(MakeEntityRowChip(chipNm, () => _db.Pf2eCreatureSpeeds.Delete(rId)));
         }
-        chipFlow.AddChild(addToggle);
 
         addToggle.Pressed += () =>
         {
@@ -451,7 +475,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                 typeOb.AddItem(kv.Value, kv.Key);
             if (typeOb.ItemCount == 0) return;
             int feetVal = 25;
-            var feetInp = MakeIntInput(25, 0, 999, v => feetVal = v); feetInp.CustomMinimumSize = new Vector2(72, 0);
+            var feetInp = IntInput.Make(25, 0, 999, v => feetVal = v); feetInp.CustomMinimumSize = new Vector2(72, 0);
             var content = new HBoxContainer(); content.AddThemeConstantOverride("separation", 4);
             content.AddChild(typeOb); content.AddChild(feetInp);
             ShowAddPopup("Add Speed", content, () =>
@@ -465,7 +489,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                     int cid = newId; string capNm = chipNm;
                     var chip = MakeEntityRowChip(capNm, () => _db.Pf2eCreatureSpeeds.Delete(cid));
                     chipFlow.AddChild(chip);
-                    chipFlow.MoveChild(addToggle, chipFlow.GetChildCount() - 1);
                 }
                 catch { }
             });
@@ -481,7 +504,10 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         var addToggle = new Button { Text = "+", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = Control.CursorShape.PointingHand, TooltipText = "Add immunity" };
 
         section.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
-        section.AddChild(MakeDimLabel("Immunities"));
+        var immunHdr = new HBoxContainer(); immunHdr.AddThemeConstantOverride("separation", 4);
+        var immunHdrLabel = new Label { Text = "Immunities" }; immunHdrLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.55f, 0.55f));
+        immunHdr.AddChild(immunHdrLabel); immunHdr.AddChild(addToggle);
+        section.AddChild(immunHdr);
         section.AddChild(chipFlow);
 
         foreach (var im in _db.Pf2eCreatureImmunities.GetForCreature(creatureId))
@@ -492,7 +518,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                                 : im.Notes ?? "");
             chipFlow.AddChild(MakeEntityRowChip(nm, () => _db.Pf2eCreatureImmunities.Delete(rId)));
         }
-        chipFlow.AddChild(addToggle);
 
         addToggle.Pressed += () =>
         {
@@ -522,7 +547,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                     int cid = newId; string capNm = nm;
                     var chip = MakeEntityRowChip(capNm, () => _db.Pf2eCreatureImmunities.Delete(cid));
                     chipFlow.AddChild(chip);
-                    chipFlow.MoveChild(addToggle, chipFlow.GetChildCount() - 1);
                 }
                 catch { }
             });
@@ -538,7 +562,10 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         var addToggle = new Button { Text = "+", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = Control.CursorShape.PointingHand, TooltipText = "Add resistance" };
 
         section.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
-        section.AddChild(MakeDimLabel("Resistances"));
+        var resistHdr = new HBoxContainer(); resistHdr.AddThemeConstantOverride("separation", 4);
+        var resistHdrLabel = new Label { Text = "Resistances" }; resistHdrLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.55f, 0.55f));
+        resistHdr.AddChild(resistHdrLabel); resistHdr.AddChild(addToggle);
+        section.AddChild(resistHdr);
         section.AddChild(chipFlow);
 
         foreach (var r in _db.Pf2eCreatureResistances.GetForCreature(creatureId))
@@ -547,7 +574,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             string nm = TitleCase($"{L(_damageTypeNames, r.DamageTypeId)} {r.Value}");
             chipFlow.AddChild(MakeEntityRowChip(nm, () => _db.Pf2eCreatureResistances.Delete(rId)));
         }
-        chipFlow.AddChild(addToggle);
 
         addToggle.Pressed += () =>
         {
@@ -557,7 +583,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                 ob.AddItem(kv.Value, kv.Key);
             if (ob.ItemCount == 0) return;
             int resVal = 5;
-            var valInp = MakeIntInput(5, 0, 999, v => resVal = v); valInp.CustomMinimumSize = new Vector2(60, 0);
+            var valInp = IntInput.Make(5, 0, 999, v => resVal = v); valInp.CustomMinimumSize = new Vector2(60, 0);
             var content = new HBoxContainer(); content.AddThemeConstantOverride("separation", 4);
             content.AddChild(ob); content.AddChild(valInp);
             ShowAddPopup("Add Resistance", content, () =>
@@ -571,7 +597,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                     int cid = newId; string capNm = nm;
                     var chip = MakeEntityRowChip(capNm, () => _db.Pf2eCreatureResistances.Delete(cid));
                     chipFlow.AddChild(chip);
-                    chipFlow.MoveChild(addToggle, chipFlow.GetChildCount() - 1);
                 }
                 catch { }
             });
@@ -587,7 +612,10 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         var addToggle = new Button { Text = "+", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = Control.CursorShape.PointingHand, TooltipText = "Add weakness" };
 
         section.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
-        section.AddChild(MakeDimLabel("Weaknesses"));
+        var weakHdr = new HBoxContainer(); weakHdr.AddThemeConstantOverride("separation", 4);
+        var weakHdrLabel = new Label { Text = "Weaknesses" }; weakHdrLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.55f, 0.55f));
+        weakHdr.AddChild(weakHdrLabel); weakHdr.AddChild(addToggle);
+        section.AddChild(weakHdr);
         section.AddChild(chipFlow);
 
         foreach (var w in _db.Pf2eCreatureWeaknesses.GetForCreature(creatureId))
@@ -596,7 +624,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             string nm = TitleCase($"{L(_damageTypeNames, w.DamageTypeId)} {w.Value}");
             chipFlow.AddChild(MakeEntityRowChip(nm, () => _db.Pf2eCreatureWeaknesses.Delete(rId)));
         }
-        chipFlow.AddChild(addToggle);
 
         addToggle.Pressed += () =>
         {
@@ -606,7 +633,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                 ob.AddItem(kv.Value, kv.Key);
             if (ob.ItemCount == 0) return;
             int weakVal = 5;
-            var valInp = MakeIntInput(5, 0, 999, v => weakVal = v); valInp.CustomMinimumSize = new Vector2(60, 0);
+            var valInp = IntInput.Make(5, 0, 999, v => weakVal = v); valInp.CustomMinimumSize = new Vector2(60, 0);
             var content = new HBoxContainer(); content.AddThemeConstantOverride("separation", 4);
             content.AddChild(ob); content.AddChild(valInp);
             ShowAddPopup("Add Weakness", content, () =>
@@ -620,7 +647,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
                     int cid = newId; string capNm = nm;
                     var chip = MakeEntityRowChip(capNm, () => _db.Pf2eCreatureWeaknesses.Delete(cid));
                     chipFlow.AddChild(chip);
-                    chipFlow.MoveChild(addToggle, chipFlow.GetChildCount() - 1);
                 }
                 catch { }
             });
@@ -714,7 +740,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
 
         StyleBoxFlat MakeHdrBox(bool hover, bool closed) => new StyleBoxFlat
         {
-            BgColor                 = hover ? new Color(0.26f, 0.28f, 0.35f) : new Color(0.20f, 0.22f, 0.28f),
+            BgColor                 = hover ? ThemeManager.Instance.Current.Hover : new Color(1, 1, 1, 0.06f),
             ContentMarginLeft       = 8, ContentMarginRight = 8, ContentMarginTop = 5, ContentMarginBottom = 5,
             CornerRadiusTopLeft     = R, CornerRadiusTopRight    = R,
             CornerRadiusBottomLeft  = closed ? R : 0,
@@ -774,7 +800,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         hdrPanel.AddChild(hdrHbox);
 
         // ── Body ──────────────────────────────────────────────────────────────
-        var normalBodyStyle = new StyleBoxFlat { BgColor = new Color(0.15f, 0.17f, 0.22f), ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 6, ContentMarginBottom = 6, CornerRadiusBottomLeft = R, CornerRadiusBottomRight = R };
+        var normalBodyStyle = new StyleBoxFlat { BgColor = ThemeManager.Instance.Current.NavBar, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 6, ContentMarginBottom = 6, CornerRadiusBottomLeft = R, CornerRadiusBottomRight = R };
         var redBodyStyle    = new StyleBoxFlat { BgColor = new Color(0.36f, 0.08f, 0.08f), ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 6, ContentMarginBottom = 6, CornerRadiusBottomLeft = R, CornerRadiusBottomRight = R };
 
         var bodyPanel = new PanelContainer(); bodyPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill; bodyPanel.Visible = false;
@@ -803,7 +829,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
 
         StyleBoxFlat MakeRedHdrBox(bool closed) => new StyleBoxFlat
         {
-            BgColor                 = new Color(0.50f, 0.12f, 0.12f),
+            BgColor                 = ThemeManager.DeleteHoverColor,
             ContentMarginLeft       = 8, ContentMarginRight = 8, ContentMarginTop = 5, ContentMarginBottom = 5,
             CornerRadiusTopLeft     = R, CornerRadiusTopRight    = R,
             CornerRadiusBottomLeft  = closed ? R : 0,
@@ -940,16 +966,16 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             meleeOb.Selected = !a.IsMelee.HasValue ? 0 : a.IsMelee.Value == 1 ? 1 : 2;
             meleeOb.ItemSelected += idx => { int sel = (int)idx; a.IsMelee = sel == 0 ? (int?)null : sel == 1 ? 1 : 0; _db.Pf2eCreatureAbilities.Edit(a); };
             var rangeLabel = new Label { Text = "Range:", VerticalAlignment = VerticalAlignment.Center }; rangeLabel.AddThemeColorOverride("font_color", new Color(0.62f, 0.62f, 0.62f));
-            var rangeInp = MakeIntInput(a.RangeFeet ?? 0, 0, 9999, v => { a.RangeFeet = v > 0 ? (int?)v : null; _db.Pf2eCreatureAbilities.Edit(a); }); rangeInp.CustomMinimumSize = new Vector2(72, 0);
+            var rangeInp = IntInput.Make(a.RangeFeet ?? 0, 0, 9999, v => { a.RangeFeet = v > 0 ? (int?)v : null; _db.Pf2eCreatureAbilities.Edit(a); }); rangeInp.CustomMinimumSize = new Vector2(72, 0);
             var rangeFtLbl = new Label { Text = "ft", VerticalAlignment = VerticalAlignment.Center };
             meleeRow.AddChild(meleeLabel); meleeRow.AddChild(meleeOb); meleeRow.AddChild(rangeLabel); meleeRow.AddChild(rangeInp); meleeRow.AddChild(rangeFtLbl);
             body.AddChild(meleeRow);
 
             var atkRow = new HBoxContainer(); atkRow.AddThemeConstantOverride("separation", 4);
             var atkLabel = new Label { Text = "Attack:", VerticalAlignment = VerticalAlignment.Center }; atkLabel.AddThemeColorOverride("font_color", new Color(0.62f, 0.62f, 0.62f));
-            var atk1 = MakeIntInput(a.AttackBonus  ?? 0, -99, 99, v => { a.AttackBonus  = v; _db.Pf2eCreatureAbilities.Edit(a); }); atk1.CustomMinimumSize = new Vector2(64, 0);
-            var atk2 = MakeIntInput(a.AttackBonus2 ?? 0, -99, 99, v => { a.AttackBonus2 = v; _db.Pf2eCreatureAbilities.Edit(a); }); atk2.CustomMinimumSize = new Vector2(64, 0);
-            var atk3 = MakeIntInput(a.AttackBonus3 ?? 0, -99, 99, v => { a.AttackBonus3 = v; _db.Pf2eCreatureAbilities.Edit(a); }); atk3.CustomMinimumSize = new Vector2(64, 0);
+            var atk1 = IntInput.Make(a.AttackBonus  ?? 0, -99, 99, v => { a.AttackBonus  = v; _db.Pf2eCreatureAbilities.Edit(a); }); atk1.CustomMinimumSize = new Vector2(64, 0);
+            var atk2 = IntInput.Make(a.AttackBonus2 ?? 0, -99, 99, v => { a.AttackBonus2 = v; _db.Pf2eCreatureAbilities.Edit(a); }); atk2.CustomMinimumSize = new Vector2(64, 0);
+            var atk3 = IntInput.Make(a.AttackBonus3 ?? 0, -99, 99, v => { a.AttackBonus3 = v; _db.Pf2eCreatureAbilities.Edit(a); }); atk3.CustomMinimumSize = new Vector2(64, 0);
             atkRow.AddChild(atkLabel); atkRow.AddChild(atk1); atkRow.AddChild(new Label { Text = "/" }); atkRow.AddChild(atk2); atkRow.AddChild(new Label { Text = "/" }); atkRow.AddChild(atk3);
             body.AddChild(atkRow);
             body.AddChild(BuildStrikeDamageSection(abilityId));
@@ -961,9 +987,9 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             var tradLabel = new Label { Text = "Tradition:", VerticalAlignment = VerticalAlignment.Center }; tradLabel.AddThemeColorOverride("font_color", new Color(0.62f, 0.62f, 0.62f));
             var tradOb   = MakeTypeDropdown(_traditionNames, a.TraditionId ?? 0, id => { a.TraditionId = id > 0 ? (int?)id : null; _db.Pf2eCreatureAbilities.Edit(a); });
             var dcLabel  = new Label { Text = "DC:",  VerticalAlignment = VerticalAlignment.Center }; dcLabel.AddThemeColorOverride("font_color", new Color(0.62f, 0.62f, 0.62f));
-            var dcInp    = MakeIntInput(a.SpellDc     ?? 0,   0, 99, v => { a.SpellDc     = v > 0 ? (int?)v : null; _db.Pf2eCreatureAbilities.Edit(a); }); dcInp.CustomMinimumSize    = new Vector2(60, 0);
+            var dcInp    = IntInput.Make(a.SpellDc     ?? 0,   0, 99, v => { a.SpellDc     = v > 0 ? (int?)v : null; _db.Pf2eCreatureAbilities.Edit(a); }); dcInp.CustomMinimumSize    = new Vector2(60, 0);
             var spAtkLbl = new Label { Text = "Atk:", VerticalAlignment = VerticalAlignment.Center }; spAtkLbl.AddThemeColorOverride("font_color", new Color(0.62f, 0.62f, 0.62f));
-            var spAtkInp = MakeIntInput(a.SpellAttack ?? 0, -99, 99, v => { a.SpellAttack = v;            _db.Pf2eCreatureAbilities.Edit(a); }); spAtkInp.CustomMinimumSize = new Vector2(60, 0);
+            var spAtkInp = IntInput.Make(a.SpellAttack ?? 0, -99, 99, v => { a.SpellAttack = v;            _db.Pf2eCreatureAbilities.Edit(a); }); spAtkInp.CustomMinimumSize = new Vector2(60, 0);
             tradRow.AddChild(tradLabel); tradRow.AddChild(tradOb); tradRow.AddChild(dcLabel); tradRow.AddChild(dcInp); tradRow.AddChild(spAtkLbl); tradRow.AddChild(spAtkInp);
             body.AddChild(tradRow);
         }
@@ -1070,7 +1096,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         {
             var row = new HBoxContainer(); row.AddThemeConstantOverride("separation", 4);
 
-            var diceInp = MakeIntInput(d.DiceCount, 0, 99, v => { d.DiceCount = v; _db.Pf2eStrikeDamage.Edit(d); });
+            var diceInp = IntInput.Make(d.DiceCount, 0, 99, v => { d.DiceCount = v; _db.Pf2eStrikeDamage.Edit(d); });
             diceInp.CustomMinimumSize = new Vector2(52, 0);
 
             var dieOb    = MakeTypeDropdown(_dieTypeNames,    d.DieTypeId,    id => { d.DieTypeId    = id; _db.Pf2eStrikeDamage.Edit(d); });
@@ -1078,7 +1104,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
 
             var bonLabel = new Label { Text = "+", VerticalAlignment = VerticalAlignment.Center };
             bonLabel.AddThemeColorOverride("font_color", new Color(0.62f, 0.62f, 0.62f));
-            var bonInp = MakeIntInput(d.Bonus, -99, 99, v => { d.Bonus = v; _db.Pf2eStrikeDamage.Edit(d); });
+            var bonInp = IntInput.Make(d.Bonus, -99, 99, v => { d.Bonus = v; _db.Pf2eStrikeDamage.Edit(d); });
             bonInp.CustomMinimumSize = new Vector2(52, 0);
 
             var delBtn = new Button { Text = "×", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = CursorShape.PointingHand };
@@ -1139,6 +1165,17 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
     private void LoadDescription()
     {
         ClearContainer(_descriptionTab);
+
+        var hbox = new HBoxContainer();
+        hbox.AddThemeConstantOverride("separation", 8);
+        hbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        hbox.SizeFlagsVertical   = SizeFlags.ExpandFill;
+        _descriptionTab.AddChild(hbox);
+
+        var carousel = new ImageCarousel();
+        hbox.AddChild(carousel);
+        carousel.Setup(EntityType.Pf2eCreature, _creature.Id, _db);
+
         var descEdit = new TextEdit
         {
             Text                = CleanText(_creature.Description),
@@ -1149,7 +1186,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             CustomMinimumSize   = new Vector2(0, 120),
         };
         descEdit.TextChanged += () => { _creature.Description = descEdit.Text; SaveCreature(); };
-        _descriptionTab.AddChild(descEdit);
+        hbox.AddChild(descEdit);
     }
 
     // ── Ability card style ────────────────────────────────────────────────────
@@ -1202,46 +1239,6 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         return ob;
     }
 
-    private static Control MakeIntInput(int value, int min, int max, Action<int> onChange)
-    {
-        int current = Math.Clamp(value, min, max);
-
-        var panel = new PanelContainer();
-        panel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor                = new Color(0.12f, 0.14f, 0.19f),
-            BorderWidthLeft = 1, BorderWidthRight = 1, BorderWidthTop = 1, BorderWidthBottom = 1,
-            BorderColor            = new Color(0.32f, 0.35f, 0.45f),
-            CornerRadiusTopLeft    = 3, CornerRadiusTopRight    = 3,
-            CornerRadiusBottomLeft = 3, CornerRadiusBottomRight = 3,
-            ContentMarginLeft = 0, ContentMarginRight = 0, ContentMarginTop = 0, ContentMarginBottom = 0,
-        });
-
-        var hbox    = new HBoxContainer(); hbox.AddThemeConstantOverride("separation", 0);
-        var edit    = new LineEdit { Text = current.ToString(), SizeFlagsHorizontal = SizeFlags.ExpandFill, Alignment = HorizontalAlignment.Center };
-        var noStyle = new StyleBoxFlat { DrawCenter = false, BorderWidthLeft = 0, BorderWidthRight = 0, BorderWidthTop = 0, BorderWidthBottom = 0 };
-        edit.AddThemeStyleboxOverride("normal",    noStyle);
-        edit.AddThemeStyleboxOverride("focus",     noStyle);
-        edit.AddThemeStyleboxOverride("read_only", noStyle);
-        edit.AddThemeStyleboxOverride("hover",     noStyle);
-
-        var divider  = new ColorRect { Color = new Color(0.32f, 0.35f, 0.45f), CustomMinimumSize = new Vector2(1, 0), SizeFlagsVertical = SizeFlags.ExpandFill };
-        var arrowCol = new VBoxContainer(); arrowCol.AddThemeConstantOverride("separation", 0); arrowCol.CustomMinimumSize = new Vector2(16, 0);
-        var upBtn    = new Button { Text = "▲", Flat = true, FocusMode = Control.FocusModeEnum.None }; upBtn.AddThemeFontSizeOverride("font_size", 7);   upBtn.SizeFlagsVertical   = SizeFlags.ExpandFill;
-        var downBtn  = new Button { Text = "▼", Flat = true, FocusMode = Control.FocusModeEnum.None }; downBtn.AddThemeFontSizeOverride("font_size", 7); downBtn.SizeFlagsVertical = SizeFlags.ExpandFill;
-
-        void Commit(string text) { if (int.TryParse(text, out int v)) { current = Math.Clamp(v, min, max); edit.Text = current.ToString(); onChange(current); } }
-        upBtn.Pressed      += () => { current = Math.Min(max, current + 1); edit.Text = current.ToString(); onChange(current); };
-        downBtn.Pressed    += () => { current = Math.Max(min, current - 1); edit.Text = current.ToString(); onChange(current); };
-        edit.FocusExited   += () => Commit(edit.Text);
-        edit.TextSubmitted += t  => Commit(t);
-
-        arrowCol.AddChild(upBtn); arrowCol.AddChild(downBtn);
-        hbox.AddChild(edit); hbox.AddChild(divider); hbox.AddChild(arrowCol);
-        panel.AddChild(hbox);
-        return panel;
-    }
-
     private static VBoxContainer MakeEditableStatPair(string key, int value, int min, int max, Action<int> onChange)
     {
         var vbox = new VBoxContainer(); vbox.AddThemeConstantOverride("separation", 2);
@@ -1249,7 +1246,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         k.AddThemeFontSizeOverride("font_size", 10);
         k.AddThemeColorOverride("font_color", new Color(0.62f, 0.62f, 0.62f));
         vbox.AddChild(k);
-        vbox.AddChild(MakeIntInput(value, min, max, onChange));
+        vbox.AddChild(IntInput.Make(value, min, max, onChange));
         return vbox;
     }
 
@@ -1267,6 +1264,39 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         if (_traitDescriptions.TryGetValue(traitTypeId, out var desc) && !string.IsNullOrWhiteSpace(desc))
             row.TooltipText = desc;
         return row;
+    }
+
+    // Compact trait chip — text-width only, no ExpandFill. Used in the creature Traits section.
+    private Control MakeCompactTraitChip(int traitTypeId, Action onDelete)
+    {
+        var deleteHover = new StyleBoxFlat { BgColor = ThemeManager.DeleteHoverColor };
+        deleteHover.SetCornerRadiusAll(4);
+
+        var chip = new PanelContainer();
+        if (_traitDescriptions.TryGetValue(traitTypeId, out var desc) && !string.IsNullOrWhiteSpace(desc))
+            chip.TooltipText = desc;
+
+        var inner = new MarginContainer();
+        inner.AddThemeConstantOverride("margin_left",   4);
+        inner.AddThemeConstantOverride("margin_right",  4);
+        inner.AddThemeConstantOverride("margin_top",    3);
+        inner.AddThemeConstantOverride("margin_bottom", 3);
+
+        var hrow = new HBoxContainer(); hrow.AddThemeConstantOverride("separation", 2);
+        var lbl = new Label { Text = TitleCase(L(_traitNames, traitTypeId)) };
+        lbl.AddThemeFontSizeOverride("font_size", 12);
+        var rmBtn = new Button { Text = "×", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = CursorShape.PointingHand };
+        rmBtn.AddThemeFontSizeOverride("font_size", 11);
+        rmBtn.MouseEntered += () => chip.AddThemeStyleboxOverride("panel", deleteHover);
+        rmBtn.MouseExited  += () => chip.RemoveThemeStyleboxOverride("panel");
+        var confirmDlg = DialogHelper.Make(text: "Remove this trait? This cannot be undone.");
+        confirmDlg.Confirmed += () => { onDelete(); chip.QueueFree(); };
+        chip.AddChild(confirmDlg);
+        rmBtn.Pressed += () => DialogHelper.Show(confirmDlg);
+        hrow.AddChild(lbl); hrow.AddChild(rmBtn);
+        inner.AddChild(hrow);
+        chip.AddChild(inner);
+        return chip;
     }
 
     // ── Trait pills (read-only, used in Abilities tab) ────────────────────────

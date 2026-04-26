@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://cx5d0l4bcrqvh" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="3_typeopt"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
+[ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_spellcast"]
 allow_unpress = true
@@ -275,12 +276,13 @@ custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 text = "Skill Choices"
 
-[node name="SkillChoicesCountInput" type="SpinBox" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillChoicesRow" unique_id=1858666030]
+[node name="SkillChoicesCountInput" type="PanelContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillChoicesRow" unique_id=1858666030]
 custom_minimum_size = Vector2(70, 0)
 layout_mode = 2
-min_value = 1.0
-max_value = 6.0
-value = 2.0
+script = ExtResource("6_intinput")
+MinValue = 1
+MaxValue = 6
+Value = 2
 
 [node name="SkillOptionsSec" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent" unique_id=1569126155]
 layout_mode = 2
@@ -392,12 +394,13 @@ alignment = 0
 layout_mode = 2
 text = "Unlocks at level"
 
-[node name="UnlockLevelInput" type="SpinBox" parent="Margin/VBox/ContentHBox/Fields/SubclassesHeader" unique_id=1847786882]
+[node name="UnlockLevelInput" type="PanelContainer" parent="Margin/VBox/ContentHBox/Fields/SubclassesHeader" unique_id=1847786882]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-value = 3.0
+script = ExtResource("6_intinput")
+MinValue = 1
+MaxValue = 20
+Value = 3
 
 [node name="SubclassesInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=43671794]
 layout_mode = 2

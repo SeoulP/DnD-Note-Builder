@@ -35,7 +35,7 @@ public partial class AbilityDetailPane : ScrollContainer
     [Export] private Control       _pickCountModeRow;
     [Export] private OptionButton  _pickCountModeInput;
     [Export] private Control       _formulaRow;
-    [Export] private SpinBox       _choiceCountBaseInput;
+    [Export] private IntInput      _choiceCountBaseInput;
     [Export] private OptionButton  _choiceCountAttrInput;
     [Export] private CheckBox      _choiceCountProfInput;
     [Export] private OptionButton  _choiceCountLevelInput;
@@ -150,7 +150,7 @@ public partial class AbilityDetailPane : ScrollContainer
         _ability.Notes          = _notes.Text;
         _ability.ChoicePoolType        = LabelToPoolType(_poolTypes[_poolTypeInput.Selected]);
         _ability.PickCountMode         = _pickCountModeInput.Selected == 1 ? "progression" : "formula";
-        _ability.ChoiceCountBase       = (int)_choiceCountBaseInput.Value;
+        _ability.ChoiceCountBase       = _choiceCountBaseInput.Value;
         _ability.ChoiceCountAttribute  = _attrValues[_choiceCountAttrInput.Selected];
         _ability.ChoiceCountAddProf    = _choiceCountProfInput.ButtonPressed;
         _ability.ChoiceCountAddLevel   = _levelValues[_choiceCountLevelInput.Selected];
@@ -251,7 +251,12 @@ public partial class AbilityDetailPane : ScrollContainer
 
         var row        = new HBoxContainer();
         var typePicker = new TypeOptionButton { SizeFlagsHorizontal = SizeFlags.ExpandFill, NoneText = "(pick resource)", AutoSelectOnAdd = true };
-        var amountInput = new SpinBox { MinValue = 1, MaxValue = 99, Value = amount, Step = 1, CustomMinimumSize = new Vector2(72, 0) };
+        var amountInput = IntInput.Make(amount, 1, 99, val => {
+            amount = val;
+            if (!pending && resourceTypeId != -1)
+                _db.Abilities.UpdateCostAmount(_ability.Id, resourceTypeId, amount);
+        });
+        amountInput.CustomMinimumSize = new Vector2(72, 0);
         var delBtn     = new Button { Text = "×", Flat = true };
 
         row.AddThemeConstantOverride("separation", 4);
@@ -287,13 +292,6 @@ public partial class AbilityDetailPane : ScrollContainer
             }
         };
 
-        amountInput.ValueChanged += val =>
-        {
-            amount = (int)val;
-            if (!pending && resourceTypeId != -1)
-                _db.Abilities.UpdateCostAmount(_ability.Id, resourceTypeId, amount);
-        };
-
         delBtn.Pressed += () =>
         {
             if (!pending && resourceTypeId != -1)
@@ -315,21 +313,12 @@ public partial class AbilityDetailPane : ScrollContainer
             row.AddThemeConstantOverride("separation", 6);
 
             var levelLabel = new Label { Text = "Level", CustomMinimumSize = new Vector2(42, 0) };
-            var levelInput = new SpinBox { MinValue = 1, MaxValue = 20, Value = cap.RequiredLevel, Step = 1, CustomMinimumSize = new Vector2(80, 0) };
+            var levelInput = IntInput.Make(cap.RequiredLevel, 1, 20, val => { cap.RequiredLevel = val; _db.Abilities.EditChoiceProgression(cap); });
+            levelInput.CustomMinimumSize = new Vector2(80, 0);
             var countLabel = new Label { Text = "Picks", CustomMinimumSize = new Vector2(42, 0) };
-            var countInput = new SpinBox { MinValue = 0, MaxValue = 20, Value = cap.ChoiceCount, Step = 1, CustomMinimumSize = new Vector2(80, 0) };
+            var countInput = IntInput.Make(cap.ChoiceCount, 0, 20, val => { cap.ChoiceCount = val; _db.Abilities.EditChoiceProgression(cap); });
+            countInput.CustomMinimumSize = new Vector2(80, 0);
             var delBtn = new Button { Text = "×", Flat = true };
-
-            levelInput.ValueChanged += _ =>
-            {
-                cap.RequiredLevel = (int)levelInput.Value;
-                _db.Abilities.EditChoiceProgression(cap);
-            };
-            countInput.ValueChanged += _ =>
-            {
-                cap.ChoiceCount = (int)countInput.Value;
-                _db.Abilities.EditChoiceProgression(cap);
-            };
             delBtn.Pressed += () =>
             {
                 _db.Abilities.DeleteChoiceProgression(cap.Id);

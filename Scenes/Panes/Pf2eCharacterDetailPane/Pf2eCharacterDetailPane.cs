@@ -22,9 +22,9 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
     [Export] private OptionButton  _ancestryInput;
     [Export] private OptionButton  _heritageInput;
     [Export] private OptionButton  _classInput;
-    [Export] private SpinBox       _levelInput;
-    [Export] private SpinBox       _currentHpInput;
-    [Export] private SpinBox       _maxHpInput;
+    [Export] private IntInput      _levelInput;
+    [Export] private IntInput      _currentHpInput;
+    [Export] private IntInput      _maxHpInput;
     [Export] private Button        _heroPip1;
     [Export] private Button        _heroPip2;
     [Export] private Button        _heroPip3;
@@ -41,10 +41,10 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
     [Export] private Control _flavorTab;
 
     // ── Stats tab ─────────────────────────────────────────────────────────────
-    [Export] private SpinBox _strInput, _dexInput, _conInput, _intInput, _wisInput, _chaInput;
-    [Export] private Label   _strMod,  _dexMod,  _conMod,  _intMod,  _wisMod,  _chaMod;
-    [Export] private SpinBox _acInput;
-    [Export] private SpinBox _speedInput;
+    [Export] private LineEdit _strInput, _dexInput, _conInput, _intInput, _wisInput, _chaInput;
+    [Export] private Label    _strMod,  _dexMod,  _conMod,  _intMod,  _wisMod,  _chaMod;
+    [Export] private IntInput _acInput;
+    [Export] private IntInput _speedInput;
     [Export] private OptionButton _fortRank, _refRank, _willRank, _percRank;
     [Export] private Label        _fortMod,  _refMod,  _willMod,  _percMod;
 
@@ -79,10 +79,11 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         _heroPip2.Pressed += () => { if (!_loading) SavePf2e(); };
         _heroPip3.Pressed += () => { if (!_loading) SavePf2e(); };
 
-        foreach (var (sb, lbl) in AbilityPairs())
+        foreach (var (inp, lbl) in AbilityPairs())
         {
-            var s = sb; var l = lbl;
-            s.ValueChanged += v => { if (_loading) return; l.Text = ModStr((int)v); SavePf2e(); RefreshSaveMods(); LoadSkills(); };
+            var input = inp; var l = lbl;
+            input.TextChanged += text => { if (_loading) return; if (int.TryParse(text, out int v) && v >= 1 && v <= 30) { l.Text = ModStr(v); SavePf2e(); RefreshSaveMods(); LoadSkills(); } };
+            input.FocusExited += () => { int val = ParseScore(input.Text); input.Text = val.ToString(); l.Text = ModStr(val); SavePf2e(); RefreshSaveMods(); LoadSkills(); };
         }
 
         _descInput.TextChanged += () => { if (!_loading && _pc != null) { _pc.Description = _descInput.Text; _db.Pf2eCharacters.EditBase(_pc); } };
@@ -99,7 +100,6 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         _flavorTabBtn.Pressed += () => SetActiveTab("Flavor");
 
         PopulateRankDropdowns();
-        ConfigureSpinBoxes();
     }
 
     public override void _Notification(int what)
@@ -140,12 +140,12 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         _maxHpInput.Value      = pc.MaxHp;
         SetHeroPips(pc.HeroPoints);
 
-        _strInput.Value = pc.Strength;    _strMod.Text = ModStr(pc.Strength);
-        _dexInput.Value = pc.Dexterity;   _dexMod.Text = ModStr(pc.Dexterity);
-        _conInput.Value = pc.Constitution; _conMod.Text = ModStr(pc.Constitution);
-        _intInput.Value = pc.Intelligence; _intMod.Text = ModStr(pc.Intelligence);
-        _wisInput.Value = pc.Wisdom;      _wisMod.Text = ModStr(pc.Wisdom);
-        _chaInput.Value = pc.Charisma;    _chaMod.Text = ModStr(pc.Charisma);
+        _strInput.Text = pc.Strength.ToString();     _strMod.Text = ModStr(pc.Strength);
+        _dexInput.Text = pc.Dexterity.ToString();    _dexMod.Text = ModStr(pc.Dexterity);
+        _conInput.Text = pc.Constitution.ToString();  _conMod.Text = ModStr(pc.Constitution);
+        _intInput.Text = pc.Intelligence.ToString();  _intMod.Text = ModStr(pc.Intelligence);
+        _wisInput.Text = pc.Wisdom.ToString();        _wisMod.Text = ModStr(pc.Wisdom);
+        _chaInput.Text = pc.Charisma.ToString();      _chaMod.Text = ModStr(pc.Charisma);
 
         _acInput.Value    = pc.Ac;
         _speedInput.Value = pc.SpeedFeet;
@@ -225,11 +225,11 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
 
     private void RefreshSaveMods()
     {
-        int lvl = (int)_levelInput.Value;
-        _fortMod.Text = SignStr(Mod((int)_conInput.Value) + ProfBonus(_fortRank.Selected, lvl));
-        _refMod.Text  = SignStr(Mod((int)_dexInput.Value) + ProfBonus(_refRank.Selected,  lvl));
-        _willMod.Text = SignStr(Mod((int)_wisInput.Value) + ProfBonus(_willRank.Selected,  lvl));
-        _percMod.Text = SignStr(Mod((int)_wisInput.Value) + ProfBonus(_percRank.Selected,  lvl));
+        int lvl = _levelInput.Value;
+        _fortMod.Text = SignStr(Mod(ParseScore(_conInput.Text)) + ProfBonus(_fortRank.Selected, lvl));
+        _refMod.Text  = SignStr(Mod(ParseScore(_dexInput.Text)) + ProfBonus(_refRank.Selected,  lvl));
+        _willMod.Text = SignStr(Mod(ParseScore(_wisInput.Text)) + ProfBonus(_willRank.Selected,  lvl));
+        _percMod.Text = SignStr(Mod(ParseScore(_wisInput.Text)) + ProfBonus(_percRank.Selected,  lvl));
     }
 
     // ── Skills tab ────────────────────────────────────────────────────────────
@@ -255,7 +255,7 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
 
         foreach (Node child in _skillsContainer.GetChildren()) child.QueueFree();
 
-        int lvl = (int)_levelInput.Value;
+        int lvl = _levelInput.Value;
         foreach (var st in skillTypes)
         {
             int    rankValue = rankValueBySkill.TryGetValue(st.Id, out int rv) ? rv : 0;
@@ -289,7 +289,7 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
             rankDd.ItemSelected += newIdx =>
             {
                 int newRank  = (int)newIdx;
-                totalLabel.Text = SignStr(capAbilMod + ProfBonus(newRank, (int)_levelInput.Value));
+                totalLabel.Text = SignStr(capAbilMod + ProfBonus(newRank, _levelInput.Value));
                 UpsertSkill(capId, newRank, charSkillIdBySkill, ranks);
             };
 
@@ -318,46 +318,8 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
 
     // ── Aliases ───────────────────────────────────────────────────────────────
 
-    private void LoadAliases()
-    {
-        if (_pc == null || _aliasChipsRow == null) return;
-        foreach (Node child in _aliasChipsRow.GetChildren()) child.QueueFree();
-
-        var chipsRow = new HBoxContainer();
-        chipsRow.AddThemeConstantOverride("separation", 4);
-        _aliasChipsRow.AddChild(chipsRow);
-
-        foreach (var alias in _db.EntityAliases.GetForEntity("pf2e_pc", _pc.Id))
-        {
-            int capturedId = alias.Id;
-            var normal = new StyleBoxFlat { BgColor = new Color(0.18f, 0.18f, 0.18f) };
-            normal.SetCornerRadiusAll(4); normal.ContentMarginLeft = 6; normal.ContentMarginRight = 4; normal.ContentMarginTop = 2; normal.ContentMarginBottom = 2;
-            var hover  = new StyleBoxFlat { BgColor = new Color(0.45f, 0.10f, 0.10f) };
-            hover.SetCornerRadiusAll(4); hover.ContentMarginLeft = 6; hover.ContentMarginRight = 4; hover.ContentMarginTop = 2; hover.ContentMarginBottom = 2;
-
-            var chip    = new PanelContainer(); chip.AddThemeStyleboxOverride("panel", normal);
-            var chipRow = new HBoxContainer();  chipRow.AddThemeConstantOverride("separation", 2);
-            var lbl     = new Label { Text = alias.Alias }; lbl.AddThemeFontSizeOverride("font_size", 11);
-            var rmBtn   = new Button { Text = "×", Flat = true, MouseDefaultCursorShape = CursorShape.PointingHand };
-            rmBtn.AddThemeFontSizeOverride("font_size", 11);
-            rmBtn.MouseEntered += () => chip.AddThemeStyleboxOverride("panel", hover);
-            rmBtn.MouseExited  += () => chip.AddThemeStyleboxOverride("panel", normal);
-            rmBtn.Pressed      += () => { _db.EntityAliases.Delete(capturedId); LoadAliases(); };
-            chipRow.AddChild(lbl); chipRow.AddChild(rmBtn);
-            chip.AddChild(chipRow); chipsRow.AddChild(chip);
-        }
-
-        var addInput = new LineEdit { PlaceholderText = "+ alias", SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(80, 0) };
-        addInput.TextSubmitted += text =>
-        {
-            string t = text.Trim();
-            if (string.IsNullOrEmpty(t)) return;
-            addInput.Text = "";
-            _db.EntityAliases.Add(new EntityAlias { CampaignId = _pc.CampaignId, EntityType = "pf2e_pc", EntityId = _pc.Id, Alias = t });
-            LoadAliases();
-        };
-        _aliasChipsRow.AddChild(addInput);
-    }
+    private void LoadAliases() =>
+        AliasChipsHelper.Reload(_aliasChipsRow, _db, "pf2e_pc", _pc?.Id ?? 0, _pc?.CampaignId ?? 0, LoadAliases);
 
     // ── Save helpers ──────────────────────────────────────────────────────────
 
@@ -367,18 +329,18 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         _pc.AncestryId     = NullIfZero(_ancestryInput.GetItemId(_ancestryInput.Selected));
         _pc.HeritageId     = NullIfZero(_heritageInput.GetItemId(_heritageInput.Selected));
         _pc.ClassId        = NullIfZero(_classInput.GetItemId(_classInput.Selected));
-        _pc.Level          = (int)_levelInput.Value;
-        _pc.CurrentHp      = (int)_currentHpInput.Value;
-        _pc.MaxHp          = (int)_maxHpInput.Value;
+        _pc.Level          = _levelInput.Value;
+        _pc.CurrentHp      = _currentHpInput.Value;
+        _pc.MaxHp          = _maxHpInput.Value;
         _pc.HeroPoints     = (_heroPip1.ButtonPressed ? 1 : 0) + (_heroPip2.ButtonPressed ? 1 : 0) + (_heroPip3.ButtonPressed ? 1 : 0);
-        _pc.Strength       = (int)_strInput.Value;
-        _pc.Dexterity      = (int)_dexInput.Value;
-        _pc.Constitution   = (int)_conInput.Value;
-        _pc.Intelligence   = (int)_intInput.Value;
-        _pc.Wisdom         = (int)_wisInput.Value;
-        _pc.Charisma       = (int)_chaInput.Value;
-        _pc.Ac             = (int)_acInput.Value;
-        _pc.SpeedFeet      = (int)_speedInput.Value;
+        _pc.Strength       = ParseScore(_strInput.Text);
+        _pc.Dexterity      = ParseScore(_dexInput.Text);
+        _pc.Constitution   = ParseScore(_conInput.Text);
+        _pc.Intelligence   = ParseScore(_intInput.Text);
+        _pc.Wisdom         = ParseScore(_wisInput.Text);
+        _pc.Charisma       = ParseScore(_chaInput.Text);
+        _pc.Ac             = _acInput.Value;
+        _pc.SpeedFeet      = _speedInput.Value;
         _pc.FortitudeRank  = _fortRank.Selected;
         _pc.ReflexRank     = _refRank.Selected;
         _pc.WillRank       = _willRank.Selected;
@@ -388,33 +350,24 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
 
     // ── Utility ───────────────────────────────────────────────────────────────
 
-    private void ConfigureSpinBoxes()
-    {
-        _levelInput.MinValue = 1;      _levelInput.MaxValue = 20;
-        _currentHpInput.MinValue = 0;  _currentHpInput.MaxValue = 999;
-        _maxHpInput.MinValue = 0;      _maxHpInput.MaxValue = 999;
-        _acInput.MinValue = 0;         _acInput.MaxValue = 99;
-        _speedInput.MinValue = 0;      _speedInput.MaxValue = 999;
-        foreach (var (sb, _) in AbilityPairs()) { sb.MinValue = 1; sb.MaxValue = 30; }
-    }
-
     private int ScoreFor(string abbr) => abbr switch
     {
-        "STR" => (int)_strInput.Value,
-        "DEX" => (int)_dexInput.Value,
-        "CON" => (int)_conInput.Value,
-        "INT" => (int)_intInput.Value,
-        "WIS" => (int)_wisInput.Value,
-        "CHA" => (int)_chaInput.Value,
+        "STR" => ParseScore(_strInput.Text),
+        "DEX" => ParseScore(_dexInput.Text),
+        "CON" => ParseScore(_conInput.Text),
+        "INT" => ParseScore(_intInput.Text),
+        "WIS" => ParseScore(_wisInput.Text),
+        "CHA" => ParseScore(_chaInput.Text),
         _     => 10
     };
 
-    private IEnumerable<(SpinBox, Label)> AbilityPairs() => new[]
+    private IEnumerable<(LineEdit, Label)> AbilityPairs() => new[]
     {
         (_strInput, _strMod), (_dexInput, _dexMod), (_conInput, _conMod),
         (_intInput, _intMod), (_wisInput, _wisMod), (_chaInput, _chaMod),
     };
 
+    private static int     ParseScore(string text) => Math.Clamp(int.TryParse(text, out int v) ? v : 10, 1, 30);
     private static int?    NullIfZero(int id) => id == 0 ? (int?)null : id;
     private static int     Mod(int score) => (int)Math.Floor((score - 10) / 2.0);
     private static int     ProfBonus(int rankValue, int level) => rankValue > 0 ? level + rankValue * 2 : 0;

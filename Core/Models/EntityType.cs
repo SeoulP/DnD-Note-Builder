@@ -15,5 +15,6 @@ namespace DndBuilder.Core.Models
         Subclass        = 10,
         Subspecies      = 11,
         Pf2eCharacter   = 12,
+        Pf2eCreature    = 13,
     }
 }

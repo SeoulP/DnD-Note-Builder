@@ -17,7 +17,7 @@ public partial class UsageProgressionPopup : Window
 {
     public event Action<string> Saved;
 
-    private SpinBox      _baseSpin;
+    private IntInput     _baseSpin;
     private OptionButton _levelOption;
     private CheckBox     _profCheck;
     private OptionButton _attrOption;
@@ -52,8 +52,8 @@ public partial class UsageProgressionPopup : Window
         root.AddChild(vbox);
 
         // ── Fields ───────────────────────────────────────────────────────────
-        _baseSpin = new SpinBox { MinValue = 0, MaxValue = 999, Step = 1, Value = 0, CustomMinimumSize = new Vector2(80, 0) };
-        _baseSpin.ValueChanged += _ => UpdatePreview();
+        _baseSpin = IntInput.Make(0, 0, 999, _ => UpdatePreview());
+        _baseSpin.CustomMinimumSize = new Vector2(80, 0);
         vbox.AddChild(MakeRow("Base Uses", _baseSpin));
 
         _levelOption = new OptionButton { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
@@ -139,7 +139,7 @@ public partial class UsageProgressionPopup : Window
 
     private string BuildFormula()
     {
-        int    baseVal  = (int)_baseSpin.Value;
+        int    baseVal  = _baseSpin.Value;
         string levelKey = LevelKeys[_levelOption.Selected];
         string profPart = _profCheck.ButtonPressed ? "prof" : "";
         string attrKey  = AttrKeys[_attrOption.Selected];

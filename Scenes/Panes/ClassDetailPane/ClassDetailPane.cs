@@ -58,7 +58,7 @@ public partial class ClassDetailPane : ScrollContainer
     [Export] private LineEdit         _armorProfsInput;
     [Export] private LineEdit         _weaponProfsInput;
     [Export] private LineEdit         _toolProfsInput;
-    [Export] private SpinBox          _skillChoicesCountInput;
+    [Export] private IntInput         _skillChoicesCountInput;
     [Export] private VBoxContainer    _skillOptionsContainer;
     [Export] private Button           _startingEquipToggle;
     [Export] private Control          _startingEquipInset;
@@ -70,7 +70,7 @@ public partial class ClassDetailPane : ScrollContainer
     [Export] private VBoxContainer    _levelsContainer;
     [Export] private Button           _subclassesToggle;
     [Export] private Control          _subclassesInset;
-    [Export] private SpinBox          _unlockLevelInput;
+    [Export] private IntInput         _unlockLevelInput;
     [Export] private VBoxContainer    _subclassesContainer;
     [Export] private Button           _addSubclassButton;
     [Export] private Button           _abilitiesToggle;
@@ -126,8 +126,6 @@ public partial class ClassDetailPane : ScrollContainer
         _armorProfsInput.TextChanged          += _ => Save();
         _weaponProfsInput.TextChanged         += _ => Save();
         _toolProfsInput.TextChanged           += _ => Save();
-        _skillChoicesCountInput.MinValue       = 1;
-        _skillChoicesCountInput.MaxValue       = 6;
         _skillChoicesCountInput.ValueChanged  += _ => Save();
 
         // Skills checkboxes (3 per row, evenly spaced)
@@ -146,8 +144,6 @@ public partial class ClassDetailPane : ScrollContainer
         };
 
         // Subclasses
-        _unlockLevelInput.MinValue     = 1;
-        _unlockLevelInput.MaxValue     = 20;
         _unlockLevelInput.ValueChanged += _ => Save();
         _addSubclassButton.Pressed     += AddSubclass;
 
@@ -227,7 +223,7 @@ public partial class ClassDetailPane : ScrollContainer
         _class.Name               = _nameInput.Text;
         _class.Description        = _descInput.Text;
         _class.Notes              = _notes.Text;
-        _class.SubclassUnlockLevel = (int)_unlockLevelInput.Value;
+        _class.SubclassUnlockLevel = _unlockLevelInput.Value;
 
         _class.HitDie              = _hitDieValues[_hitDieInput.Selected];
         _class.PrimaryAbility      = string.Join(", ", _primaryAbilityChecks.Where(cb => cb.ButtonPressed).Select(cb => cb.Text));
@@ -239,7 +235,7 @@ public partial class ClassDetailPane : ScrollContainer
         _class.ArmorProfs          = _armorProfsInput.Text;
         _class.WeaponProfs         = _weaponProfsInput.Text;
         _class.ToolProfs           = _toolProfsInput.Text;
-        _class.SkillChoicesCount   = (int)_skillChoicesCountInput.Value;
+        _class.SkillChoicesCount   = _skillChoicesCountInput.Value;
         _class.SkillChoicesOptions = string.Join(", ", _skillChecks.Where(cb => cb.ButtonPressed).Select(cb => cb.Text));
 
         _class.StartingEquipA = _startingEquipAInput.Text;
@@ -442,8 +438,7 @@ public partial class ClassDetailPane : ScrollContainer
         };
 
         var profLabel = new Label { Text = "Prof" };
-        var profBox   = new SpinBox { MinValue = 1, MaxValue = 10, Step = 1, Value = lvl.ProfBonus };
-        profBox.ValueChanged += val => { lvl.ProfBonus = (int)val; _db.Classes.SaveLevel(lvl); };
+        var profBox   = IntInput.Make(lvl.ProfBonus, 1, 10, val => { lvl.ProfBonus = val; _db.Classes.SaveLevel(lvl); });
         headerRow.AddChild(header);
         headerRow.AddChild(profLabel);
         headerRow.AddChild(profBox);
