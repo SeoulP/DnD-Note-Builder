@@ -82,8 +82,8 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         foreach (var (inp, lbl) in AbilityPairs())
         {
             var input = inp; var l = lbl;
-            input.TextChanged += text => { if (_loading) return; if (int.TryParse(text, out int v) && v >= 1 && v <= 30) { l.Text = ModStr(v); SavePf2e(); RefreshSaveMods(); LoadSkills(); } };
-            input.FocusExited += () => { int val = ParseScore(input.Text); input.Text = val.ToString(); l.Text = ModStr(val); SavePf2e(); RefreshSaveMods(); LoadSkills(); };
+            input.TextChanged += text => { if (_loading) return; if (int.TryParse(text, out int v) && v >= 1 && v <= 30) { l.Text = Pf2eMath.ModStr(v); SavePf2e(); RefreshSaveMods(); LoadSkills(); } };
+            input.FocusExited += () => { int val = Pf2eMath.ParseScore(input.Text); input.Text = val.ToString(); l.Text = Pf2eMath.ModStr(val); SavePf2e(); RefreshSaveMods(); LoadSkills(); };
         }
 
         _descInput.TextChanged += () => { if (!_loading && _pc != null) { _pc.Description = _descInput.Text; _db.Pf2eCharacters.EditBase(_pc); } };
@@ -140,12 +140,12 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         _maxHpInput.Value      = pc.MaxHp;
         SetHeroPips(pc.HeroPoints);
 
-        _strInput.Text = pc.Strength.ToString();     _strMod.Text = ModStr(pc.Strength);
-        _dexInput.Text = pc.Dexterity.ToString();    _dexMod.Text = ModStr(pc.Dexterity);
-        _conInput.Text = pc.Constitution.ToString();  _conMod.Text = ModStr(pc.Constitution);
-        _intInput.Text = pc.Intelligence.ToString();  _intMod.Text = ModStr(pc.Intelligence);
-        _wisInput.Text = pc.Wisdom.ToString();        _wisMod.Text = ModStr(pc.Wisdom);
-        _chaInput.Text = pc.Charisma.ToString();      _chaMod.Text = ModStr(pc.Charisma);
+        _strInput.Text = pc.Strength.ToString();     _strMod.Text = Pf2eMath.ModStr(pc.Strength);
+        _dexInput.Text = pc.Dexterity.ToString();    _dexMod.Text = Pf2eMath.ModStr(pc.Dexterity);
+        _conInput.Text = pc.Constitution.ToString();  _conMod.Text = Pf2eMath.ModStr(pc.Constitution);
+        _intInput.Text = pc.Intelligence.ToString();  _intMod.Text = Pf2eMath.ModStr(pc.Intelligence);
+        _wisInput.Text = pc.Wisdom.ToString();        _wisMod.Text = Pf2eMath.ModStr(pc.Wisdom);
+        _chaInput.Text = pc.Charisma.ToString();      _chaMod.Text = Pf2eMath.ModStr(pc.Charisma);
 
         _acInput.Value    = pc.Ac;
         _speedInput.Value = pc.SpeedFeet;
@@ -226,10 +226,10 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
     private void RefreshSaveMods()
     {
         int lvl = _levelInput.Value;
-        _fortMod.Text = SignStr(Mod(ParseScore(_conInput.Text)) + ProfBonus(_fortRank.Selected, lvl));
-        _refMod.Text  = SignStr(Mod(ParseScore(_dexInput.Text)) + ProfBonus(_refRank.Selected,  lvl));
-        _willMod.Text = SignStr(Mod(ParseScore(_wisInput.Text)) + ProfBonus(_willRank.Selected,  lvl));
-        _percMod.Text = SignStr(Mod(ParseScore(_wisInput.Text)) + ProfBonus(_percRank.Selected,  lvl));
+        _fortMod.Text = Pf2eMath.SignStr(Pf2eMath.AbilityMod(Pf2eMath.ParseScore(_conInput.Text)) + Pf2eMath.ProfBonus(_fortRank.Selected, lvl));
+        _refMod.Text  = Pf2eMath.SignStr(Pf2eMath.AbilityMod(Pf2eMath.ParseScore(_dexInput.Text)) + Pf2eMath.ProfBonus(_refRank.Selected,  lvl));
+        _willMod.Text = Pf2eMath.SignStr(Pf2eMath.AbilityMod(Pf2eMath.ParseScore(_wisInput.Text)) + Pf2eMath.ProfBonus(_willRank.Selected,  lvl));
+        _percMod.Text = Pf2eMath.SignStr(Pf2eMath.AbilityMod(Pf2eMath.ParseScore(_wisInput.Text)) + Pf2eMath.ProfBonus(_percRank.Selected,  lvl));
     }
 
     // ── Skills tab ────────────────────────────────────────────────────────────
@@ -260,8 +260,8 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         {
             int    rankValue = rankValueBySkill.TryGetValue(st.Id, out int rv) ? rv : 0;
             string abbr      = abbrByAbility.GetValueOrDefault(st.AbilityScoreId, "?");
-            int    abilMod   = Mod(ScoreFor(abbr));
-            int    total     = abilMod + ProfBonus(rankValue, lvl);
+            int    abilMod   = Pf2eMath.AbilityMod(ScoreFor(abbr));
+            int    total     = abilMod + Pf2eMath.ProfBonus(rankValue, lvl);
 
             var row = new HBoxContainer();
             row.AddThemeConstantOverride("separation", 8);
@@ -280,7 +280,7 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
             rankDd.Selected = rankValue;
             row.AddChild(rankDd);
 
-            var totalLabel = new Label { Text = SignStr(total), CustomMinimumSize = new Vector2(40, 0) };
+            var totalLabel = new Label { Text = Pf2eMath.SignStr(total), CustomMinimumSize = new Vector2(40, 0) };
             totalLabel.HorizontalAlignment = HorizontalAlignment.Right;
             row.AddChild(totalLabel);
 
@@ -289,7 +289,7 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
             rankDd.ItemSelected += newIdx =>
             {
                 int newRank  = (int)newIdx;
-                totalLabel.Text = SignStr(capAbilMod + ProfBonus(newRank, _levelInput.Value));
+                totalLabel.Text = Pf2eMath.SignStr(capAbilMod + Pf2eMath.ProfBonus(newRank, _levelInput.Value));
                 UpsertSkill(capId, newRank, charSkillIdBySkill, ranks);
             };
 
@@ -333,12 +333,12 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         _pc.CurrentHp      = _currentHpInput.Value;
         _pc.MaxHp          = _maxHpInput.Value;
         _pc.HeroPoints     = (_heroPip1.ButtonPressed ? 1 : 0) + (_heroPip2.ButtonPressed ? 1 : 0) + (_heroPip3.ButtonPressed ? 1 : 0);
-        _pc.Strength       = ParseScore(_strInput.Text);
-        _pc.Dexterity      = ParseScore(_dexInput.Text);
-        _pc.Constitution   = ParseScore(_conInput.Text);
-        _pc.Intelligence   = ParseScore(_intInput.Text);
-        _pc.Wisdom         = ParseScore(_wisInput.Text);
-        _pc.Charisma       = ParseScore(_chaInput.Text);
+        _pc.Strength       = Pf2eMath.ParseScore(_strInput.Text);
+        _pc.Dexterity      = Pf2eMath.ParseScore(_dexInput.Text);
+        _pc.Constitution   = Pf2eMath.ParseScore(_conInput.Text);
+        _pc.Intelligence   = Pf2eMath.ParseScore(_intInput.Text);
+        _pc.Wisdom         = Pf2eMath.ParseScore(_wisInput.Text);
+        _pc.Charisma       = Pf2eMath.ParseScore(_chaInput.Text);
         _pc.Ac             = _acInput.Value;
         _pc.SpeedFeet      = _speedInput.Value;
         _pc.FortitudeRank  = _fortRank.Selected;
@@ -352,12 +352,12 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
 
     private int ScoreFor(string abbr) => abbr switch
     {
-        "STR" => ParseScore(_strInput.Text),
-        "DEX" => ParseScore(_dexInput.Text),
-        "CON" => ParseScore(_conInput.Text),
-        "INT" => ParseScore(_intInput.Text),
-        "WIS" => ParseScore(_wisInput.Text),
-        "CHA" => ParseScore(_chaInput.Text),
+        "STR" => Pf2eMath.ParseScore(_strInput.Text),
+        "DEX" => Pf2eMath.ParseScore(_dexInput.Text),
+        "CON" => Pf2eMath.ParseScore(_conInput.Text),
+        "INT" => Pf2eMath.ParseScore(_intInput.Text),
+        "WIS" => Pf2eMath.ParseScore(_wisInput.Text),
+        "CHA" => Pf2eMath.ParseScore(_chaInput.Text),
         _     => 10
     };
 
@@ -367,10 +367,5 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         (_intInput, _intMod), (_wisInput, _wisMod), (_chaInput, _chaMod),
     };
 
-    private static int     ParseScore(string text) => Math.Clamp(int.TryParse(text, out int v) ? v : 10, 1, 30);
     private static int?    NullIfZero(int id) => id == 0 ? (int?)null : id;
-    private static int     Mod(int score) => (int)Math.Floor((score - 10) / 2.0);
-    private static int     ProfBonus(int rankValue, int level) => rankValue > 0 ? level + rankValue * 2 : 0;
-    private static string  ModStr(int score) => SignStr(Mod(score));
-    private static string  SignStr(int v) => v >= 0 ? $"+{v}" : $"{v}";
 }

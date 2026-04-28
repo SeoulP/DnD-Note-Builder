@@ -114,16 +114,16 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
             {
                 if (int.TryParse(text, out int v) && v >= 1 && v <= 30)
                 {
-                    capturedMod.Text = ModLabel(v);
+                    capturedMod.Text = DnD5eMath.ModLabel(v);
                     Save();
                     LoadSkills();
                 }
             };
             capturedInput.FocusExited += () =>
             {
-                int val = ParseScore(capturedInput.Text);
+                int val = DnD5eMath.ParseScore(capturedInput.Text);
                 capturedInput.Text = val.ToString();
-                capturedMod.Text   = ModLabel(val);
+                capturedMod.Text   = DnD5eMath.ModLabel(val);
                 Save();
                 LoadAbilityChoices();
                 LoadSkills();
@@ -207,12 +207,12 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         _pc.ClassId      = GetOptionId(_classInput);
         _pc.SubclassId   = GetOptionId(_subclassInput);
         _pc.Level        = _levelInput.Value;
-        _pc.Strength     = ParseScore(_strInput.Text);
-        _pc.Dexterity    = ParseScore(_dexInput.Text);
-        _pc.Constitution = ParseScore(_conInput.Text);
-        _pc.Intelligence = ParseScore(_intInput.Text);
-        _pc.Wisdom       = ParseScore(_wisInput.Text);
-        _pc.Charisma     = ParseScore(_chaInput.Text);
+        _pc.Strength     = DnD5eMath.ParseScore(_strInput.Text);
+        _pc.Dexterity    = DnD5eMath.ParseScore(_dexInput.Text);
+        _pc.Constitution = DnD5eMath.ParseScore(_conInput.Text);
+        _pc.Intelligence = DnD5eMath.ParseScore(_intInput.Text);
+        _pc.Wisdom       = DnD5eMath.ParseScore(_wisInput.Text);
+        _pc.Charisma     = DnD5eMath.ParseScore(_chaInput.Text);
         _pc.Description  = _descInput.Text;
         _pc.Notes        = _notes.Text;
         // BackgroundId is set directly on _pc by OnBackgroundSelected before Save() is called
@@ -279,7 +279,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     private void UpdateModLabels()
     {
         foreach (var (input, mod) in ScorePairs())
-            mod.Text = ModLabel(ParseScore(input.Text));
+            mod.Text = DnD5eMath.ModLabel(DnD5eMath.ParseScore(input.Text));
     }
 
     private IEnumerable<(LineEdit input, Label mod)> ScorePairs() => new[]
@@ -287,15 +287,6 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         (_strInput, _strMod), (_dexInput, _dexMod), (_conInput, _conMod),
         (_intInput, _intMod), (_wisInput, _wisMod), (_chaInput, _chaMod),
     };
-
-    private static int ParseScore(string text) =>
-        System.Math.Clamp(int.TryParse(text, out int v) ? v : 10, 1, 30);
-
-    private static string ModLabel(int score)
-    {
-        int mod = (int)System.Math.Floor((score - 10) / 2.0);
-        return mod >= 0 ? $"(+{mod})" : $"({mod})";
-    }
 
     // ── Background ────────────────────────────────────────────────────────────
 
@@ -460,14 +451,14 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         foreach (Node child in _skillsListContainer.GetChildren())
             child.QueueFree();
 
-        int profBonus = CalcProfBonus(_pc.Level);
+        int profBonus = DnD5eMath.ProfBonus(_pc.Level);
 
         foreach (var skill in allSkills)
         {
             skillMap.TryGetValue(skill.Id, out var cs);
             bool isProficient = cs != null;
             bool isExpertise  = cs?.IsExpertise ?? false;
-            int  bonus        = CalcSkillBonus(skill.Attribute, _pc, profBonus, isProficient, isExpertise);
+            int  bonus        = DnD5eMath.SkillBonus(skill.Attribute, _pc, profBonus, isProficient, isExpertise);
 
             var row = BuildSkillRow(skill, cs, bonus, profBonus, skillMap, expectations, allSkills, bgName, actualCounts, expectedCounts, sourceNames);
             _skillsListContainer.AddChild(row);
@@ -545,7 +536,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         // Bonus label
         var bonusLabel = new Label
         {
-            Text                    = BonusText(bonus),
+            Text                    = DnD5eMath.SignStr(bonus),
             CustomMinimumSize       = new Vector2(32, 0),
             HorizontalAlignment     = HorizontalAlignment.Right,
         };
@@ -657,29 +648,6 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
 
         return "custom";
     }
-
-    // ── Skill bonus math ──────────────────────────────────────────────────────
-
-    private static int CalcProfBonus(int level) => 2 + (level - 1) / 4;
-
-    private static int CalcSkillBonus(string attr, PlayerCharacter pc, int profBonus, bool isProficient, bool isExpertise)
-    {
-        int score = attr switch
-        {
-            "str" => pc.Strength,
-            "dex" => pc.Dexterity,
-            "con" => pc.Constitution,
-            "int" => pc.Intelligence,
-            "wis" => pc.Wisdom,
-            "cha" => pc.Charisma,
-            _     => 10,
-        };
-        int attrMod = (int)System.Math.Floor((score - 10) / 2.0);
-        int profMod = isExpertise ? 2 * profBonus : isProficient ? profBonus : 0;
-        return attrMod + profMod;
-    }
-
-    private static string BonusText(int bonus) => bonus >= 0 ? $"+{bonus}" : $"{bonus}";
 
     // ── Ability choices ───────────────────────────────────────────────────────
 

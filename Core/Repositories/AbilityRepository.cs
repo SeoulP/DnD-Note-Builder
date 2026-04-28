@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using DndBuilder.Core;
 using DndBuilder.Core.Models;
 
 namespace DndBuilder.Core.Repositories
@@ -1681,9 +1682,9 @@ namespace DndBuilder.Core.Repositories
                 // Formula mode: ChoiceCountBase is primary; fall back to MaxChoices for legacy data
                 picks = ability.ChoiceCountBase > 0 ? ability.ChoiceCountBase : ability.MaxChoices;
                 if (!string.IsNullOrEmpty(ability.ChoiceCountAttribute) && pc != null)
-                    picks += AbilityMod(GetScore(pc, ability.ChoiceCountAttribute));
+                    picks += DnD5eMath.AbilityMod(GetScore(pc, ability.ChoiceCountAttribute));
                 if (ability.ChoiceCountAddProf)
-                    picks += ProfBonus(characterLevel);
+                    picks += DnD5eMath.ProfBonus(characterLevel);
                 picks += LevelBonus(ability.ChoiceCountAddLevel, characterLevel);
             }
 
@@ -1754,8 +1755,6 @@ namespace DndBuilder.Core.Repositories
             return result == null ? 0 : (int)(long)result;
         }
 
-        private static int AbilityMod(int score) => (int)Math.Floor((score - 10) / 2.0);
-        private static int ProfBonus(int level)  => (level - 1) / 4 + 2;
         private static int LevelBonus(string mode, int level) => mode switch
         {
             "full"      => level,

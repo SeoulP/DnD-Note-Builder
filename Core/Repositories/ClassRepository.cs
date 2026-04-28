@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
+using DndBuilder.Core;
 using DndBuilder.Core.Models;
 
 namespace DndBuilder.Core.Repositories
@@ -680,7 +681,7 @@ namespace DndBuilder.Core.Repositories
             Level     = r.GetInt32(2),
             Features  = r.GetString(3),
             ClassData = r.GetString(4),
-            ProfBonus = r.IsDBNull(5) ? 2 + (r.GetInt32(2) - 1) / 4 : r.GetInt32(5),
+            ProfBonus = r.IsDBNull(5) ? DnD5eMath.ProfBonus(r.GetInt32(2)) : r.GetInt32(5),
         };
     }
 }

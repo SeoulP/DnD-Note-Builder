@@ -1,3 +1,4 @@
+using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using Godot;
 using System;
@@ -917,9 +918,9 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             }
             if (a.AttackBonus.HasValue)
             {
-                string s = ModStr(a.AttackBonus.Value);
-                if (a.AttackBonus2.HasValue) s += $" / {ModStr(a.AttackBonus2.Value)}";
-                if (a.AttackBonus3.HasValue) s += $" / {ModStr(a.AttackBonus3.Value)}";
+                string s = Pf2eMath.SignStr(a.AttackBonus.Value);
+                if (a.AttackBonus2.HasValue) s += $" / {Pf2eMath.SignStr(a.AttackBonus2.Value)}";
+                if (a.AttackBonus3.HasValue) s += $" / {Pf2eMath.SignStr(a.AttackBonus3.Value)}";
                 body.AddChild(MakeBodyRow("Attack", s));
             }
             var dmgs = _db.Pf2eStrikeDamage.GetForAbility(abilityId);
@@ -941,7 +942,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
             {
                 string s = L(_traditionNames, a.TraditionId.Value);
                 if (a.SpellDc.HasValue)     s += $"  DC {a.SpellDc}";
-                if (a.SpellAttack.HasValue) s += $"  Atk {ModStr(a.SpellAttack.Value)}";
+                if (a.SpellAttack.HasValue) s += $"  Atk {Pf2eMath.SignStr(a.SpellAttack.Value)}";
                 body.AddChild(MakeBodyRow("Tradition", s));
             }
         }
@@ -1390,5 +1391,4 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
     }
 
     private static string L(Dictionary<int, string> dict, int id) => dict.TryGetValue(id, out var s) ? s : id.ToString();
-    private static string ModStr(int mod) => mod >= 0 ? $"+{mod}" : mod.ToString();
 }
