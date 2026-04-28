@@ -1,0 +1,7 @@
+[
+  { "name": "Present At",    "description": "Generally associated with or operating out of this location" },
+  { "name": "Controls",      "description": "Owns or runs this location" },
+  { "name": "Occupies",      "description": "Militarily or forcibly holding this location" },
+  { "name": "Opposes",       "description": "Actively working against this location or its inhabitants" },
+  { "name": "Hidden Inside", "description": "Secret or covert presence — not publicly known" }
+]

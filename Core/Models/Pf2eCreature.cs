@@ -22,7 +22,6 @@ namespace DndBuilder.Core.Models
         public int Perception { get; set; } = 0;
         public string Source { get; set; } = "";
         public int? SourcePage { get; set; } = null;
-        public bool IsSeeded { get; set; } = false;
         public string Notes        { get; set; } = "";
         public string Description  { get; set; } = "";
     }

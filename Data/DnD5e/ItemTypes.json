@@ -1,0 +1,10 @@
+[
+  { "name": "Weapon",     "description": "Swords, axes, bows, and other offensive items" },
+  { "name": "Armor",      "description": "Worn protective equipment" },
+  { "name": "Consumable", "description": "Single-use items such as potions and scrolls" },
+  { "name": "Trinket",    "description": "Minor keepsakes and curiosities with no mechanical use" },
+  { "name": "Document",   "description": "Letters, maps, contracts, and written materials" },
+  { "name": "Treasure",   "description": "Coins, gems, art objects, and valuable goods" },
+  { "name": "Key Item",   "description": "Plot-critical items tied to quests or story beats" },
+  { "name": "Misc",       "description": "Anything that does not fit another category" }
+]

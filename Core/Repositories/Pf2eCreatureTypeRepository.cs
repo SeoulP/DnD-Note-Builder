@@ -8,11 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly string[] Defaults =
-        {
-            "Monster", "Animal", "Humanoid NPC", "Construct", "Undead", "Other",
-        };
-
         public Pf2eCreatureTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -25,20 +20,6 @@ namespace DndBuilder.Core.Repositories
                 UNIQUE(campaign_id, name)
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var name in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO pathfinder_creature_types (campaign_id, name)
-                    SELECT @cid, @name WHERE NOT EXISTS
-                        (SELECT 1 FROM pathfinder_creature_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eCreatureType> GetAll(int campaignId)

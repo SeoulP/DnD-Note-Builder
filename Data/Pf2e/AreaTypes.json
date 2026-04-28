@@ -1,0 +1,9 @@
+[
+  { "name": "Melee Reach", "description": "Affects targets within melee reach",  "sort_order": 0 },
+  { "name": "Ranged",      "description": "Single target at range",              "sort_order": 1 },
+  { "name": "Cone",        "description": "Wedge-shaped area from the creature", "sort_order": 2 },
+  { "name": "Burst",       "description": "Sphere at a targeted point",          "sort_order": 3 },
+  { "name": "Emanation",   "description": "Sphere centered on the creature",     "sort_order": 4 },
+  { "name": "Line",        "description": "Straight line from the creature",     "sort_order": 5 },
+  { "name": "Wall",        "description": "A flat vertical surface",             "sort_order": 6 }
+]

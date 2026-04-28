@@ -8,11 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly string[] Defaults =
-        {
-            "Fortitude", "Reflex", "Will",
-        };
-
         public Pf2eSaveTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -23,17 +18,6 @@ namespace DndBuilder.Core.Repositories
                 name TEXT    NOT NULL UNIQUE
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var name in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_save_types (name) VALUES (@name)";
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eSaveType> GetAll()

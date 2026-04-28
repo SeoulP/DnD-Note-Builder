@@ -1,0 +1,11 @@
+[
+  { "name": "Darkvision",       "is_precise": 1 },
+  { "name": "Low-Light Vision", "is_precise": 1 },
+  { "name": "Scent",            "is_precise": 0 },
+  { "name": "Tremorsense",      "is_precise": 0 },
+  { "name": "Wavesense",        "is_precise": 0 },
+  { "name": "Echolocation",     "is_precise": 1 },
+  { "name": "Lifesense",        "is_precise": 0 },
+  { "name": "Thoughtsense",     "is_precise": 0 },
+  { "name": "Spiritsense",      "is_precise": 0 }
+]

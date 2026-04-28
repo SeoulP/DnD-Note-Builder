@@ -1,0 +1,14 @@
+[
+  { "species": "Elf",       "name": "High Elf",            "description": "High Elves have a keen mind and a mastery of at least the basics of magic, inherited from their long study of the arcane." },
+  { "species": "Elf",       "name": "Wood Elf",            "description": "Wood Elves are fleet of foot and stealthy, masters of moving through the natural world without leaving a trace." },
+  { "species": "Elf",       "name": "Dark Elf (Drow)",     "description": "Drow have lived for millennia in the Underdark. They are stealthy, quick, and possess powerful innate spellcasting." },
+  { "species": "Dwarf",     "name": "Hill Dwarf",          "description": "Hill Dwarves have keen senses, deep intuition, and remarkable resilience. Their HP maximum increases by 1 per level." },
+  { "species": "Dwarf",     "name": "Mountain Dwarf",      "description": "Mountain Dwarves are strong and hardy, accustomed to a difficult life in rugged terrain, and proficient with light and medium armor." },
+  { "species": "Halfling",  "name": "Lightfoot Halfling",  "description": "Lightfoot Halflings are unusually lucky, nimble, and naturally stealthy. They can attempt to hide even when obscured by a creature one size larger." },
+  { "species": "Halfling",  "name": "Stout Halfling",      "description": "Stout Halflings are hardier than average halflings, with some resistance to poison and a constitution toughened by their rugged upbringing." },
+  { "species": "Gnome",     "name": "Forest Gnome",        "description": "Forest Gnomes have an innate talent with illusions and an instinctive quickness and stealth that belies their non-threatening appearance." },
+  { "species": "Gnome",     "name": "Rock Gnome",          "description": "Rock Gnomes have an extraordinary aptitude for invention, tinkering with ordinary objects and tools to craft magical gadgets and devices." },
+  { "species": "Dragonborn","name": "Chromatic Dragonborn","description": "Descended from chromatic dragons — black, blue, green, red, or white. Their breath weapon reflects their draconic ancestor's damage type." },
+  { "species": "Dragonborn","name": "Gem Dragonborn",      "description": "Descended from gem dragons — amethyst, crystal, emerald, sapphire, or topaz. They possess a unique psionic resonance." },
+  { "species": "Dragonborn","name": "Metallic Dragonborn", "description": "Descended from metallic dragons — brass, bronze, copper, gold, or silver. Known for their diplomatic temperaments and protective breath weapons." }
+]

@@ -8,19 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int isPrecise)[] Defaults =
-        {
-            ("Darkvision",       1),
-            ("Low-Light Vision", 1),
-            ("Scent",            0),
-            ("Tremorsense",      0),
-            ("Wavesense",        0),
-            ("Echolocation",     1),
-            ("Lifesense",        0),
-            ("Thoughtsense",     0),
-            ("Spiritsense",      0),
-        };
-
         public Pf2eSenseTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -35,21 +22,6 @@ namespace DndBuilder.Core.Repositories
                 UNIQUE(campaign_id, name)
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, isPrecise) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO pathfinder_sense_types (campaign_id, name, is_precise, description)
-                    SELECT @cid, @name, @prec, '' WHERE NOT EXISTS
-                        (SELECT 1 FROM pathfinder_sense_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@prec", isPrecise);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eSenseType> GetAll(int campaignId)

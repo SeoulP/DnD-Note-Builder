@@ -8,43 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int hasValue)[] Defaults =
-        {
-            // has_value = 1
-            ("Clumsy",      1),
-            ("Drained",     1),
-            ("Enfeebled",   1),
-            ("Frightened",  1),
-            ("Sickened",    1),
-            ("Slowed",      1),
-            ("Stunned",     1),
-            ("Stupefied",   1),
-            // has_value = 0
-            ("Blinded",        0),
-            ("Confused",       0),
-            ("Controlled",     0),
-            ("Dazzled",        0),
-            ("Deafened",       0),
-            ("Doomed",         0),
-            ("Encumbered",     0),
-            ("Fascinated",     0),
-            ("Flat-Footed",    0),
-            ("Fleeing",        0),
-            ("Grabbed",        0),
-            ("Hidden",         0),
-            ("Immobilized",    0),
-            ("Invisible",      0),
-            ("Observed",       0),
-            ("Off-Guard",      0),
-            ("Paralyzed",      0),
-            ("Petrified",      0),
-            ("Prone",          0),
-            ("Restrained",     0),
-            ("Unconscious",    0),
-            ("Undetected",     0),
-            ("Unnoticed",      0),
-        };
-
         public Pf2eConditionTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -59,21 +22,6 @@ namespace DndBuilder.Core.Repositories
                 UNIQUE(campaign_id, name)
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, hasValue) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO pathfinder_condition_types (campaign_id, name, has_value, description)
-                    SELECT @cid, @name, @hv, '' WHERE NOT EXISTS
-                        (SELECT 1 FROM pathfinder_condition_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@hv",   hasValue);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eConditionType> GetAll(int campaignId)

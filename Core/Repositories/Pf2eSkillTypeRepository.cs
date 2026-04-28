@@ -8,27 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, string abilityName)[] Defaults =
-        {
-            ("Acrobatics",   "Dexterity"),
-            ("Arcana",       "Intelligence"),
-            ("Athletics",    "Strength"),
-            ("Crafting",     "Intelligence"),
-            ("Deception",    "Charisma"),
-            ("Diplomacy",    "Charisma"),
-            ("Intimidation", "Charisma"),
-            ("Lore",         "Intelligence"),
-            ("Medicine",     "Wisdom"),
-            ("Nature",       "Wisdom"),
-            ("Occultism",    "Intelligence"),
-            ("Performance",  "Charisma"),
-            ("Religion",     "Wisdom"),
-            ("Society",      "Intelligence"),
-            ("Stealth",      "Dexterity"),
-            ("Survival",     "Wisdom"),
-            ("Thievery",     "Dexterity"),
-        };
-
         public Pf2eSkillTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -42,22 +21,6 @@ namespace DndBuilder.Core.Repositories
                 UNIQUE(campaign_id, name)
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, abilityName) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO pathfinder_skill_types (campaign_id, name, ability_score_id)
-                    SELECT @cid, @name, (SELECT id FROM pathfinder_ability_scores WHERE name = @attr)
-                    WHERE NOT EXISTS
-                        (SELECT 1 FROM pathfinder_skill_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@attr", abilityName);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eSkillType> GetAll(int campaignId)

@@ -34,10 +34,18 @@ namespace DndBuilder.Core.Repositories
                 perception       INTEGER NOT NULL DEFAULT 0,
                 source           TEXT    NOT NULL DEFAULT '',
                 source_page      INTEGER,
-                is_seeded        INTEGER NOT NULL DEFAULT 0,
                 notes            TEXT    NOT NULL DEFAULT ''
             )";
             cmd.ExecuteNonQuery();
+
+            // One-time: drop is_seeded column removed during SeedingService rollout
+            try
+            {
+                var drop = _conn.CreateCommand();
+                drop.CommandText = "ALTER TABLE pathfinder_creatures DROP COLUMN is_seeded";
+                drop.ExecuteNonQuery();
+            }
+            catch { /* column already gone or never existed */ }
         }
 
         public List<Pf2eCreature> GetAll(int campaignId)
@@ -47,7 +55,7 @@ namespace DndBuilder.Core.Repositories
             cmd.CommandText = @"SELECT id, campaign_id, name, creature_type_id, level, size_id,
                 str_mod, dex_mod, con_mod, int_mod, wis_mod, cha_mod,
                 ac, max_hp, fortitude, reflex, will, perception,
-                source, source_page, is_seeded, notes
+                source, source_page, notes
                 FROM pathfinder_creatures WHERE campaign_id = @cid ORDER BY name";
             cmd.Parameters.AddWithValue("@cid", campaignId);
             using var reader = cmd.ExecuteReader();
@@ -62,7 +70,7 @@ namespace DndBuilder.Core.Repositories
             cmd.CommandText = @"SELECT id, campaign_id, name, creature_type_id, level, size_id,
                 str_mod, dex_mod, con_mod, int_mod, wis_mod, cha_mod,
                 ac, max_hp, fortitude, reflex, will, perception,
-                source, source_page, is_seeded, notes
+                source, source_page, notes
                 FROM pathfinder_creatures WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", id);
             using var reader = cmd.ExecuteReader();
@@ -76,11 +84,11 @@ namespace DndBuilder.Core.Repositories
                 (campaign_id, name, creature_type_id, level, size_id,
                  str_mod, dex_mod, con_mod, int_mod, wis_mod, cha_mod,
                  ac, max_hp, fortitude, reflex, will, perception,
-                 source, source_page, is_seeded, notes)
+                 source, source_page, notes)
                 VALUES (@cid, @name, @ctid, @lvl, @szid,
                         @str, @dex, @con, @int, @wis, @cha,
                         @ac, @hp, @fort, @ref, @will, @perc,
-                        @src, @srcpg, @seed, @notes);
+                        @src, @srcpg, @notes);
                 SELECT last_insert_rowid()";
             cmd.Parameters.AddWithValue("@cid",   c.CampaignId);
             cmd.Parameters.AddWithValue("@name",  c.Name);
@@ -101,7 +109,6 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@perc",  c.Perception);
             cmd.Parameters.AddWithValue("@src",   c.Source);
             cmd.Parameters.AddWithValue("@srcpg", c.SourcePage.HasValue ? (object)c.SourcePage.Value : System.DBNull.Value);
-            cmd.Parameters.AddWithValue("@seed",  c.IsSeeded ? 1 : 0);
             cmd.Parameters.AddWithValue("@notes", c.Notes);
             return (int)(long)cmd.ExecuteScalar();
         }
@@ -113,7 +120,7 @@ namespace DndBuilder.Core.Repositories
                 name = @name, creature_type_id = @ctid, level = @lvl, size_id = @szid,
                 str_mod = @str, dex_mod = @dex, con_mod = @con, int_mod = @int, wis_mod = @wis, cha_mod = @cha,
                 ac = @ac, max_hp = @hp, fortitude = @fort, reflex = @ref, will = @will, perception = @perc,
-                source = @src, source_page = @srcpg, is_seeded = @seed, notes = @notes
+                source = @src, source_page = @srcpg, notes = @notes
                 WHERE id = @id";
             cmd.Parameters.AddWithValue("@name",  c.Name);
             cmd.Parameters.AddWithValue("@ctid",  c.CreatureTypeId);
@@ -133,7 +140,6 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@perc",  c.Perception);
             cmd.Parameters.AddWithValue("@src",   c.Source);
             cmd.Parameters.AddWithValue("@srcpg", c.SourcePage.HasValue ? (object)c.SourcePage.Value : System.DBNull.Value);
-            cmd.Parameters.AddWithValue("@seed",  c.IsSeeded ? 1 : 0);
             cmd.Parameters.AddWithValue("@notes", c.Notes);
             cmd.Parameters.AddWithValue("@id",    c.Id);
             cmd.ExecuteNonQuery();
@@ -169,8 +175,7 @@ namespace DndBuilder.Core.Repositories
             Perception     = r.GetInt32(17),
             Source         = r.GetString(18),
             SourcePage     = r.IsDBNull(19) ? (int?)null : r.GetInt32(19),
-            IsSeeded       = r.GetInt32(20) == 1,
-            Notes          = r.GetString(21),
+            Notes          = r.GetString(20),
         };
     }
 }

@@ -8,18 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int sortOrder)[] Defaults =
-        {
-            ("At Will",  0),
-            ("Constant", 1),
-            ("1/Round",  2),
-            ("3/Day",    3),
-            ("2/Day",    4),
-            ("1/Day",    5),
-            ("1/Hour",   6),
-            ("1/Week",   7),
-        };
-
         public Pf2eSpellFrequencyRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -31,18 +19,6 @@ namespace DndBuilder.Core.Repositories
                 sort_order INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var (name, sortOrder) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_spell_frequencies (name, sort_order) VALUES (@name, @sort)";
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@sort", sortOrder);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eSpellFrequency> GetAll()

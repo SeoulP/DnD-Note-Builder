@@ -8,21 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly string[] Defaults =
-        {
-            // Core PHB races
-            "Human", "Elf", "High Elf", "Wood Elf", "Dark Elf (Drow)",
-            "Dwarf", "Hill Dwarf", "Mountain Dwarf",
-            "Halfling", "Lightfoot Halfling", "Stout Halfling",
-            "Gnome", "Rock Gnome", "Forest Gnome",
-            "Half-Elf", "Half-Orc", "Tiefling", "Dragonborn",
-            // Common NPC / monster races
-            "Aasimar", "Orc", "Goblin", "Hobgoblin", "Bugbear",
-            "Kobold", "Lizardfolk", "Gnoll", "Yuan-ti",
-            "Tabaxi", "Kenku", "Tortle", "Firbolg", "Triton",
-            "Undead", "Construct",
-        };
-
         public SpeciesRepository(SqliteConnection conn)
         {
             _conn = conn;
@@ -76,59 +61,6 @@ namespace DndBuilder.Core.Repositories
                 var alter = _conn.CreateCommand();
                 alter.CommandText = "ALTER TABLE species ADD COLUMN notes TEXT NOT NULL DEFAULT ''";
                 alter.ExecuteNonQuery();
-            }
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            // Seed legacy flat name list (keeps NPC species dropdowns working)
-            foreach (var name in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO species (campaign_id, name)
-                    SELECT @cid, @name WHERE NOT EXISTS
-                        (SELECT 1 FROM species WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.ExecuteNonQuery();
-            }
-
-            // TEMPORARY SEED DATA — DELETE BEFORE COMMITTING
-            // Source: D&D 5e 2024 Player's Handbook. Revert this method after exporting to .dndx.
-            var descriptions = new (string name, string description)[]
-            {
-                ("Aasimar",    "Touched by divine power, Aasimar carry a spark of the Upper Planes within their souls. They are descended from humans and celestials, bearing a divine charge to protect the innocent."),
-                ("Dragonborn", "Born of dragons, Dragonborn walk proudly through a world that greets them with fearful incomprehension. Their draconic ancestry manifests in their appearance, in their behavior, and in their abilities."),
-                ("Dwarf",      "Bold and hardy, Dwarves are known as skilled warriors, miners, and workers of stone and metal. They are sturdy, long-lived, and deeply loyal to their clans."),
-                ("Elf",        "Elves are a magical people of otherworldly grace, living in places of ethereal beauty. Long-lived and quick to notice threats, they are skilled warriors, mages, and scouts."),
-                ("Gnome",      "A gnome's energy and enthusiasm for living shines through every inch of their tiny bodies. They delight in innovation, tinkering, and exploring the world."),
-                ("Goliath",    "Goliaths are towering figures built for physical competition. Driven to always push their limits, they thrive on proving themselves through deed."),
-                ("Halfling",   "The comfort of home is the goal of most Halflings' lives. Despite their small size, they are remarkably brave, possessed of an uncanny luck that serves them well."),
-                ("Human",      "The most adaptable and ambitious people among the common races, Humans are short-lived but driven by a burning ambition that sees them spread across the multiverse."),
-                ("Orc",        "Orcs are built for a difficult life, with a quick temper and impressive strength. They are driven by great physical ability and an intensity of emotion that shapes their culture."),
-                ("Tiefling",   "To be greeted with stares and whispers, to suffer violence and insult on the street — this is the lot of the Tiefling. Their fiendish heritage is plain to see in their appearance."),
-            };
-
-            foreach (var (name, description) in descriptions)
-            {
-                // Ensure the species exists (top-level 2024 PHB entries)
-                var insertCmd = _conn.CreateCommand();
-                insertCmd.CommandText = @"INSERT INTO species (campaign_id, name, description)
-                    SELECT @cid, @name, @desc
-                    WHERE NOT EXISTS (SELECT 1 FROM species WHERE campaign_id = @cid AND name = @name)";
-                insertCmd.Parameters.AddWithValue("@cid",  campaignId);
-                insertCmd.Parameters.AddWithValue("@name", name);
-                insertCmd.Parameters.AddWithValue("@desc", description);
-                insertCmd.ExecuteNonQuery();
-
-                // Fill description on existing rows that have none
-                var updateCmd = _conn.CreateCommand();
-                updateCmd.CommandText = @"UPDATE species SET description = @desc
-                    WHERE campaign_id = @cid AND name = @name AND (description IS NULL OR description = '')";
-                updateCmd.Parameters.AddWithValue("@cid",  campaignId);
-                updateCmd.Parameters.AddWithValue("@name", name);
-                updateCmd.Parameters.AddWithValue("@desc", description);
-                updateCmd.ExecuteNonQuery();
             }
         }
 

@@ -89,22 +89,9 @@ public partial class NewCampaignModal : Window
         try
         {
             int newId = _databaseService.Campaigns.Add(campaign);
-            _databaseService.Species                   .SeedDefaults(newId);
-            _databaseService.Subspecies                .SeedDefaults(newId);
-            _databaseService.Classes                   .SeedDefaults(newId);
-            _databaseService.AbilityTypes              .SeedDefaults(newId);
-            _databaseService.AbilityResourceTypes      .SeedDefaults(newId);
-            _databaseService.Abilities                 .SeedDefaults(newId);
-            _databaseService.LocationFactionRoles      .SeedDefaults(newId);
-            _databaseService.NpcRelationshipTypes      .SeedDefaults(newId);
-            _databaseService.NpcStatuses               .SeedDefaults(newId);
-            _databaseService.NpcFactionRoles           .SeedDefaults(newId);
-            _databaseService.FactionRelationshipTypes  .SeedDefaults(newId);
-            _databaseService.CharacterRelationshipTypes.SeedDefaults(newId);
-            _databaseService.ItemTypes                 .SeedDefaults(newId);
-            _databaseService.QuestStatuses             .SeedDefaults(newId);
-            _databaseService.DnD5eSkills               .SeedDefaults(newId);
-            _databaseService.DnD5eBackgrounds          .SeedDefaults(newId);
+            _databaseService.DnD5eSeedingService.SeedAll(newId);
+            if (campaign.System == "pathfinder2e")
+                _databaseService.Pf2eSeedingService.SeedAll(newId);
             EmitSignal(SignalName.CampaignCreated, newId);
             Hide();
             ResetForm();

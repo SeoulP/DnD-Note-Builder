@@ -1,0 +1,12 @@
+[
+  { "name": "Class Feature" },
+  { "name": "Subclass Feature" },
+  { "name": "Species Trait" },
+  { "name": "Subspecies Trait" },
+  { "name": "Feat" },
+  { "name": "Fighting Style" },
+  { "name": "Maneuver" },
+  { "name": "Eldritch Invocation" },
+  { "name": "Metamagic" },
+  { "name": "Passive" }
+]

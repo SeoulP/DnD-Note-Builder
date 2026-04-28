@@ -3,6 +3,7 @@ using Godot;
 using Microsoft.Data.Sqlite;
 using DndBuilder.Core.Models;
 using DndBuilder.Core.Repositories;
+using DndBuilder.Core.Seeding;
 
 public partial class DatabaseService : Node
 {
@@ -110,6 +111,10 @@ public partial class DatabaseService : Node
     public Pf2eEncounterCombatantRepository              Pf2eEncounterCombatants          { get; private set; }
     public Pf2eEncounterCombatantHpLogRepository         Pf2eEncounterCombatantHpLog      { get; private set; }
     public Pf2eEncounterCombatantConditionRepository     Pf2eEncounterCombatantConditions { get; private set; }
+
+    // ── Seeding Services ─────────────────────────────────────────────────────────
+    public DnD5eSeedingService DnD5eSeedingService { get; private set; }
+    public Pf2eSeedingService  Pf2eSeedingService  { get; private set; }
 
     public string DbPath { get; private set; }
     public string ImgDir { get; private set; }
@@ -256,6 +261,10 @@ public partial class DatabaseService : Node
         Pf2eEncounterCombatantConditions = new Pf2eEncounterCombatantConditionRepository(_conn);
         Encounters                       = new EncounterRepository(_conn);
 
+        // ── Seeding Services ──────────────────────────────────────────────────
+        DnD5eSeedingService = new DnD5eSeedingService(_conn);
+        Pf2eSeedingService  = new Pf2eSeedingService(_conn);
+
         RunMigrations();
     }
 
@@ -294,16 +303,17 @@ public partial class DatabaseService : Node
         EntityAliases       .Migrate();  // references campaigns; no other FK dependencies
 
         // ── P2e Global (no campaign_id — seeded once here) ───────────────────
-        Pf2eAbilityScores   .Migrate();   Pf2eAbilityScores   .SeedDefaults();
-        Pf2eAbilityTypes    .Migrate();   Pf2eAbilityTypes    .SeedDefaults();
-        Pf2eActionCosts     .Migrate();   Pf2eActionCosts     .SeedDefaults();
-        Pf2eSaveTypes       .Migrate();   Pf2eSaveTypes       .SeedDefaults();
-        Pf2eDieTypes        .Migrate();   Pf2eDieTypes        .SeedDefaults();
-        Pf2eSpellFrequencies.Migrate();   Pf2eSpellFrequencies.SeedDefaults();
-        Pf2eAreaTypes       .Migrate();   Pf2eAreaTypes       .SeedDefaults();
-        Pf2eSizes           .Migrate();   Pf2eSizes           .SeedDefaults();
-        Pf2eProficiencyRanks.Migrate();   Pf2eProficiencyRanks.SeedDefaults();
-        Pf2eAttackCategories.Migrate();   Pf2eAttackCategories.SeedDefaults();
+        Pf2eAbilityScores   .Migrate();
+        Pf2eAbilityTypes    .Migrate();
+        Pf2eActionCosts     .Migrate();
+        Pf2eSaveTypes       .Migrate();
+        Pf2eDieTypes        .Migrate();
+        Pf2eSpellFrequencies.Migrate();
+        Pf2eAreaTypes       .Migrate();
+        Pf2eSizes           .Migrate();
+        Pf2eProficiencyRanks.Migrate();
+        Pf2eAttackCategories.Migrate();
+        Pf2eSeedingService  .SeedGlobalData();
 
         // ── P2e Campaign-scoped lookups ───────────────────────────────────────
         Pf2eTraditions    .Migrate();  // references campaigns
@@ -375,119 +385,7 @@ public partial class DatabaseService : Node
     private void SeedAllCampaigns()
     {
         foreach (var campaign in Campaigns.GetAll())
-        {
-            Species             .SeedDefaults(campaign.Id);
-            Subspecies          .SeedDefaults(campaign.Id);
-            DnD5eSkills         .SeedDefaults(campaign.Id);
-            DnD5eBackgrounds    .SeedDefaults(campaign.Id);
-            Classes             .SeedDefaults(campaign.Id);
-            AbilityTypes        .SeedDefaults(campaign.Id);
-            AbilityResourceTypes.SeedDefaults(campaign.Id);
-            Abilities           .SeedDefaults(campaign.Id);
-            DnD5eBackgrounds    .LinkBackgroundFeats(campaign.Id);
-            LocationFactionRoles.SeedDefaults(campaign.Id);
-            NpcRelationshipTypes.SeedDefaults(campaign.Id);
-            NpcStatuses         .SeedDefaults(campaign.Id);
-            NpcFactionRoles           .SeedDefaults(campaign.Id);
-            FactionRelationshipTypes  .SeedDefaults(campaign.Id);
-            CharacterRelationshipTypes.SeedDefaults(campaign.Id);
-            ItemTypes                 .SeedDefaults(campaign.Id);
-            QuestStatuses             .SeedDefaults(campaign.Id);
-
-            if (campaign.System == "pathfinder2e")
-            {
-                Pf2eTraditions    .SeedDefaults(campaign.Id);
-                Pf2eCreatureTypes .SeedDefaults(campaign.Id);
-                Pf2eDamageTypes   .SeedDefaults(campaign.Id);
-                Pf2eConditionTypes.SeedDefaults(campaign.Id);
-                Pf2eTraitTypes    .SeedDefaults(campaign.Id);
-                Pf2eSenseTypes    .SeedDefaults(campaign.Id);
-                Pf2eSkillTypes    .SeedDefaults(campaign.Id);
-                Pf2eLanguageTypes .SeedDefaults(campaign.Id);
-                Pf2eMovementTypes .SeedDefaults(campaign.Id);
-                Pf2eFeatTypes     .SeedDefaults(campaign.Id);
-                SeedCreatureDetailsFromJson(campaign.Id);
-            }
-        }
-    }
-
-    private void SeedCreatureDetailsFromJson(int campaignId)
-    {
-        string jsonPath = ProjectSettings.GlobalizePath("res://Data/Pf2e/Monster_Core.json");
-        if (!System.IO.File.Exists(jsonPath)) return;
-
-        string jsonText = System.IO.File.ReadAllText(jsonPath);
-        using var doc = System.Text.Json.JsonDocument.Parse(jsonText);
-
-        // sense type name (case-insensitive) → sense_type_id + default precision
-        var senseTypeIdMap  = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var senseTypePrecise = new System.Collections.Generic.Dictionary<int, bool>();
-        {
-            var cmd = _conn.CreateCommand();
-            cmd.CommandText = "SELECT id, name, is_precise FROM pathfinder_sense_types WHERE campaign_id = @cid";
-            cmd.Parameters.AddWithValue("@cid", campaignId);
-            using var r = cmd.ExecuteReader();
-            while (r.Read())
-            {
-                int id = r.GetInt32(0);
-                senseTypeIdMap[r.GetString(1)] = id;
-                senseTypePrecise[id] = r.GetInt32(2) == 1;
-            }
-        }
-
-        // seeded creature name → id
-        var creatureNameMap = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        {
-            var cmd = _conn.CreateCommand();
-            cmd.CommandText = "SELECT id, name FROM pathfinder_creatures WHERE campaign_id = @cid AND is_seeded = 1";
-            cmd.Parameters.AddWithValue("@cid", campaignId);
-            using var r = cmd.ExecuteReader();
-            while (r.Read()) creatureNameMap[r.GetString(1)] = r.GetInt32(0);
-        }
-
-        using var tx = _conn.BeginTransaction();
-        try
-        {
-            foreach (var entry in doc.RootElement.EnumerateArray())
-            {
-                if (!entry.TryGetProperty("name", out var nameProp)) continue;
-                string name = nameProp.GetString();
-                if (!creatureNameMap.TryGetValue(name, out int creatureId)) continue;
-
-                if (!entry.TryGetProperty("senses", out var sensesEl)) continue;
-                foreach (var senseEl in sensesEl.EnumerateArray())
-                {
-                    if (!senseEl.TryGetProperty("type", out var typeProp)) continue;
-                    string senseTypeName = typeProp.GetString();
-                    if (!senseTypeIdMap.TryGetValue(senseTypeName, out int senseTypeId)) continue;
-
-                    int? range = null;
-                    if (senseEl.TryGetProperty("range", out var rangeEl) && rangeEl.ValueKind == System.Text.Json.JsonValueKind.Number)
-                        range = rangeEl.GetInt32();
-
-                    bool isPrecise = senseTypePrecise.TryGetValue(senseTypeId, out bool p) ? p : true;
-
-                    var cmd = _conn.CreateCommand();
-                    cmd.Transaction = tx;
-                    // Upsert: insert sense row if missing; update range if JSON now has a value
-                    cmd.CommandText = @"INSERT INTO pathfinder_creature_senses (creature_id, sense_type_id, is_precise, range_feet, notes)
-                        VALUES (@cid, @stid, @prec, @range, '')
-                        ON CONFLICT (creature_id, sense_type_id) DO UPDATE
-                        SET range_feet = CASE WHEN excluded.range_feet IS NOT NULL THEN excluded.range_feet ELSE range_feet END";
-                    cmd.Parameters.AddWithValue("@cid",   creatureId);
-                    cmd.Parameters.AddWithValue("@stid",  senseTypeId);
-                    cmd.Parameters.AddWithValue("@prec",  isPrecise ? 1 : 0);
-                    cmd.Parameters.AddWithValue("@range", range.HasValue ? (object)range.Value : System.DBNull.Value);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            tx.Commit();
-        }
-        catch (Exception ex)
-        {
-            tx.Rollback();
-            AppLogger.Instance.Error("DatabaseService", $"SeedCreatureDetailsFromJson failed: {ex.Message}");
-        }
+            DnD5eSeedingService.SeedAll(campaign.Id);
     }
 
     // One-time migration: move any legacy portrait_path strings from the characters table

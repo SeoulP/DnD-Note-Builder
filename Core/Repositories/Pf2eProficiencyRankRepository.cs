@@ -8,15 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int rankValue)[] Defaults =
-        {
-            ("Untrained", 0),
-            ("Trained",   1),
-            ("Expert",    2),
-            ("Master",    3),
-            ("Legendary", 4),
-        };
-
         public Pf2eProficiencyRankRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -28,18 +19,6 @@ namespace DndBuilder.Core.Repositories
                 rank_value INTEGER NOT NULL UNIQUE
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var (name, rankValue) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_proficiency_ranks (name, rank_value) VALUES (@name, @rank)";
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@rank", rankValue);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eProficiencyRank> GetAll()

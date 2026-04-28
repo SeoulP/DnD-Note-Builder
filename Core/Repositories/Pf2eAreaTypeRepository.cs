@@ -8,17 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, string description, int sortOrder)[] Defaults =
-        {
-            ("Melee Reach",  "Affects targets within melee reach",   0),
-            ("Ranged",       "Single target at range",               1),
-            ("Cone",         "Wedge-shaped area from the creature",  2),
-            ("Burst",        "Sphere at a targeted point",           3),
-            ("Emanation",    "Sphere centered on the creature",      4),
-            ("Line",         "Straight line from the creature",      5),
-            ("Wall",         "A flat vertical surface",              6),
-        };
-
         public Pf2eAreaTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -31,19 +20,6 @@ namespace DndBuilder.Core.Repositories
                 sort_order  INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var (name, description, sortOrder) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_area_types (name, description, sort_order) VALUES (@name, @desc, @sort)";
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", description);
-                cmd.Parameters.AddWithValue("@sort", sortOrder);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eAreaType> GetAll()

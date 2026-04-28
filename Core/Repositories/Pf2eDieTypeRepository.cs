@@ -8,17 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int sides)[] Defaults =
-        {
-            ("d4",   4),
-            ("d6",   6),
-            ("d8",   8),
-            ("d10",  10),
-            ("d12",  12),
-            ("d20",  20),
-            ("d100", 100),
-        };
-
         public Pf2eDieTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -30,18 +19,6 @@ namespace DndBuilder.Core.Repositories
                 sides INTEGER NOT NULL UNIQUE
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var (name, sides) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_die_types (name, sides) VALUES (@name, @sides)";
-                cmd.Parameters.AddWithValue("@name",  name);
-                cmd.Parameters.AddWithValue("@sides", sides);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eDieType> GetAll()

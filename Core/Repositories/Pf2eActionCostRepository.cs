@@ -8,17 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int sortOrder)[] Defaults =
-        {
-            ("None",          0),
-            ("1 Action",      1),
-            ("2 Actions",     2),
-            ("3 Actions",     3),
-            ("Reaction",      4),
-            ("Free Action",   5),
-            ("Variable",      6),
-        };
-
         public Pf2eActionCostRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -30,18 +19,6 @@ namespace DndBuilder.Core.Repositories
                 sort_order INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var (name, sortOrder) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_action_costs (name, sort_order) VALUES (@name, @sort)";
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@sort", sortOrder);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eActionCost> GetAll()

@@ -8,13 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly string[] Defaults =
-        {
-            "Common", "Draconic", "Dwarven", "Elven", "Fey", "Gnomish", "Goblin", "Halfling",
-            "Jotun", "Orcish", "Sakvroth", "Thalassic", "Shadowtongue", "Petran", "Pyric",
-            "Sussuran", "Talican", "Tengu", "Diabolic", "Empyrean", "Protean", "Requian", "Utopian",
-        };
-
         public Pf2eLanguageTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -27,20 +20,6 @@ namespace DndBuilder.Core.Repositories
                 UNIQUE(campaign_id, name)
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var name in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO pathfinder_language_types (campaign_id, name)
-                    SELECT @cid, @name WHERE NOT EXISTS
-                        (SELECT 1 FROM pathfinder_language_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eLanguageType> GetAll(int campaignId)

@@ -8,16 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, string abbreviation)[] Defaults =
-        {
-            ("Strength",     "STR"),
-            ("Dexterity",    "DEX"),
-            ("Constitution", "CON"),
-            ("Intelligence", "INT"),
-            ("Wisdom",       "WIS"),
-            ("Charisma",     "CHA"),
-        };
-
         public Pf2eAbilityScoreRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -29,18 +19,6 @@ namespace DndBuilder.Core.Repositories
                 abbreviation TEXT    NOT NULL UNIQUE
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var (name, abbreviation) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_ability_scores (name, abbreviation) VALUES (@name, @abbr)";
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@abbr", abbreviation);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eAbilityScore> GetAll()

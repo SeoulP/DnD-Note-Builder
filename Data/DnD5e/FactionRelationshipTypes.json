@@ -1,0 +1,10 @@
+[
+  { "name": "Allied with",      "description": "Actively cooperates and shares goals" },
+  { "name": "Enemy of",         "description": "Openly hostile or in direct conflict" },
+  { "name": "Rival of",         "description": "Competes for the same resources or influence" },
+  { "name": "Neutral toward",   "description": "Neither allied nor hostile; indifferent" },
+  { "name": "Vassal of",        "description": "Subordinate to or controlled by the other faction" },
+  { "name": "Trade Partner of", "description": "Maintains a commercial or economic relationship" },
+  { "name": "Contested by",     "description": "Relations are disputed or actively shifting" },
+  { "name": "Former Ally of",   "description": "Once allied; now estranged or broken" }
+]

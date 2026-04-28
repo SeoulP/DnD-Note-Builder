@@ -8,31 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int isPhysical, int isEnergy, int isPersistent, int isSplash)[] Defaults =
-        {
-            ("Piercing",             1, 0, 0, 0),
-            ("Slashing",             1, 0, 0, 0),
-            ("Bludgeoning",          1, 0, 0, 0),
-            ("Acid",                 0, 1, 0, 0),
-            ("Acid (Persistent)",    0, 1, 1, 0),
-            ("Acid (Splash)",        0, 1, 0, 1),
-            ("Cold",                 0, 1, 0, 0),
-            ("Electricity",          0, 1, 0, 0),
-            ("Fire",                 0, 1, 0, 0),
-            ("Fire (Persistent)",    0, 1, 1, 0),
-            ("Fire (Splash)",        0, 1, 0, 1),
-            ("Sonic",                0, 1, 0, 0),
-            ("Force",                0, 1, 0, 0),
-            ("Poison",               0, 0, 0, 0),
-            ("Poison (Persistent)",  0, 0, 1, 0),
-            ("Bleed",                0, 0, 0, 0),
-            ("Bleed (Persistent)",   0, 0, 1, 0),
-            ("Mental",               0, 0, 0, 0),
-            ("Spirit",               0, 0, 0, 0),
-            ("Void",                 0, 0, 0, 0),
-            ("Vitality",             0, 0, 0, 0),
-        };
-
         public Pf2eDamageTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -49,24 +24,6 @@ namespace DndBuilder.Core.Repositories
                 UNIQUE(campaign_id, name)
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, isPhysical, isEnergy, isPersistent, isSplash) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO pathfinder_damage_types (campaign_id, name, is_physical, is_energy, is_persistent, is_splash)
-                    SELECT @cid, @name, @phys, @energy, @persist, @splash WHERE NOT EXISTS
-                        (SELECT 1 FROM pathfinder_damage_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",     campaignId);
-                cmd.Parameters.AddWithValue("@name",    name);
-                cmd.Parameters.AddWithValue("@phys",    isPhysical);
-                cmd.Parameters.AddWithValue("@energy",  isEnergy);
-                cmd.Parameters.AddWithValue("@persist", isPersistent);
-                cmd.Parameters.AddWithValue("@splash",  isSplash);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eDamageType> GetAll(int campaignId)

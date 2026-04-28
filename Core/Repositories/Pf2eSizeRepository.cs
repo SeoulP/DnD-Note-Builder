@@ -8,16 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, int sortOrder)[] Defaults =
-        {
-            ("Tiny",       1),
-            ("Small",      2),
-            ("Medium",     3),
-            ("Large",      4),
-            ("Huge",       5),
-            ("Gargantuan", 6),
-        };
-
         public Pf2eSizeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -29,18 +19,6 @@ namespace DndBuilder.Core.Repositories
                 sort_order INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults()
-        {
-            foreach (var (name, sortOrder) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT OR IGNORE INTO pathfinder_sizes (name, sort_order) VALUES (@name, @sort)";
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@sort", sortOrder);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eSize> GetAll()

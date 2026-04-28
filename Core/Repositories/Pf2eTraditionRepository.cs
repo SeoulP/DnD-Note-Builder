@@ -8,11 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly string[] Defaults =
-        {
-            "Arcane", "Divine", "Occult", "Primal",
-        };
-
         public Pf2eTraditionRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -26,20 +21,6 @@ namespace DndBuilder.Core.Repositories
                 UNIQUE(campaign_id, name)
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var name in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO pathfinder_traditions (campaign_id, name, description)
-                    SELECT @cid, @name, '' WHERE NOT EXISTS
-                        (SELECT 1 FROM pathfinder_traditions WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<Pf2eTradition> GetAll(int campaignId)
