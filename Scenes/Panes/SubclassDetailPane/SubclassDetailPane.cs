@@ -35,7 +35,7 @@ public partial class SubclassDetailPane : ScrollContainer
         _notes.TextChanged      += () => Save();
         _notes.NavigateTo       += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 
-        WireSectionToggle(_levelsToggle, _levelsInset);
+        UiHelpers.WireSectionToggle(_levelsToggle, _levelsInset);
 
         _confirmDialog = DialogHelper.Make("Delete Subclass");
         AddChild(_confirmDialog);
@@ -123,51 +123,16 @@ public partial class SubclassDetailPane : ScrollContainer
             {
                 var ability = _db.Abilities.Get(abilId);
                 if (ability == null) continue;
-                int capId = abilId;
-
-                var row     = new HBoxContainer();
-                var nameBtn = new Button
-                {
-                    Text                    = ability.Name,
-                    Flat                    = true,
-                    Alignment               = HorizontalAlignment.Left,
-                    SizeFlagsHorizontal     = SizeFlags.ExpandFill,
-                    MouseDefaultCursorShape = CursorShape.PointingHand,
-                };
-                nameBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "ability", capId);
-
-                var usesBtn = new Button
-                {
-                    Text              = UsesFormula.FormatForDisplay(usesStr),
-                    CustomMinimumSize = new Vector2(80, 0),
-                    TooltipText       = "Click to edit usage scaling",
-                };
+                int    capId          = abilId;
                 string currentFormula = usesStr;
-                usesBtn.Pressed += () =>
-                {
-                    var popup = new UsageProgressionPopup();
-                    AddChild(popup);
-                    popup.Setup(ability.Name, currentFormula);
-                    popup.Saved += formula =>
-                    {
-                        currentFormula = formula;
-                        _db.Abilities.UpdateSubclassAbilityUses(_subclass.Id, capId, formula);
-                        usesBtn.Text = UsesFormula.FormatForDisplay(formula);
-                    };
-                    popup.PopupCentered();
-                };
 
-                var delBtn = new Button { Text = "×", Flat = true };
-                delBtn.Pressed += () =>
-                {
-                    _db.Abilities.RemoveSubclassAbility(_subclass.Id, capId);
-                    Refresh();
-                };
-
-                row.AddChild(nameBtn);
-                row.AddChild(usesBtn);
-                row.AddChild(delBtn);
-                abilityRows.AddChild(row);
+                abilityRows.AddChild(LevelAbilityRow.Make(
+                    ability.Name,
+                    currentFormula,
+                    () => EmitSignal(SignalName.NavigateTo, "ability", capId),
+                    formula => { currentFormula = formula; _db.Abilities.UpdateSubclassAbilityUses(_subclass.Id, capId, formula); },
+                    () => { _db.Abilities.RemoveSubclassAbility(_subclass.Id, capId); Refresh(); },
+                    child => AddChild(child)));
             }
 
             addAbilityBtn.NoneText = "(Add ability...)";
@@ -204,15 +169,4 @@ public partial class SubclassDetailPane : ScrollContainer
         return box;
     }
 
-    private static void WireSectionToggle(Button toggle, Control content, bool startCollapsed = false)
-    {
-        content.Visible = !startCollapsed;
-        string label    = toggle.Text;
-        toggle.Text     = (startCollapsed ? "▶  " : "▼  ") + label;
-        toggle.Pressed += () =>
-        {
-            content.Visible = !content.Visible;
-            toggle.Text     = (content.Visible ? "▼  " : "▶  ") + label;
-        };
-    }
 }

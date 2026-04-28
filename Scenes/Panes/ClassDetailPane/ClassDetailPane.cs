@@ -87,14 +87,14 @@ public partial class ClassDetailPane : ScrollContainer
         _db = GetNode<DatabaseService>("/root/DatabaseService");
 
         // Section toggles
-        WireSectionToggle(_descToggle,          _descInset);
-        WireSectionToggle(_coreStatsToggle,     _coreStatsInset);
-        WireSectionToggle(_proficienciesToggle, _proficienciesInset);
-        WireSectionToggle(_startingEquipToggle, _startingEquipInset);
-        WireSectionToggle(_levelsToggle,        _levelsInset);
-        WireSectionToggle(_subclassesToggle,    _subclassesInset);
-        WireSectionToggle(_abilitiesToggle,     _abilitiesInset);
-        WireSectionToggle(_notesToggle,         _notesInset);
+        UiHelpers.WireSectionToggle(_descToggle,          _descInset);
+        UiHelpers.WireSectionToggle(_coreStatsToggle,     _coreStatsInset);
+        UiHelpers.WireSectionToggle(_proficienciesToggle, _proficienciesInset);
+        UiHelpers.WireSectionToggle(_startingEquipToggle, _startingEquipInset);
+        UiHelpers.WireSectionToggle(_levelsToggle,        _levelsInset);
+        UiHelpers.WireSectionToggle(_subclassesToggle,    _subclassesInset);
+        UiHelpers.WireSectionToggle(_abilitiesToggle,     _abilitiesInset);
+        UiHelpers.WireSectionToggle(_notesToggle,         _notesInset);
 
         // Name
         _nameInput.TextChanged  += name => { Save(); EmitSignal(SignalName.NameChanged, "class", _class?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Class" : name); };
@@ -253,18 +253,6 @@ public partial class ClassDetailPane : ScrollContainer
         _isPreparedCasterInput.Visible = hasSpell;
     }
 
-    private static void WireSectionToggle(Button toggle, Control content, bool startCollapsed = false)
-    {
-        content.Visible = !startCollapsed;
-        string label    = toggle.Text;
-        toggle.Text     = (startCollapsed ? "▶  " : "▼  ") + label;
-        toggle.Pressed += () =>
-        {
-            content.Visible = !content.Visible;
-            toggle.Text     = (content.Visible ? "▼  " : "▶  ") + label;
-        };
-    }
-
     private static void BuildCheckboxRows(VBoxContainer container, string[] options, List<CheckBox> checks, Action onChange, int columns)
     {
         HBoxContainer row = null;
@@ -371,50 +359,13 @@ public partial class ClassDetailPane : ScrollContainer
 
                 if (!usesMap.ContainsKey(capId)) usesMap[capId] = "--";
 
-                var row      = new HBoxContainer();
-                var nameBtn  = new Button
-                {
-                    Text                    = ability.Name,
-                    Flat                    = true,
-                    Alignment               = HorizontalAlignment.Left,
-                    SizeFlagsHorizontal     = SizeFlags.ExpandFill,
-                    MouseDefaultCursorShape = CursorShape.PointingHand,
-                };
-                nameBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "ability", capId);
-
-                var usesBtn = new Button
-                {
-                    Text              = UsesLabel(usesMap.GetValueOrDefault(capId, "--")),
-                    CustomMinimumSize = new Vector2(80, 0),
-                    TooltipText       = "Click to edit usage scaling",
-                };
-                usesBtn.Pressed += () =>
-                {
-                    var popup = new UsageProgressionPopup();
-                    AddChild(popup);
-                    popup.Setup(ability.Name, usesMap.GetValueOrDefault(capId, "--"));
-                    popup.Saved += formula =>
-                    {
-                        usesMap[capId] = formula;
-                        SaveUsesMap();
-                        usesBtn.Text = UsesFormula.FormatForDisplay(formula);
-                    };
-                    popup.PopupCentered();
-                };
-
-                var delBtn = new Button { Text = "×", Flat = true };
-                delBtn.Pressed += () =>
-                {
-                    _db.Abilities.RemoveLevelAbility(lvl.Id, capId);
-                    usesMap.Remove(capId);
-                    SaveUsesMap();
-                    Refresh();
-                };
-
-                row.AddChild(nameBtn);
-                row.AddChild(usesBtn);
-                row.AddChild(delBtn);
-                abilityRows.AddChild(row);
+                abilityRows.AddChild(LevelAbilityRow.Make(
+                    ability.Name,
+                    usesMap.GetValueOrDefault(capId, "--"),
+                    () => EmitSignal(SignalName.NavigateTo, "ability", capId),
+                    formula => { usesMap[capId] = formula; SaveUsesMap(); },
+                    () => { _db.Abilities.RemoveLevelAbility(lvl.Id, capId); usesMap.Remove(capId); SaveUsesMap(); Refresh(); },
+                    child => AddChild(child)));
             }
 
             addAbilityBtn.NoneText = "(Add ability...)";
@@ -460,8 +411,6 @@ public partial class ClassDetailPane : ScrollContainer
     }
 
     private static string FormatLevelHeader(ClassLevel lvl) => $"Level {lvl.Level,2}";
-
-    private static string UsesLabel(string val) => UsesFormula.FormatForDisplay(val);
 
     // ── Subclasses ────────────────────────────────────────────────────────────
 

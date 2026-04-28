@@ -1267,62 +1267,18 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         return row;
     }
 
-    // Compact trait chip — text-width only, no ExpandFill. Used in the creature Traits section.
-    private Control MakeCompactTraitChip(int traitTypeId, Action onDelete)
-    {
-        var deleteHover = new StyleBoxFlat { BgColor = ThemeManager.DeleteHoverColor };
-        deleteHover.SetCornerRadiusAll(4);
-
-        var chip = new PanelContainer();
-        if (_traitDescriptions.TryGetValue(traitTypeId, out var desc) && !string.IsNullOrWhiteSpace(desc))
-            chip.TooltipText = desc;
-
-        var inner = new MarginContainer();
-        inner.AddThemeConstantOverride("margin_left",   4);
-        inner.AddThemeConstantOverride("margin_right",  4);
-        inner.AddThemeConstantOverride("margin_top",    3);
-        inner.AddThemeConstantOverride("margin_bottom", 3);
-
-        var hrow = new HBoxContainer(); hrow.AddThemeConstantOverride("separation", 2);
-        var lbl = new Label { Text = TitleCase(L(_traitNames, traitTypeId)) };
-        lbl.AddThemeFontSizeOverride("font_size", 12);
-        var rmBtn = new Button { Text = "×", Flat = true, FocusMode = Control.FocusModeEnum.None, MouseDefaultCursorShape = CursorShape.PointingHand };
-        rmBtn.AddThemeFontSizeOverride("font_size", 11);
-        rmBtn.MouseEntered += () => chip.AddThemeStyleboxOverride("panel", deleteHover);
-        rmBtn.MouseExited  += () => chip.RemoveThemeStyleboxOverride("panel");
-        var confirmDlg = DialogHelper.Make(text: "Remove this trait? This cannot be undone.");
-        confirmDlg.Confirmed += () => { onDelete(); chip.QueueFree(); };
-        chip.AddChild(confirmDlg);
-        rmBtn.Pressed += () => DialogHelper.Show(confirmDlg);
-        hrow.AddChild(lbl); hrow.AddChild(rmBtn);
-        inner.AddChild(hrow);
-        chip.AddChild(inner);
-        return chip;
-    }
+    private Control MakeCompactTraitChip(int traitTypeId, Action onDelete) =>
+        Chip.MakeCompact(
+            TitleCase(L(_traitNames, traitTypeId)),
+            onDelete,
+            _traitDescriptions.TryGetValue(traitTypeId, out var d) && !string.IsNullOrWhiteSpace(d) ? d : null);
 
     // ── Trait pills (read-only, used in Abilities tab) ────────────────────────
 
-    private HBoxContainer MakeTraitPillRow(IEnumerable<int> traitTypeIds)
-    {
-        var row = new HBoxContainer(); row.AddThemeConstantOverride("separation", 4);
-        foreach (var tid in traitTypeIds) row.AddChild(MakeTraitPill(tid));
-        return row;
-    }
-
-    private Label MakeTraitPill(int traitTypeId)
-    {
-        var pill = new Label { Text = TitleCase(L(_traitNames, traitTypeId)), MouseFilter = Control.MouseFilterEnum.Stop };
-        pill.AddThemeFontSizeOverride("font_size", 11);
-        pill.AddThemeStyleboxOverride("normal", new StyleBoxFlat
-        {
-            BgColor = new Color(0.24f, 0.31f, 0.50f),
-            ContentMarginLeft = 6, ContentMarginRight = 6, ContentMarginTop = 2, ContentMarginBottom = 2,
-            CornerRadiusTopLeft = 3, CornerRadiusTopRight = 3, CornerRadiusBottomLeft = 3, CornerRadiusBottomRight = 3,
-        });
-        if (_traitDescriptions.TryGetValue(traitTypeId, out var desc) && !string.IsNullOrWhiteSpace(desc))
-            pill.TooltipText = desc;
-        return pill;
-    }
+    private Control MakeTraitPill(int traitTypeId) =>
+        Chip.MakePill(
+            TitleCase(L(_traitNames, traitTypeId)),
+            _traitDescriptions.TryGetValue(traitTypeId, out var d) && !string.IsNullOrWhiteSpace(d) ? d : null);
 
     // ── Stat section label helpers ─────────────────────────────────────────────
 

@@ -44,7 +44,7 @@ public partial class SpeciesDetailPane : ScrollContainer
 
         _addSubspeciesButton.Pressed += AddSubspecies;
 
-        WireSectionToggle(_levelsToggle, _levelsInset);
+        UiHelpers.WireSectionToggle(_levelsToggle, _levelsInset);
         _initLevelsButton.Pressed += () =>
         {
             if (_species == null) return;
@@ -232,50 +232,13 @@ public partial class SpeciesDetailPane : ScrollContainer
 
                 if (!usesMap.ContainsKey(capId)) usesMap[capId] = "--";
 
-                var row     = new HBoxContainer();
-                var nameBtn = new Button
-                {
-                    Text                    = ability.Name,
-                    Flat                    = true,
-                    Alignment               = HorizontalAlignment.Left,
-                    SizeFlagsHorizontal     = SizeFlags.ExpandFill,
-                    MouseDefaultCursorShape = CursorShape.PointingHand,
-                };
-                nameBtn.Pressed += () => EmitSignal(SignalName.NavigateTo, "ability", capId);
-
-                var usesBtn = new Button
-                {
-                    Text              = UsesLabel(usesMap.GetValueOrDefault(capId, "--")),
-                    CustomMinimumSize = new Vector2(80, 0),
-                    TooltipText       = "Click to edit usage scaling",
-                };
-                usesBtn.Pressed += () =>
-                {
-                    var popup = new UsageProgressionPopup();
-                    AddChild(popup);
-                    popup.Setup(ability.Name, usesMap.GetValueOrDefault(capId, "--"));
-                    popup.Saved += formula =>
-                    {
-                        usesMap[capId] = formula;
-                        SaveUsesMap();
-                        usesBtn.Text = UsesFormula.FormatForDisplay(formula);
-                    };
-                    popup.PopupCentered();
-                };
-
-                var delBtn = new Button { Text = "×", Flat = true };
-                delBtn.Pressed += () =>
-                {
-                    _db.Abilities.RemoveSpeciesLevelAbility(lvl.Id, capId);
-                    usesMap.Remove(capId);
-                    SaveUsesMap();
-                    Refresh();
-                };
-
-                row.AddChild(nameBtn);
-                row.AddChild(usesBtn);
-                row.AddChild(delBtn);
-                abilityRows.AddChild(row);
+                abilityRows.AddChild(LevelAbilityRow.Make(
+                    ability.Name,
+                    usesMap.GetValueOrDefault(capId, "--"),
+                    () => EmitSignal(SignalName.NavigateTo, "ability", capId),
+                    formula => { usesMap[capId] = formula; SaveUsesMap(); },
+                    () => { _db.Abilities.RemoveSpeciesLevelAbility(lvl.Id, capId); usesMap.Remove(capId); SaveUsesMap(); Refresh(); },
+                    child => AddChild(child)));
             }
 
             addAbilityBtn.NoneText = "(Add ability...)";
@@ -317,18 +280,4 @@ public partial class SpeciesDetailPane : ScrollContainer
     }
 
     private static string FormatLevelHeader(SpeciesLevel lvl) => $"Level {lvl.Level,2}";
-
-    private static string UsesLabel(string val) => UsesFormula.FormatForDisplay(val);
-
-    private static void WireSectionToggle(Button toggle, Control content, bool startCollapsed = false)
-    {
-        content.Visible = !startCollapsed;
-        string label    = toggle.Text;
-        toggle.Text     = (startCollapsed ? "▶  " : "▼  ") + label;
-        toggle.Pressed += () =>
-        {
-            content.Visible = !content.Visible;
-            toggle.Text     = (content.Visible ? "▼  " : "▶  ") + label;
-        };
-    }
 }
