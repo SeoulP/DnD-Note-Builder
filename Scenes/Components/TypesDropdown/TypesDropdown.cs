@@ -8,7 +8,7 @@ using Godot;
 /// Type to filter, hover-reveal × to delete, "New type..." form at the bottom.
 /// Replaces OptionButton for all seeded-type dropdowns (Species, NPC Status, etc.).
 /// </summary>
-public partial class TypeOptionButton : Button
+public partial class TypesDropdown : Button
 {
     [Signal] public delegate void TypeSelectedEventHandler(int id);  // -1 = none
     [Signal] public delegate void TypeCreatedEventHandler(int id);   // fired when a new item is added via the form

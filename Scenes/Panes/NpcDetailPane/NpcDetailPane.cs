@@ -21,10 +21,10 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private OptionButton      _speciesInput;
     [Export] private LineEdit          _occupationInput;
     [Export] private LineEdit          _genderInput;
-    [Export] private TypeOptionButton  _statusInput;
-    [Export] private TypeOptionButton  _relationshipInput;
-    [Export] private TypeOptionButton  _factionSelect;
-    [Export] private TypeOptionButton  _roleSelect;
+    [Export] private TypesDropdown  _statusInput;
+    [Export] private TypesDropdown  _relationshipInput;
+    [Export] private TypesDropdown  _factionSelect;
+    [Export] private TypesDropdown  _roleSelect;
     [Export] private Button            _addFactionButton;
     [Export] private VBoxContainer     _factionRowsContainer;
     [Export] private Button            _deleteButton;
@@ -33,8 +33,8 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private WikiNotes _notes;
     [Export] private ImageCarousel     _imageCarousel;
     [Export] private Button            _relNpcSelfLabel;
-    [Export] private TypeOptionButton  _relTypeSelect;
-    [Export] private TypeOptionButton  _relNpcSelect;
+    [Export] private TypesDropdown  _relTypeSelect;
+    [Export] private TypesDropdown  _relNpcSelect;
     [Export] private Button            _addRelButton;
     [Export] private VBoxContainer     _relRowsContainer;
 

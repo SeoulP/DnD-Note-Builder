@@ -24,13 +24,13 @@ public partial class FactionDetailPane : ScrollContainer
     [Export] private Button        _deleteButton;
     [Export] private VBoxContainer _aliasChipsRow;
     [Export] private ImageCarousel _imageCarousel;
-    [Export] private TypeOptionButton _npcSelect;
-    [Export] private TypeOptionButton _roleSelect;
+    [Export] private TypesDropdown _npcSelect;
+    [Export] private TypesDropdown _roleSelect;
     [Export] private Button           _addNpcButton;
     [Export] private VBoxContainer    _npcRowsContainer;
     [Export] private Button           _relFactionSelfLabel;
-    [Export] private TypeOptionButton _relFactionTypeSelect;
-    [Export] private TypeOptionButton _relFactionSelect;
+    [Export] private TypesDropdown _relFactionTypeSelect;
+    [Export] private TypesDropdown _relFactionSelect;
     [Export] private Button           _addRelFactionButton;
     [Export] private VBoxContainer    _relFactionRowsContainer;
 

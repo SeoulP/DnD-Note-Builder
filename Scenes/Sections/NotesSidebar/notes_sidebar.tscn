@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scenes/Components/NotesSidebar/NotesSidebar.cs" id="1_script"]
+[ext_resource type="Script" path="res://Scenes/Sections/NotesSidebar/NotesSidebar.cs" id="1_script"]
 
 [node name="NotesSidebar" type="VBoxContainer" node_paths=PackedStringArray("_addPartyButton", "_addNpcsButton", "_addFactionButton", "_addLocationsButton", "_addSessionsButton", "_addItemsButton", "_addQuestsButton", "_partyContainer", "_npcsContainer", "_factionsContainer", "_locationsContainer", "_sessionsContainer", "_itemsContainer", "_questsContainer")]
 layout_mode = 2

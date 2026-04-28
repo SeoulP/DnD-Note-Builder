@@ -109,7 +109,7 @@ public partial class SubclassDetailPane : ScrollContainer
 
         var abilityRows   = new VBoxContainer();
         abilityRows.AddThemeConstantOverride("separation", 2);
-        var addAbilityBtn = new TypeOptionButton();
+        var addAbilityBtn = new TypesDropdown();
 
         void Refresh()
         {

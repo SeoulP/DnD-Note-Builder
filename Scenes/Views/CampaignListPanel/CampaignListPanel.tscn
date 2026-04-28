@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dr4s868xq75ta"]
 
-[ext_resource type="PackedScene" uid="uid://d0wlwg2ktmkdg" path="res://Scenes/Components/CampaignList/campaign_list.tscn" id="1_mwuvt"]
+[ext_resource type="PackedScene" uid="uid://d0wlwg2ktmkdg" path="res://Scenes/Sections/CampaignList/campaign_list.tscn" id="1_mwuvt"]
 [ext_resource type="Script" uid="uid://dq4itgbcw1kwy" path="res://Scenes/Views/CampaignListPanel/CampaignListPanel.cs" id="1_rj14g"]
 [ext_resource type="PackedScene" uid="uid://buc11k7dyc1de" path="res://Scenes/Modals/NewCampaignModal/add_campaign_modal.tscn" id="2_mwuvt"]
 

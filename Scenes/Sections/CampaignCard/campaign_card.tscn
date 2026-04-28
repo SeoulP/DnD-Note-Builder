@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ddivlvwirarno"]
 
-[ext_resource type="Script" uid="uid://dtpli84lswtll" path="res://Scenes/Components/CampaignCard/CampaignCard.cs" id="1_240op"]
+[ext_resource type="Script" uid="uid://dtpli84lswtll" path="res://Scenes/Sections/CampaignCard/CampaignCard.cs" id="1_240op"]
 [ext_resource type="Texture2D" uid="uid://btosnwkfg2b0q" path="res://Scenes/Icons/Clipboard.png" id="2_i4ydu"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_bdrn8"]

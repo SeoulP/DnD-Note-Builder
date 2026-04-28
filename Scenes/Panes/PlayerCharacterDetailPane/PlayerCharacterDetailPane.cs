@@ -948,9 +948,9 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         if (_pc == null) return;
         var ownedIds = new HashSet<int>(GetAllOwnedAbilities().ConvertAll(a => a.Id));
 
-        // Create a hidden TypeOptionButton child sized to match the + button so its
+        // Create a hidden TypesDropdown child sized to match the + button so its
         // popup positions correctly via GetGlobalRect().
-        var picker = new TypeOptionButton
+        var picker = new TypesDropdown
         {
             NoneText          = "— Cancel —",
             AutoSelectOnAdd   = true,

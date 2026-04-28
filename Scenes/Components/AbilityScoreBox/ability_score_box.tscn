@@ -7,5 +7,5 @@ size_flags_horizontal = 4
 theme = ExtResource("1_bance")
 theme_override_font_sizes/font_size = 24
 text = "10"
-placeholder_text = "1–30"
+placeholder_text = "1u{2013}30"
 alignment = 1

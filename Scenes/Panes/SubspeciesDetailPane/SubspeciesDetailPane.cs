@@ -18,7 +18,7 @@ public partial class SubspeciesDetailPane : ScrollContainer
     [Export] private TextEdit         _descInput;
     [Export] private WikiNotes        _notes;
     [Export] private VBoxContainer    _abilitiesContainer;
-    [Export] private TypeOptionButton _addAbilityButton;
+    [Export] private TypesDropdown _addAbilityButton;
     [Export] private Button           _deleteButton;
     [Export] private ImageCarousel    _imageCarousel;
 

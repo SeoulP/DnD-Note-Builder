@@ -8,13 +8,13 @@ public partial class CampaignListPanel : VBoxContainer
 	[Export] private Button _addCampaignButton;
 	[Export] private CampaignList _campaignList;
 
-	private AddCampaignModal _addCampaignModal;
+	private NewCampaignModal _addCampaignModal;
 	
 	private DatabaseService _databaseService;
 
 	public override void _Ready()
 	{
-		_addCampaignModal = _addCampaignModalScene.Instantiate<AddCampaignModal>();
+		_addCampaignModal = _addCampaignModalScene.Instantiate<NewCampaignModal>();
 		AddChild(_addCampaignModal);
 		_addCampaignModal.Hide();
 

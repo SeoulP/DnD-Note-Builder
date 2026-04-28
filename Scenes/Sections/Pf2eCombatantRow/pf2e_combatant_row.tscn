@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scenes/Components/Pf2eCombatantRow/Pf2eCombatantRow.cs" id="1_script"]
+[ext_resource type="Script" path="res://Scenes/Sections/Pf2eCombatantRow/Pf2eCombatantRow.cs" id="1_script"]
 
 [node name="Pf2eCombatantRow" type="PanelContainer" node_paths=PackedStringArray("_colorDot", "_nameLabel", "_initiativeInput", "_hpButton", "_action1Btn", "_action2Btn", "_action3Btn", "_deleteButton")]
 script = ExtResource("1_script")

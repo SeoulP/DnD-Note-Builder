@@ -25,13 +25,13 @@ public partial class LocationDetailPane : ScrollContainer
     [Export] private Button           _deleteButton;
     [Export] private VBoxContainer    _aliasChipsRow;
     [Export] private VBoxContainer    _factionRowsContainer;
-    [Export] private TypeOptionButton _factionSelect;
-    [Export] private TypeOptionButton _roleSelect;
+    [Export] private TypesDropdown _factionSelect;
+    [Export] private TypesDropdown _roleSelect;
     [Export] private Button           _addFactionButton;
     [Export] private Button           _setParentButton;
-    [Export] private TypeOptionButton _parentLocationSelect;
+    [Export] private TypesDropdown _parentLocationSelect;
     [Export] private VBoxContainer    _parentLocationContainer;
-    [Export] private TypeOptionButton _subLocationSelect;
+    [Export] private TypesDropdown _subLocationSelect;
     [Export] private Button           _addSubLocationButton;
     [Export] private VBoxContainer    _subLocationsContainer;
     [Export] private ImageCarousel    _imageCarousel;

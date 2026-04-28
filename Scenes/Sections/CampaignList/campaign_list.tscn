@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d0wlwg2ktmkdg"]
 
-[ext_resource type="Script" uid="uid://p04dh4dmrcld" path="res://Scenes/Components/CampaignList/CampaignList.cs" id="1_tlgc7"]
-[ext_resource type="PackedScene" uid="uid://ddivlvwirarno" path="res://Scenes/Components/CampaignCard/campaign_card.tscn" id="2_6okr6"]
+[ext_resource type="Script" uid="uid://p04dh4dmrcld" path="res://Scenes/Sections/CampaignList/CampaignList.cs" id="1_tlgc7"]
+[ext_resource type="PackedScene" uid="uid://ddivlvwirarno" path="res://Scenes/Sections/CampaignCard/campaign_card.tscn" id="2_6okr6"]
 
 [node name="CampaignList" type="VBoxContainer" unique_id=1352534916 node_paths=PackedStringArray("_cardsContainer")]
 anchors_preset = 14

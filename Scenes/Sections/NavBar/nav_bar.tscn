@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://d8nvbscene1x2"]
 
-[ext_resource type="Script" uid="uid://c7nbarscp1x2y" path="res://Scenes/Components/NavBar/NavBar.cs" id="1_navbar"]
+[ext_resource type="Script" uid="uid://c7nbarscp1x2y" path="res://Scenes/Sections/NavBar/NavBar.cs" id="1_navbar"]
 [ext_resource type="PackedScene" path="res://Scenes/Modals/ImportExportModal/import_export_modal.tscn" id="2_importexport"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_navbar"]

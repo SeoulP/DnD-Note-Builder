@@ -19,7 +19,7 @@ public partial class AbilityDetailPane : ScrollContainer
     [Signal] public delegate void DeletedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit          _nameInput;
-    [Export] private TypeOptionButton  _typeInput;
+    [Export] private TypesDropdown  _typeInput;
     [Export] private OptionButton  _actionInput;
     [Export] private LineEdit      _triggerInput;
     [Export] private OptionButton  _recoveryIntervalInput;
@@ -203,7 +203,7 @@ public partial class AbilityDetailPane : ScrollContainer
             _optionsContainer.AddChild(row);
         }
 
-        var addBtn = new TypeOptionButton { NoneText = "(Add option...)" };
+        var addBtn = new TypesDropdown { NoneText = "(Add option...)" };
         _optionsContainer.AddChild(addBtn);
         addBtn.Setup(
             () => _db.Abilities.GetAll(_ability.CampaignId)
@@ -250,7 +250,7 @@ public partial class AbilityDetailPane : ScrollContainer
         var amount         = savedAmount;
 
         var row        = new HBoxContainer();
-        var typePicker = new TypeOptionButton { SizeFlagsHorizontal = SizeFlags.ExpandFill, NoneText = "(pick resource)", AutoSelectOnAdd = true };
+        var typePicker = new TypesDropdown { SizeFlagsHorizontal = SizeFlags.ExpandFill, NoneText = "(pick resource)", AutoSelectOnAdd = true };
         var amountInput = IntInput.Make(amount, 1, 99, val => {
             amount = val;
             if (!pending && resourceTypeId != -1)

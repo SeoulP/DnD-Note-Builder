@@ -14,7 +14,7 @@ public partial class ItemDetailPane : ScrollContainer
     [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit         _nameInput;
-    [Export] private TypeOptionButton _typeInput;
+    [Export] private TypesDropdown _typeInput;
     [Export] private CheckBox         _isUniqueInput;
     [Export] private TextEdit         _descInput;
     [Export] private WikiNotes _notes;

@@ -18,9 +18,9 @@
 [ext_resource type="PackedScene" path="res://Scenes/Panes/Pf2eCharacterDetailPane/pf2e_character_detail_pane.tscn" id="15_pf2epcdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Panes/Pf2eCreatureDetailPane/pf2e_creature_detail_pane.tscn" id="16_pf2ecreatdet"]
 [ext_resource type="PackedScene" path="res://Scenes/Panes/Pf2eEncounterDetailPane/pf2e_encounter_detail_pane.tscn" id="17_encounterdet"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/NotesSidebar/notes_sidebar.tscn" id="18_notessidebar"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/SystemSidebar/system_sidebar.tscn" id="19_systemsidebar"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/TrackerSidebar/tracker_sidebar.tscn" id="20_trackersidebar"]
+[ext_resource type="PackedScene" path="res://Scenes/Sections/NotesSidebar/notes_sidebar.tscn" id="18_notessidebar"]
+[ext_resource type="PackedScene" path="res://Scenes/Sections/SystemSidebar/system_sidebar.tscn" id="19_systemsidebar"]
+[ext_resource type="PackedScene" path="res://Scenes/Sections/TrackerSidebar/tracker_sidebar.tscn" id="20_trackersidebar"]
 
 [node name="CampaignView" type="Control" node_paths=PackedStringArray("_notesSidebarControl", "_systemSidebarControl", "_trackerSidebarControl", "_detailPanel", "_paneContainer", "_tabList", "_tabScroll", "_backButton", "_forwardButton")]
 layout_mode = 3

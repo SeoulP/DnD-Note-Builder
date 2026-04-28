@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scenes/Components/SystemSidebar/SystemSidebar.cs" id="1_script"]
+[ext_resource type="Script" path="res://Scenes/Sections/SystemSidebar/SystemSidebar.cs" id="1_script"]
 
 [node name="SystemSidebar" type="VBoxContainer" node_paths=PackedStringArray("_addClassesButton", "_addSpeciesButton", "_addAbilitiesButton", "_addCreaturesButton", "_classesContainer", "_speciesContainer", "_abilitiesContainer", "_creaturesContainer")]
 layout_mode = 2

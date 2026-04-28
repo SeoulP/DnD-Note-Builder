@@ -2,7 +2,7 @@
 
 [ext_resource type="Script"  path="res://Scenes/Panes/ClassDetailPane/ClassDetailPane.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
-[ext_resource type="Script" uid="uid://cx5d0l4bcrqvh" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="3_typeopt"]
+[ext_resource type="Script" uid="uid://cx5d0l4bcrqvh" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
 [ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]

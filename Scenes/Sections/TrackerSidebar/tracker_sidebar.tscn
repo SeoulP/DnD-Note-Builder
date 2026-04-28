@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scenes/Components/TrackerSidebar/TrackerSidebar.cs" id="1_script"]
+[ext_resource type="Script" path="res://Scenes/Sections/TrackerSidebar/TrackerSidebar.cs" id="1_script"]
 
 [node name="TrackerSidebar" type="VBoxContainer" node_paths=PackedStringArray("_addEncounterButton", "_encountersContainer")]
 layout_mode = 2

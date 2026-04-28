@@ -14,9 +14,9 @@ public partial class QuestDetailPane : ScrollContainer
     [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit         _nameInput;
-    [Export] private TypeOptionButton _statusInput;
-    [Export] private TypeOptionButton _questGiverInput;
-    [Export] private TypeOptionButton _locationInput;
+    [Export] private TypesDropdown _statusInput;
+    [Export] private TypesDropdown _questGiverInput;
+    [Export] private TypesDropdown _locationInput;
     [Export] private LineEdit         _rewardInput;
     [Export] private TextEdit         _descInput;
     [Export] private WikiNotes        _notes;

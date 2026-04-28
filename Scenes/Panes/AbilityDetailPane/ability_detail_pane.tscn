@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="3_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
-[ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="5_typeopt"]
+[ext_resource type="Script" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="5_typeopt"]
 [ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]
 
 [node name="AbilityDetailPane" type="ScrollContainer" unique_id=198427409 node_paths=PackedStringArray("_nameInput", "_typeInput", "_actionInput", "_triggerInput", "_recoveryIntervalInput", "_recoveryAmountInput", "_costsContainer", "_addCostButton", "_effectInput", "_notes", "_deleteButton", "_imageCarousel", "_poolTypeInput", "_pickCountModeRow", "_pickCountModeInput", "_formulaRow", "_choiceCountBaseInput", "_choiceCountAttrInput", "_choiceCountProfInput", "_choiceCountLevelInput", "_fixedOptionsSection", "_optionsContainer", "_choiceProgressionSection", "_choiceProgressionContainer", "_addChoiceProgressionButton")]

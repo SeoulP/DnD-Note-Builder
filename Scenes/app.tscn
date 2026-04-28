@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bo1iiipda7yrx" path="res://Scenes/App.cs" id="1_nmq3k"]
 [ext_resource type="PackedScene" path="res://Scenes/Views/CampaignListPanel/CampaignListPanel.tscn" id="2_sb7qb"]
 [ext_resource type="PackedScene" path="res://Scenes/Views/CampaignView/campaign_view.tscn" id="3_dash"]
-[ext_resource type="PackedScene" uid="uid://d8nvbscene1x2" path="res://Scenes/Components/NavBar/nav_bar.tscn" id="4_navbar"]
+[ext_resource type="PackedScene" uid="uid://d8nvbscene1x2" path="res://Scenes/Sections/NavBar/nav_bar.tscn" id="4_navbar"]
 [ext_resource type="PackedScene" uid="uid://dtoast1x9b3c" path="res://Scenes/Components/Toast/toast.tscn" id="5_toast"]
 
 [node name="App" type="Control" unique_id=2117337232 node_paths=PackedStringArray("_appPanel", "_navBar")]

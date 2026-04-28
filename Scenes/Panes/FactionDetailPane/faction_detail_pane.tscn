@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
-[ext_resource type="Script" path="res://Scenes/Components/TypeOptionButton/TypeOptionButton.cs" id="5_typeopt"]
+[ext_resource type="Script" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="5_typeopt"]
 
 [node name="FactionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_typeInput", "_descInput", "_goalsInput", "_notes", "_deleteButton", "_imageCarousel", "_npcSelect", "_roleSelect", "_addNpcButton", "_npcRowsContainer", "_relFactionSelfLabel", "_relFactionTypeSelect", "_relFactionSelect", "_addRelFactionButton", "_relFactionRowsContainer")]
 anchors_preset = 15

@@ -4,12 +4,12 @@ using System.Linq;
 using Godot;
 
 /// <summary>
-/// Two-column variant of TypeOptionButton for NPC relationship types.
+/// Two-column variant of TypesDropdown for NPC relationship types.
 /// Each row shows [ Forward label ] ↔ [ Reverse label ] so the user can
 /// pick both the type and its direction in one click.
 /// Symmetric types (ReverseLabel == null) show a single full-width button.
 /// </summary>
-public partial class RelationshipTypeOptionButton : Button
+public partial class RelationshipTypesDropdown : Button
 {
     [Signal] public delegate void TypeSelectedEventHandler(int id, bool isReversed);
     [Signal] public delegate void TypeCreatedEventHandler(int id);
@@ -289,7 +289,7 @@ public partial class RelationshipTypeOptionButton : Button
         popup.Hide();
     }
 
-    // ── fuzzy match (same as TypeOptionButton) ────────────────────────────────
+    // ── fuzzy match (same as TypesDropdown) ────────────────────────────────
 
     private const float FuzzyThreshold = 0.7f;
 

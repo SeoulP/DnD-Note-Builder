@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scenes/Panes/Pf2eEncounterDetailPane/Pf2eEncounterDetailPane.cs" id="1_script"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/Pf2eCombatantRow/pf2e_combatant_row.tscn" id="3_combrow"]
+[ext_resource type="PackedScene" path="res://Scenes/Sections/Pf2eCombatantRow/pf2e_combatant_row.tscn" id="3_combrow"]
 
 [node name="Pf2eEncounterDetailPane" type="VBoxContainer" node_paths=PackedStringArray("_deleteButton", "_nameInput", "_sessionOption", "_resolveButton", "_addCombatantButton", "_showDefeatedButton", "_activeCombatantsVBox", "_defeatedDivider", "_defeatedCombatantsVBox", "_nextTurnButton", "_statBlockVBox")]
 anchors_preset = 15

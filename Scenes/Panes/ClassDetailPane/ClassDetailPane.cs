@@ -76,7 +76,7 @@ public partial class ClassDetailPane : ScrollContainer
     [Export] private Button           _abilitiesToggle;
     [Export] private Control          _abilitiesInset;
     [Export] private VBoxContainer    _abilitiesContainer;
-    [Export] private TypeOptionButton _addAbilityButton;
+    [Export] private TypesDropdown _addAbilityButton;
     [Export] private Button           _notesToggle;
     [Export] private Control          _notesInset;
     [Export] private WikiNotes        _notes;
@@ -335,7 +335,7 @@ public partial class ClassDetailPane : ScrollContainer
         var abilityRows = new VBoxContainer();
         abilityRows.AddThemeConstantOverride("separation", 2);
 
-        var addAbilityBtn = new TypeOptionButton();
+        var addAbilityBtn = new TypesDropdown();
 
         // uses map: abilityId → uses string ("--" or a number). Stored in class_data as "id:uses,..."
         var usesMap = new Dictionary<int, string>();

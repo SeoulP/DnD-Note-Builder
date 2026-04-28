@@ -23,7 +23,7 @@ public partial class SpeciesDetailPane : ScrollContainer
     [Export] private VBoxContainer    _subspeciesContainer;
     [Export] private Button           _addSubspeciesButton;
     [Export] private VBoxContainer    _abilitiesContainer;
-    [Export] private TypeOptionButton _addAbilityButton;
+    [Export] private TypesDropdown _addAbilityButton;
     [Export] private Button           _levelsToggle;
     [Export] private Control          _levelsInset;
     [Export] private Button           _initLevelsButton;
@@ -198,7 +198,7 @@ public partial class SpeciesDetailPane : ScrollContainer
         var abilityRows   = new VBoxContainer();
         abilityRows.AddThemeConstantOverride("separation", 2);
 
-        var addAbilityBtn = new TypeOptionButton();
+        var addAbilityBtn = new TypesDropdown();
 
         var usesMap = new Dictionary<int, string>();
         foreach (var seg in lvl.ClassData.Split(',', StringSplitOptions.RemoveEmptyEntries))

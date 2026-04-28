@@ -2,7 +2,7 @@ using System;
 using DndBuilder.Core.Models;
 using Godot;
 
-public partial class AddCampaignModal : Window
+public partial class NewCampaignModal : Window
 {
     DatabaseService _databaseService;
     [Signal] public delegate void CampaignCreatedEventHandler(int newId);
@@ -111,7 +111,7 @@ public partial class AddCampaignModal : Window
         }
         catch (System.Exception ex)
         {
-            AppLogger.Instance.Error("AddCampaignModal", "OnCreate failed", ex);
+            AppLogger.Instance.Error("NewCampaignModal", "OnCreate failed", ex);
             SetErrorMessage($"Error: {ex.Message}");
         }
     }
