@@ -148,6 +148,16 @@ public partial class SessionDetailPane : ScrollContainer
             any = true;
             _relatedLinksContainer.AddChild(BuildLinkSection(label, items, type, entityNames));
         }
+
+        // Encounters linked by session_id FK — not via wiki-links
+        var encounters = _db.Encounters.GetBySession(_session.Id);
+        if (encounters.Count > 0)
+        {
+            any = true;
+            _relatedLinksContainer.AddChild(BuildLinkSection("Encounters",
+                encounters.ConvertAll(e => (e.Name, e.Id)), "encounter", null));
+        }
+
         if (unresolved.Count > 0)
         {
             any = true;

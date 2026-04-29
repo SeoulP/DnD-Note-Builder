@@ -12,7 +12,7 @@
   { "name": "Controlled",  "has_value": 0 },
   { "name": "Dazzled",     "has_value": 0 },
   { "name": "Deafened",    "has_value": 0 },
-  { "name": "Doomed",      "has_value": 0 },
+  { "name": "Doomed",      "has_value": 1 },
   { "name": "Encumbered",  "has_value": 0 },
   { "name": "Fascinated",  "has_value": 0 },
   { "name": "Flat-Footed", "has_value": 0 },

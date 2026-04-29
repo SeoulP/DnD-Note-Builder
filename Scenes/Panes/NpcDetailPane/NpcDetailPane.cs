@@ -18,6 +18,7 @@ public partial class NpcDetailPane : ScrollContainer
     [Signal] public delegate void EntityCreatedEventHandler(string entityType, int entityId);
 
     [Export] private LineEdit          _nameInput;
+    [Export] private Label             _speciesLabel;
     [Export] private OptionButton      _speciesInput;
     [Export] private LineEdit          _occupationInput;
     [Export] private LineEdit          _genderInput;
@@ -83,10 +84,22 @@ public partial class NpcDetailPane : ScrollContainer
     {
         _npc = npc;
 
+        var campaign = _db.Campaigns.Get(npc.CampaignId);
+        var vocab    = DndBuilder.Core.Models.SystemVocabulary.For(campaign?.System ?? "");
+        if (_speciesLabel != null) _speciesLabel.Text = vocab.Species;
+
         _speciesInput.Clear();
         _speciesInput.AddItem("(unknown)", -1);
-        foreach (var sp in _db.Species.GetAll(npc.CampaignId))
-            _speciesInput.AddItem(sp.Name, sp.Id);
+        if (campaign?.System == "pathfinder2e")
+        {
+            foreach (var a in _db.Pf2eAncestries.GetAll(npc.CampaignId))
+                _speciesInput.AddItem(a.Name, a.Id);
+        }
+        else
+        {
+            foreach (var sp in _db.Species.GetAll(npc.CampaignId))
+                _speciesInput.AddItem(sp.Name, sp.Id);
+        }
         SelectOptionById(_speciesInput, npc.SpeciesId);
 
         _statusInput.AutoSelectOnAdd = true;

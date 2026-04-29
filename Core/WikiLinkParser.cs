@@ -29,12 +29,13 @@ public static class WikiLinkParser
     private static Dictionary<string, string> BuildLookup(DatabaseService db, int campaignId)
     {
         var d = new Dictionary<string, string>();
-        foreach (var x in db.Npcs.GetAll(campaignId))      d[x.Name.ToLowerInvariant()]  = $"npc:{x.Id}";
-        foreach (var x in db.Factions.GetAll(campaignId))  d[x.Name.ToLowerInvariant()]  = $"faction:{x.Id}";
-        foreach (var x in db.Locations.GetAll(campaignId)) d[x.Name.ToLowerInvariant()]  = $"location:{x.Id}";
-        foreach (var x in db.Sessions.GetAll(campaignId))  d[x.Title.ToLowerInvariant()] = $"session:{x.Id}";
-        foreach (var x in db.Items.GetAll(campaignId))     d[x.Name.ToLowerInvariant()]  = $"item:{x.Id}";
-        foreach (var x in db.Quests.GetAll(campaignId))    d[x.Name.ToLowerInvariant()]  = $"quest:{x.Id}";
+        foreach (var x in db.Npcs.GetAll(campaignId))          d[x.Name.ToLowerInvariant()]  = $"npc:{x.Id}";
+        foreach (var x in db.Factions.GetAll(campaignId))      d[x.Name.ToLowerInvariant()]  = $"faction:{x.Id}";
+        foreach (var x in db.Locations.GetAll(campaignId))     d[x.Name.ToLowerInvariant()]  = $"location:{x.Id}";
+        foreach (var x in db.Sessions.GetAll(campaignId))      d[x.Title.ToLowerInvariant()] = $"session:{x.Id}";
+        foreach (var x in db.Items.GetAll(campaignId))         d[x.Name.ToLowerInvariant()]  = $"item:{x.Id}";
+        foreach (var x in db.Quests.GetAll(campaignId))        d[x.Name.ToLowerInvariant()]  = $"quest:{x.Id}";
+        foreach (var x in db.Pf2eCreatures.GetAll(campaignId)) d[x.Name.ToLowerInvariant()]  = $"pf2e_creature:{x.Id}";
         // Aliases resolve to the same URL as the entity; entity name takes precedence on conflict
         foreach (var a in db.EntityAliases.GetAll(campaignId))
         {

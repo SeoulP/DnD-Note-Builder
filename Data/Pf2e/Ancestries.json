@@ -1,0 +1,15 @@
+[
+  { "name": "Dwarf",    "base_hp": 10, "size": "Medium", "speed_feet": 20, "description": "Dwarves are a stocky, determined people with strong ties to craftsmanship, stone, and ancestral tradition." },
+  { "name": "Elf",     "base_hp": 6,  "size": "Medium", "speed_feet": 30, "description": "Elves are long-lived, graceful people with pointed ears and a deep connection to magic and the natural world." },
+  { "name": "Gnome",   "base_hp": 8,  "size": "Small",  "speed_feet": 25, "description": "Gnomes are small, curious people from the First World, driven by wonder and prone to the Bleaching without sufficient stimulation." },
+  { "name": "Goblin",  "base_hp": 6,  "size": "Small",  "speed_feet": 25, "description": "Goblins are small, scrappy folk with a talent for survival and a love of fire, speed, and chaos." },
+  { "name": "Halfling","base_hp": 6,  "size": "Small",  "speed_feet": 25, "description": "Halflings are a short, nimble people known for their luck, community bonds, and adaptability." },
+  { "name": "Human",   "base_hp": 8,  "size": "Medium", "speed_feet": 25, "description": "Humans are versatile, ambitious people found across the world in countless cultures and traditions." },
+  { "name": "Leshy",   "base_hp": 8,  "size": "Small",  "speed_feet": 25, "description": "Leshys are nature spirits given physical form as plant-like beings, animated by powerful primal magic." },
+  { "name": "Orc",     "base_hp": 10, "size": "Medium", "speed_feet": 25, "description": "Orcs are strong, resilient people who have forged diverse cultures despite generations of conflict and mistrust." },
+  { "name": "Catfolk", "base_hp": 8,  "size": "Medium", "speed_feet": 25, "description": "Catfolk are a proud, curious people with feline features, a love of exploration, and complex clan-based societies." },
+  { "name": "Fetchling","base_hp": 8, "size": "Medium", "speed_feet": 25, "description": "Fetchlings are descended from humans who passed into the Shadow Plane, leaving them with shadowy features and a connection to darkness." },
+  { "name": "Kobold",  "base_hp": 6,  "size": "Small",  "speed_feet": 25, "description": "Kobolds are small draconic people who dwell in tunnels and caverns, fiercely protective of their clans and natural survivors." },
+  { "name": "Ratfolk", "base_hp": 6,  "size": "Small",  "speed_feet": 25, "description": "Ratfolk are quick, clever scavengers who form tight-knit warrens, valuing community and adaptability above all." },
+  { "name": "Tengu",   "base_hp": 6,  "size": "Medium", "speed_feet": 25, "description": "Tengu are a birdlike people with sharp minds, wandering natures, and a talent for learning and mimicry." }
+]

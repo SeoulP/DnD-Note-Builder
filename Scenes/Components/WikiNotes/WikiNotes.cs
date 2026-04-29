@@ -477,21 +477,23 @@ public override void _ExitTree()
                 results.Add((name, label));
         }
 
-        foreach (var x in _db.Npcs.GetAll(_campaignId))      Add(x.Name,  "NPC");
-        foreach (var x in _db.Factions.GetAll(_campaignId))  Add(x.Name,  "Faction");
-        foreach (var x in _db.Locations.GetAll(_campaignId)) Add(x.Name,  "Location");
-        foreach (var x in _db.Sessions.GetAll(_campaignId))  Add(x.Title, "Session");
-        foreach (var x in _db.Items.GetAll(_campaignId))     Add(x.Name,  "Item");
-        foreach (var x in _db.Quests.GetAll(_campaignId))    Add(x.Name,  "Quest");
+        foreach (var x in _db.Npcs.GetAll(_campaignId))          Add(x.Name,  "NPC");
+        foreach (var x in _db.Factions.GetAll(_campaignId))    Add(x.Name,  "Faction");
+        foreach (var x in _db.Locations.GetAll(_campaignId))   Add(x.Name,  "Location");
+        foreach (var x in _db.Sessions.GetAll(_campaignId))    Add(x.Title, "Session");
+        foreach (var x in _db.Items.GetAll(_campaignId))       Add(x.Name,  "Item");
+        foreach (var x in _db.Quests.GetAll(_campaignId))      Add(x.Name,  "Quest");
+        foreach (var x in _db.Pf2eCreatures.GetAll(_campaignId)) Add(x.Name, "Creature");
 
         // Alias matches — show as "Alias (→ EntityName)" so the DM knows what they resolve to
         var entityNames = new System.Collections.Generic.Dictionary<string, string>();
-        foreach (var x in _db.Npcs.GetAll(_campaignId))      entityNames[$"npc:{x.Id}"]      = x.Name;
-        foreach (var x in _db.Factions.GetAll(_campaignId))  entityNames[$"faction:{x.Id}"]  = x.Name;
-        foreach (var x in _db.Locations.GetAll(_campaignId)) entityNames[$"location:{x.Id}"] = x.Name;
-        foreach (var x in _db.Sessions.GetAll(_campaignId))  entityNames[$"session:{x.Id}"]  = x.Title;
-        foreach (var x in _db.Items.GetAll(_campaignId))     entityNames[$"item:{x.Id}"]     = x.Name;
-        foreach (var x in _db.Quests.GetAll(_campaignId))    entityNames[$"quest:{x.Id}"]    = x.Name;
+        foreach (var x in _db.Npcs.GetAll(_campaignId))          entityNames[$"npc:{x.Id}"]            = x.Name;
+        foreach (var x in _db.Factions.GetAll(_campaignId))      entityNames[$"faction:{x.Id}"]        = x.Name;
+        foreach (var x in _db.Locations.GetAll(_campaignId))     entityNames[$"location:{x.Id}"]       = x.Name;
+        foreach (var x in _db.Sessions.GetAll(_campaignId))      entityNames[$"session:{x.Id}"]        = x.Title;
+        foreach (var x in _db.Items.GetAll(_campaignId))         entityNames[$"item:{x.Id}"]           = x.Name;
+        foreach (var x in _db.Quests.GetAll(_campaignId))        entityNames[$"quest:{x.Id}"]          = x.Name;
+        foreach (var x in _db.Pf2eCreatures.GetAll(_campaignId)) entityNames[$"pf2e_creature:{x.Id}"]  = x.Name;
         foreach (var a in _db.EntityAliases.GetAll(_campaignId))
         {
             if (q.Length > 0 && !a.Alias.ToLowerInvariant().Contains(q)) continue;

@@ -385,7 +385,11 @@ public partial class DatabaseService : Node
     private void SeedAllCampaigns()
     {
         foreach (var campaign in Campaigns.GetAll())
+        {
             DnD5eSeedingService.SeedAll(campaign.Id);
+            if (campaign.System == "pathfinder2e")
+                Pf2eSeedingService.SeedAll(campaign.Id);
+        }
     }
 
     // One-time migration: move any legacy portrait_path strings from the characters table

@@ -61,7 +61,7 @@ public partial class CampaignView : Control
 
     private static bool IsSystemEntity(string et) =>
         et is "class" or "subclass" or "species" or "subspecies" or "ability"
-           or "pf2e_creature" or "pf2e_class" or "pf2e_ancestry";
+           or "pf2e_creature" or "pf2e_class" or "pf2e_ancestry" or "pf2e_feat";
 
     private static bool IsTrackerEntity(string et) => et is "encounter";
 
@@ -336,6 +336,12 @@ public partial class CampaignView : Control
                 var label = new Label { Text = $"PF2e Ancestry: {e.Name}\n(detail pane coming soon)", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, SizeFlagsVertical = SizeFlags.ExpandFill };
                 return (label, string.IsNullOrEmpty(e.Name) ? "New Ancestry" : e.Name, null);
             }
+            case "pf2e_feat":
+            {
+                var e = _db.Pf2eFeats.Get(entityId); if (e == null) return (null, null, null);
+                var label = new Label { Text = $"PF2e Feat: {e.Name}\n(detail pane coming soon)", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, SizeFlagsVertical = SizeFlags.ExpandFill };
+                return (label, string.IsNullOrEmpty(e.Name) ? "New Feat" : e.Name, null);
+            }
             case "pf2e_creature":
             {
                 var e = _db.Pf2eCreatures.Get(entityId); if (e == null) return (null, null, null);
@@ -370,6 +376,7 @@ public partial class CampaignView : Control
             case "pf2e_pc":         _db.Pf2eCharacters.Delete(entityId);  break;
             case "pf2e_class":      _db.Pf2eClasses.Delete(entityId);     break;
             case "pf2e_ancestry":   _db.Pf2eAncestries.Delete(entityId);  break;
+            case "pf2e_feat":       _db.Pf2eFeats.Delete(entityId);       break;
             case "pf2e_creature":   _db.Pf2eCreatures.Delete(entityId);   break;
             case "encounter":       _db.Encounters.Delete(entityId);      break;
             case "npc":        _db.Npcs.Delete(entityId);             break;
@@ -1031,7 +1038,7 @@ public partial class CampaignView : Control
         "item"                            => NotesSidebar.ItemColor,
         "quest"                           => NotesSidebar.QuestColor,
         "encounter"                       => TrackerSidebar.EncounterColor,
-        "ability"                         => SystemSidebar.AbilityColor,
+        "ability" or "pf2e_feat"          => SystemSidebar.AbilityColor,
         "class" or "subclass" or "pf2e_class"   => SystemSidebar.ClassColor,
         "species" or "subspecies" or "pf2e_ancestry" => SystemSidebar.SpeciesColor,
         "pf2e_creature"                   => SystemSidebar.CreatureColor,

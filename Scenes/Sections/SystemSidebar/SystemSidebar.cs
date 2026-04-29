@@ -74,10 +74,22 @@ public partial class SystemSidebar : VBoxContainer
         };
         _addAbilitiesButton.Pressed += () =>
         {
-            var ability = new Ability { CampaignId = _campaignId, Name = $"New {_vocab.Ability}" };
-            int id      = _db.Abilities.Add(ability);
-            LoadAbilities();
-            EmitSignal(SignalName.EntitySelected, "ability", id);
+            if (_campaign?.System == "pathfinder2e")
+            {
+                int featTypeId   = _db.Pf2eFeatTypes.GetAll(_campaignId).FirstOrDefault()?.Id ?? 1;
+                int actionCostId = _db.Pf2eActionCosts.GetAll().FirstOrDefault(a => a.Name == "None")?.Id ?? 1;
+                var feat = new Pf2eFeat { CampaignId = _campaignId, Name = "New Feat", FeatTypeId = featTypeId, ActionCostId = actionCostId };
+                int id   = _db.Pf2eFeats.Add(feat);
+                LoadAbilities();
+                EmitSignal(SignalName.EntitySelected, "pf2e_feat", id);
+            }
+            else
+            {
+                var ability = new Ability { CampaignId = _campaignId, Name = $"New {_vocab.Ability}" };
+                int id      = _db.Abilities.Add(ability);
+                LoadAbilities();
+                EmitSignal(SignalName.EntitySelected, "ability", id);
+            }
         };
         _addCreaturesButton.Pressed += () =>
         {
@@ -130,7 +142,7 @@ public partial class SystemSidebar : VBoxContainer
         {
             case "class": case "subclass": case "pf2e_class":        LoadClasses();   break;
             case "species": case "subspecies": case "pf2e_ancestry":  LoadSpecies();  break;
-            case "ability":                                            LoadAbilities(); break;
+            case "ability": case "pf2e_feat":                         LoadAbilities(); break;
             case "pf2e_creature":                                      LoadCreatures(); break;
         }
     }
@@ -141,7 +153,7 @@ public partial class SystemSidebar : VBoxContainer
         {
             "class" or "subclass" or "pf2e_class"        => _classesContainer,
             "species" or "subspecies" or "pf2e_ancestry" => _speciesContainer,
-            "ability"                                     => _abilitiesContainer,
+            "ability" or "pf2e_feat"                      => _abilitiesContainer,
             "pf2e_creature"                               => _creaturesContainer,
             _                                             => null,
         };
@@ -310,6 +322,19 @@ public partial class SystemSidebar : VBoxContainer
     private void LoadAbilities()
     {
         ClearItems(_abilitiesContainer, _addAbilitiesButton);
+        if (_campaign?.System == "pathfinder2e")
+        {
+            foreach (var feat in _db.Pf2eFeats.GetAll(_campaignId))
+            {
+                int id  = feat.Id;
+                var btn = MakeSidebarButton(feat.Name, AbilityColor);
+                btn.SetMeta("id", id);
+                btn.Pressed += () => EmitSignal(SignalName.EntitySelected, "pf2e_feat", id);
+                WireCtrlClick(btn, "pf2e_feat", id);
+                _abilitiesContainer.AddChild(btn);
+            }
+            return;
+        }
         foreach (var ability in _db.Abilities.GetAll(_campaignId))
         {
             int id  = ability.Id;

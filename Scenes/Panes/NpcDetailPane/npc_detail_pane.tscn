@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="5_wikinotes"]
 
-[node name="NpcDetailPane" type="ScrollContainer" unique_id=1370170876 node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_speciesInput", "_occupationInput", "_genderInput", "_statusInput", "_relationshipInput", "_factionSelect", "_roleSelect", "_addFactionButton", "_factionRowsContainer", "_deleteButton", "_descInput", "_notes", "_imageCarousel", "_relNpcSelfLabel", "_relTypeSelect", "_relNpcSelect", "_addRelButton", "_relRowsContainer")]
+[node name="NpcDetailPane" type="ScrollContainer" unique_id=1370170876 node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_speciesLabel", "_speciesInput", "_occupationInput", "_genderInput", "_statusInput", "_relationshipInput", "_factionSelect", "_roleSelect", "_addFactionButton", "_factionRowsContainer", "_deleteButton", "_descInput", "_notes", "_imageCarousel", "_relNpcSelfLabel", "_relTypeSelect", "_relNpcSelect", "_addRelButton", "_relRowsContainer")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -15,6 +15,7 @@ grow_vertical = 2
 script = ExtResource("1_npcdet")
 _nameInput            = NodePath("Margin/VBoxContainer/NameRow/NameInput")
 _aliasChipsRow        = NodePath("Margin/VBoxContainer/AliasChipsRow")
+_speciesLabel         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SpeciesRow/SpeciesLabel")
 _speciesInput         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SpeciesRow/SpeciesInput")
 _occupationInput      = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/OccupationRow/OccupationInput")
 _genderInput          = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/GenderRow/GenderInput")
