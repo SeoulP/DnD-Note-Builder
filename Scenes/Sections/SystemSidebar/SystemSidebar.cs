@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DndBuilder.Core.Models;
@@ -13,6 +14,8 @@ public partial class SystemSidebar : VBoxContainer
     private HashSet<int>     _collapsedSpecies = new();
     private bool             _classesFirstLoad = true;
     private bool             _speciesFirstLoad = true;
+    private Timer            _renameDebounce;
+    private string           _pendingRenameType;
 
     [Export] private Button        _addClassesButton;
     [Export] private Button        _addSpeciesButton;
@@ -113,6 +116,15 @@ public partial class SystemSidebar : VBoxContainer
         NotesSidebar.StyleAccordion(GetNode<Control>("CreaturesPanel"), CreatureColor);
 
         GetNode<LineEdit>("SystemSearchInput").TextChanged += FilterSystemSidebar;
+
+        _renameDebounce = new Timer { WaitTime = 1.0f, OneShot = true };
+        AddChild(_renameDebounce);
+        _renameDebounce.Timeout += () =>
+        {
+            if (_pendingRenameType != null)
+                ReloadData(_pendingRenameType);
+            _pendingRenameType = null;
+        };
     }
 
     public void SetCampaign(int campaignId, Campaign campaign, SystemVocabulary vocab)
@@ -140,11 +152,60 @@ public partial class SystemSidebar : VBoxContainer
     {
         switch (entityType)
         {
-            case "class": case "subclass": case "pf2e_class":        LoadClasses();   break;
-            case "species": case "subspecies": case "pf2e_ancestry":  LoadSpecies();  break;
-            case "ability": case "pf2e_feat":                         LoadAbilities(); break;
-            case "pf2e_creature":                                      LoadCreatures(); break;
+            case "class": case "subclass": case "pf2e_class":
+                LoadClasses();
+                RevealPanel("ClassesPanel", _classesContainer);
+                break;
+            case "species": case "subspecies": case "pf2e_ancestry":
+                LoadSpecies();
+                RevealPanel("SpeciesPanel", _speciesContainer);
+                break;
+            case "ability": case "pf2e_feat":
+                LoadAbilities();
+                RevealPanel("AbilitiesPanel", _abilitiesContainer);
+                break;
+            case "pf2e_creature":
+                LoadCreatures();
+                RevealPanel("CreaturesPanel", _creaturesContainer);
+                break;
         }
+    }
+
+    private void ReloadData(string entityType)
+    {
+        switch (entityType)
+        {
+            case "class": case "subclass": case "pf2e_class":        LoadClasses();    break;
+            case "species": case "subspecies": case "pf2e_ancestry":  LoadSpecies();    break;
+            case "ability": case "pf2e_feat":                         LoadAbilities();  break;
+            case "pf2e_creature":                                     LoadCreatures();  break;
+        }
+    }
+
+    private void RevealPanel(string panelName, VBoxContainer items)
+    {
+        var panel = GetNode<Control>(panelName);
+        panel.Visible = true;
+        panel.Set("folded", false);
+        items.Visible = true;
+        CallDeferred(nameof(DoRevealPanel), panelName);
+    }
+
+    private void DoRevealPanel(string panelName)
+    {
+        VBoxContainer items = panelName switch
+        {
+            "ClassesPanel"   => _classesContainer,
+            "SpeciesPanel"   => _speciesContainer,
+            "AbilitiesPanel" => _abilitiesContainer,
+            "CreaturesPanel" => _creaturesContainer,
+            _                => null,
+        };
+        if (items == null) return;
+        var panel = GetNode<Control>(panelName);
+        panel.Visible = true;
+        panel.Set("folded", false);
+        items.Visible = true;
     }
 
     public void UpdateButtonName(string entityType, int entityId, string name)
@@ -158,6 +219,12 @@ public partial class SystemSidebar : VBoxContainer
             _                                             => null,
         };
         FindAndRenameButton(container, entityId, name);
+        if (container != null)
+        {
+            _pendingRenameType = entityType;
+            _renameDebounce.Stop();
+            _renameDebounce.Start();
+        }
     }
 
     private void ApplyVocabulary()
@@ -174,7 +241,9 @@ public partial class SystemSidebar : VBoxContainer
         ClearItems(_classesContainer, _addClassesButton);
         if (_campaign?.System == "pathfinder2e")
         {
-            foreach (var cls in _db.Pf2eClasses.GetAll(_campaignId))
+            var classes = _db.Pf2eClasses.GetAll(_campaignId);
+            classes.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+            foreach (var cls in classes)
             {
                 int id  = cls.Id;
                 var btn = MakeSidebarButton(cls.Name, ClassColor);
@@ -249,7 +318,9 @@ public partial class SystemSidebar : VBoxContainer
         ClearItems(_speciesContainer, _addSpeciesButton);
         if (_campaign?.System == "pathfinder2e")
         {
-            foreach (var anc in _db.Pf2eAncestries.GetAll(_campaignId))
+            var ancestries = _db.Pf2eAncestries.GetAll(_campaignId);
+            ancestries.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+            foreach (var anc in ancestries)
             {
                 int id  = anc.Id;
                 var btn = MakeSidebarButton(anc.Name, SpeciesColor);
@@ -324,7 +395,9 @@ public partial class SystemSidebar : VBoxContainer
         ClearItems(_abilitiesContainer, _addAbilitiesButton);
         if (_campaign?.System == "pathfinder2e")
         {
-            foreach (var feat in _db.Pf2eFeats.GetAll(_campaignId))
+            var feats = _db.Pf2eFeats.GetAll(_campaignId);
+            feats.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+            foreach (var feat in feats)
             {
                 int id  = feat.Id;
                 var btn = MakeSidebarButton(feat.Name, AbilityColor);
@@ -335,7 +408,9 @@ public partial class SystemSidebar : VBoxContainer
             }
             return;
         }
-        foreach (var ability in _db.Abilities.GetAll(_campaignId))
+        var abilities = _db.Abilities.GetAll(_campaignId);
+        abilities.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+        foreach (var ability in abilities)
         {
             int id  = ability.Id;
             var btn = MakeSidebarButton(ability.Name, AbilityColor);
@@ -352,7 +427,9 @@ public partial class SystemSidebar : VBoxContainer
         if (_campaign?.System != "pathfinder2e") { creaturesPanel.Visible = false; return; }
         creaturesPanel.Visible = true;
         ClearItems(_creaturesContainer, _addCreaturesButton);
-        foreach (var c in _db.Pf2eCreatures.GetAll(_campaignId))
+        var creatures = _db.Pf2eCreatures.GetAll(_campaignId);
+        creatures.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+        foreach (var c in creatures)
         {
             int id  = c.Id;
             var btn = MakeSidebarButton(string.IsNullOrEmpty(c.Name) ? "New Creature" : c.Name, CreatureColor);

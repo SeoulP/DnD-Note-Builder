@@ -61,7 +61,7 @@ public partial class CampaignView : Control
 
     private static bool IsSystemEntity(string et) =>
         et is "class" or "subclass" or "species" or "subspecies" or "ability"
-           or "pf2e_creature" or "pf2e_class" or "pf2e_ancestry" or "pf2e_feat";
+           or "pf2e_creature" or "pf2e_class" or "pf2e_ancestry" or "pf2e_feat" or "pf2e_heritage";
 
     private static bool IsTrackerEntity(string et) => et is "encounter";
 
@@ -327,20 +327,43 @@ public partial class CampaignView : Control
             case "pf2e_class":
             {
                 var e = _db.Pf2eClasses.Get(entityId); if (e == null) return (null, null, null);
-                var label = new Label { Text = $"PF2e Class: {e.Name}\n(detail pane coming soon)", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, SizeFlagsVertical = SizeFlags.ExpandFill };
-                return (label, string.IsNullOrEmpty(e.Name) ? "New Class" : e.Name, null);
+                var p = new Pf2eClassDetailPane();
+                p.NavigateTo  += ShowDetailPane;
+                p.NameChanged += OnNameChanged;
+                p.Deleted     += OnEntityDeleted;
+                p.FeatAdded   += (_, __) => _systemSidebar?.Reload("pf2e_feat");
+                p.FeatDeleted += id => { _systemSidebar?.Reload("pf2e_feat"); CloseFeatTab(id); };
+                return (p, string.IsNullOrEmpty(e.Name) ? "New Class" : e.Name, () => p.Load(e));
             }
             case "pf2e_ancestry":
             {
                 var e = _db.Pf2eAncestries.Get(entityId); if (e == null) return (null, null, null);
-                var label = new Label { Text = $"PF2e Ancestry: {e.Name}\n(detail pane coming soon)", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, SizeFlagsVertical = SizeFlags.ExpandFill };
-                return (label, string.IsNullOrEmpty(e.Name) ? "New Ancestry" : e.Name, null);
+                var p = new Pf2eAncestryDetailPane();
+                p.NavigateTo     += ShowDetailPane;
+                p.NameChanged    += OnNameChanged;
+                p.Deleted        += OnEntityDeleted;
+                p.HeritageAdded  += (_, __) => _systemSidebar?.Reload("pf2e_heritage");
+                p.FeatAdded      += (_, __) => _systemSidebar?.Reload("pf2e_feat");
+                p.FeatDeleted    += id => { _systemSidebar?.Reload("pf2e_feat"); CloseFeatTab(id); };
+                return (p, string.IsNullOrEmpty(e.Name) ? "New Ancestry" : e.Name, () => p.Load(e));
+            }
+            case "pf2e_heritage":
+            {
+                var e = _db.Pf2eHeritages.Get(entityId); if (e == null) return (null, null, null);
+                var p = new Pf2eHeritageDetailPane();
+                p.NavigateTo  += ShowDetailPane;
+                p.NameChanged += OnNameChanged;
+                p.Deleted     += OnEntityDeleted;
+                return (p, string.IsNullOrEmpty(e.Name) ? "New Heritage" : e.Name, () => p.Load(e));
             }
             case "pf2e_feat":
             {
                 var e = _db.Pf2eFeats.Get(entityId); if (e == null) return (null, null, null);
-                var label = new Label { Text = $"PF2e Feat: {e.Name}\n(detail pane coming soon)", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, SizeFlagsVertical = SizeFlags.ExpandFill };
-                return (label, string.IsNullOrEmpty(e.Name) ? "New Feat" : e.Name, null);
+                var p = new Pf2eFeatDetailPane();
+                p.NavigateTo  += ShowDetailPane;
+                p.NameChanged += OnNameChanged;
+                p.Deleted     += OnEntityDeleted;
+                return (p, string.IsNullOrEmpty(e.Name) ? "New Feat" : e.Name, () => p.Load(e));
             }
             case "pf2e_creature":
             {
@@ -376,6 +399,7 @@ public partial class CampaignView : Control
             case "pf2e_pc":         _db.Pf2eCharacters.Delete(entityId);  break;
             case "pf2e_class":      _db.Pf2eClasses.Delete(entityId);     break;
             case "pf2e_ancestry":   _db.Pf2eAncestries.Delete(entityId);  break;
+            case "pf2e_heritage":   _db.Pf2eHeritages.Delete(entityId);   break;
             case "pf2e_feat":       _db.Pf2eFeats.Delete(entityId);       break;
             case "pf2e_creature":   _db.Pf2eCreatures.Delete(entityId);   break;
             case "encounter":       _db.Encounters.Delete(entityId);      break;
@@ -535,6 +559,13 @@ public partial class CampaignView : Control
                 AcceptEvent();
             }
         }
+    }
+
+    private void CloseFeatTab(int featId)
+    {
+        for (int i = _tabs.Count - 1; i >= 0; i--)
+            if (_tabs[i].EntityType == "pf2e_feat" && _tabs[i].EntityId == featId)
+                CloseTab(i);
     }
 
     private void CloseTab(int index)
