@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_npcdet")
 _nameInput            = NodePath("Margin/VBoxContainer/NameRow/NameInput")
-_aliasChipsRow        = NodePath("Margin/VBoxContainer/AliasChipsRow")
+_aliasChipsRow        = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/AliasChipsRow")
 _speciesLabel         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SpeciesRow/SpeciesLabel")
 _speciesInput         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/SpeciesRow/SpeciesInput")
 _occupationInput      = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/OccupationRow/OccupationInput")
@@ -62,11 +62,6 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -76,6 +71,11 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="SpeciesRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" unique_id=1066022243]
 layout_mode = 2

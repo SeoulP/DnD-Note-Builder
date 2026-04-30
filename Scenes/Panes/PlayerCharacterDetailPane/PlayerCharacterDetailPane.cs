@@ -982,15 +982,9 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         {
             var choice = allChoices.Find(c => c.Id == sel.ChoiceId);
             if (choice == null) continue;
-            // Linked sub-abilities appear at the top level sorted by their own action type.
+            // Linked choices appear at the top level via the filtered list; skip them here.
             if (choice.LinkedAbilityId.HasValue) continue;
             var row = new EntityRow { ShowDelete = false, Text = choice.Name };
-            if (choice.LinkedAbilityId.HasValue)
-            {
-                int linkedId = choice.LinkedAbilityId.Value;
-                row.NavigatePressed       += () => EmitSignal(SignalName.NavigateTo, "ability", linkedId);
-                row.NavigatePressedNewTab += () => EmitSignal(SignalName.NavigateToNewTab, "ability", linkedId);
-            }
             var margin = new MarginContainer();
             margin.AddThemeConstantOverride("margin_left", 24);
 

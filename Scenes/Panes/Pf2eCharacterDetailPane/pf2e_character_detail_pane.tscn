@@ -16,7 +16,7 @@ grow_vertical = 2
 script = ExtResource("1_script")
 _nameInput        = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/NameInput")
 _deleteButton     = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/DeleteButton")
-_aliasChipsRow    = NodePath("MainVBox/HeaderMargin/HeaderVBox/AliasChipsRow")
+_aliasChipsRow    = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AliasChipsRow")
 _ancestryInput    = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AncestryRow/AncestryInput")
 _heritageInput    = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AncestryRow/HeritageInput")
 _classInput       = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow/ClassInput")
@@ -92,11 +92,6 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="AliasChipsRow" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
 [node name="FieldsRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -106,6 +101,11 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="AncestryRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields"]
 layout_mode = 2

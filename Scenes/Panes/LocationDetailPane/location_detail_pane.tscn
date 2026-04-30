@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_locdet")
 _nameInput             = NodePath("Margin/VBoxContainer/NameRow/NameInput")
-_aliasChipsRow         = NodePath("Margin/VBoxContainer/AliasChipsRow")
+_aliasChipsRow         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/AliasChipsRow")
 _deleteButton          = NodePath("Margin/VBoxContainer/NameRow/DeleteButton")
 _typeInput             = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow/TypeInput")
 _descInput             = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/DescriptionInput")
@@ -58,11 +58,6 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -72,6 +67,11 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="TypeRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2

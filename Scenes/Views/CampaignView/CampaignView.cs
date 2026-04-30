@@ -198,10 +198,25 @@ public partial class CampaignView : Control
 
     private void ShowDetailPane(string entityType, int entityId)
     {
+        // Ctrl+click → always new tab
+        if (Input.IsKeyPressed(Key.Ctrl))
+        { ShowDetailPaneInNewTab(entityType, entityId); return; }
+
+        // Entity already open → switch to that tab
         int existing = _tabs.FindIndex(t => t.EntityType == entityType && t.EntityId == entityId);
         if (existing >= 0) { ActivateTab(existing); return; }
+
+        // Cross-panel navigation (Notes↔System↔Tracker) → new tab
+        string targetPanel = IsSystemEntity(entityType) ? "system"
+                           : IsTrackerEntity(entityType) ? "tracker"
+                           : "notes";
+        if (_activeTab >= 0 && _activeTab < _tabs.Count && _tabs[_activeTab].Panel != targetPanel)
+        { OpenNewTab(entityType, entityId); return; }
+
+        // Same panel: reuse current tab if not pinned
         if (_activeTab >= 0 && _activeTab < _tabs.Count && !_tabs[_activeTab].IsPinned)
         { LoadIntoTab(_activeTab, entityType, entityId); return; }
+
         OpenNewTab(entityType, entityId);
     }
 

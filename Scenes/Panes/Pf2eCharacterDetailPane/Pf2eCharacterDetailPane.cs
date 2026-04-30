@@ -22,6 +22,9 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
     [Export] private OptionButton  _ancestryInput;
     [Export] private OptionButton  _heritageInput;
     [Export] private OptionButton  _classInput;
+    private Button _ancestryNavBtn;
+    private Button _heritageNavBtn;
+    private Button _classNavBtn;
     [Export] private IntInput      _levelInput;
     [Export] private IntInput      _currentHpInput;
     [Export] private IntInput      _maxHpInput;
@@ -100,6 +103,31 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
         _flavorTabBtn.Pressed += () => SetActiveTab("Flavor");
 
         PopulateRankDropdowns();
+
+        // ── Entity nav arrows ─────────────────────────────────────────────────
+        static Button NavArrow(string tooltip) => new Button
+            { Text = "→", Flat = true, TooltipText = tooltip, Disabled = true,
+              MouseDefaultCursorShape = CursorShape.PointingHand };
+
+        var ancRow = _ancestryInput.GetParent();
+        _ancestryNavBtn = NavArrow("Open Ancestry");
+        _ancestryInput.ItemSelected += idx => _ancestryNavBtn.Disabled = _ancestryInput.GetItemId((int)idx) <= 0;
+        _ancestryNavBtn.Pressed     += () => { int id = _ancestryInput.GetItemId(_ancestryInput.Selected); if (id > 0) EmitSignal(SignalName.NavigateTo, "pf2e_ancestry", id); };
+        ancRow.AddChild(_ancestryNavBtn);
+        ancRow.MoveChild(_ancestryNavBtn, _ancestryInput.GetIndex() + 1);
+
+        _heritageNavBtn = NavArrow("Open Heritage");
+        _heritageInput.ItemSelected += idx => _heritageNavBtn.Disabled = _heritageInput.GetItemId((int)idx) <= 0;
+        _ancestryInput.ItemSelected += _ => _heritageNavBtn.Disabled = true;
+        _heritageNavBtn.Pressed     += () => { int id = _heritageInput.GetItemId(_heritageInput.Selected); if (id > 0) EmitSignal(SignalName.NavigateTo, "pf2e_heritage", id); };
+        ancRow.AddChild(_heritageNavBtn);
+
+        var clsRow = _classInput.GetParent();
+        _classNavBtn = NavArrow("Open Class");
+        _classInput.ItemSelected += idx => _classNavBtn.Disabled = _classInput.GetItemId((int)idx) <= 0;
+        _classNavBtn.Pressed     += () => { int id = _classInput.GetItemId(_classInput.Selected); if (id > 0) EmitSignal(SignalName.NavigateTo, "pf2e_class", id); };
+        clsRow.AddChild(_classNavBtn);
+        clsRow.MoveChild(_classNavBtn, _classInput.GetIndex() + 1);
     }
 
     public override void _Notification(int what)
@@ -130,10 +158,13 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
 
         PopulateAncestry();
         SetOptionById(_ancestryInput, pc.AncestryId ?? 0);
+        if (_ancestryNavBtn != null) _ancestryNavBtn.Disabled = !(pc.AncestryId > 0);
         RefreshHeritages(true);
         SetOptionById(_heritageInput, pc.HeritageId ?? 0);
+        if (_heritageNavBtn != null) _heritageNavBtn.Disabled = !(pc.HeritageId > 0);
         PopulateClass();
         SetOptionById(_classInput, pc.ClassId ?? 0);
+        if (_classNavBtn != null) _classNavBtn.Disabled = !(pc.ClassId > 0);
 
         _levelInput.Value      = pc.Level;
         _currentHpInput.Value  = pc.CurrentHp;

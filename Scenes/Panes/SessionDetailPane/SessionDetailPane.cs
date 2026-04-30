@@ -36,6 +36,11 @@ public partial class SessionDetailPane : ScrollContainer
         ("item",            "Items"),
         ("quest",           "Quests"),
         ("playercharacter", "Characters"),
+        ("pf2e_pc",         "Characters"),
+        ("pf2e_creature",   "Creatures"),
+        ("pf2e_class",      "Classes"),
+        ("pf2e_ancestry",   "Ancestries"),
+        ("pf2e_heritage",   "Heritages"),
     };
 
     public override void _Ready()
@@ -49,6 +54,8 @@ public partial class SessionDetailPane : ScrollContainer
         _notes.TextChanged   += () => { Save(); RefreshRelatedLinks(); };
         _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
         _notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
+
+        _numberLabel.Visible = false;
 
         _confirmDialog = DialogHelper.Make("Delete Session");
         AddChild(_confirmDialog);
@@ -65,11 +72,22 @@ public partial class SessionDetailPane : ScrollContainer
 
         _imageCarousel?.Setup(EntityType.Session, session.Id, _db, session.CampaignId);
 
-        _numberLabel.Text   = $"Session #{session.Number:D3}";
         _titleInput.Text    = string.IsNullOrEmpty(session.Title) ? "New Session" : session.Title;
         _playedOnInput.Text = session.PlayedOn;
         _notes.Setup(session.CampaignId, _db);
         _notes.Text = session.Notes;
+
+        string numberAlias = $"Session {session.Number:D3}";
+        var existingAliases = _db.EntityAliases.GetAll(session.CampaignId)
+            .FindAll(a => a.EntityType == "session" && a.EntityId == session.Id);
+        if (!existingAliases.Exists(a => a.Alias == numberAlias))
+            _db.EntityAliases.Add(new EntityAlias
+            {
+                CampaignId = session.CampaignId,
+                EntityType = "session",
+                EntityId   = session.Id,
+                Alias      = numberAlias,
+            });
 
         _lastLinkNames.Clear();
         RefreshRelatedLinks();
@@ -107,12 +125,18 @@ public partial class SessionDetailPane : ScrollContainer
             if (!list.Contains((type, id))) list.Add((type, id));
         }
 
-        foreach (var x in _db.Npcs.GetAll(cid))      { entityNames[("npc",             x.Id)] = x.Name;  AddEntry(x.Name,  "npc",             x.Id); }
-        foreach (var x in _db.Factions.GetAll(cid))  { entityNames[("faction",         x.Id)] = x.Name;  AddEntry(x.Name,  "faction",         x.Id); }
-        foreach (var x in _db.Locations.GetAll(cid)) { entityNames[("location",        x.Id)] = x.Name;  AddEntry(x.Name,  "location",        x.Id); }
-        foreach (var x in _db.Sessions.GetAll(cid))  { entityNames[("session",         x.Id)] = x.Title; AddEntry(x.Title, "session",         x.Id); }
-        foreach (var x in _db.Items.GetAll(cid))     { entityNames[("item",            x.Id)] = x.Name;  AddEntry(x.Name,  "item",            x.Id); }
-        foreach (var x in _db.Quests.GetAll(cid))    { entityNames[("quest",           x.Id)] = x.Name;  AddEntry(x.Name,  "quest",           x.Id); }
+        foreach (var x in _db.Npcs.GetAll(cid))             { entityNames[("npc",             x.Id)] = x.Name;  AddEntry(x.Name,  "npc",             x.Id); }
+        foreach (var x in _db.Factions.GetAll(cid))         { entityNames[("faction",         x.Id)] = x.Name;  AddEntry(x.Name,  "faction",         x.Id); }
+        foreach (var x in _db.Locations.GetAll(cid))        { entityNames[("location",        x.Id)] = x.Name;  AddEntry(x.Name,  "location",        x.Id); }
+        foreach (var x in _db.Sessions.GetAll(cid))         { entityNames[("session",         x.Id)] = x.Title; AddEntry(x.Title, "session",         x.Id); }
+        foreach (var x in _db.Items.GetAll(cid))            { entityNames[("item",            x.Id)] = x.Name;  AddEntry(x.Name,  "item",            x.Id); }
+        foreach (var x in _db.Quests.GetAll(cid))           { entityNames[("quest",           x.Id)] = x.Name;  AddEntry(x.Name,  "quest",           x.Id); }
+        foreach (var x in _db.PlayerCharacters.GetAll(cid)) { entityNames[("playercharacter", x.Id)] = x.Name;  AddEntry(x.Name,  "playercharacter", x.Id); }
+        foreach (var x in _db.Pf2eCharacters.GetAll(cid))   { entityNames[("pf2e_pc",         x.Id)] = x.Name;  AddEntry(x.Name,  "pf2e_pc",         x.Id); }
+        foreach (var x in _db.Pf2eCreatures.GetAll(cid))    { entityNames[("pf2e_creature",   x.Id)] = x.Name;  AddEntry(x.Name,  "pf2e_creature",   x.Id); }
+        foreach (var x in _db.Pf2eClasses.GetAll(cid))      { entityNames[("pf2e_class",      x.Id)] = x.Name;  AddEntry(x.Name,  "pf2e_class",      x.Id); }
+        foreach (var x in _db.Pf2eAncestries.GetAll(cid))   { entityNames[("pf2e_ancestry",   x.Id)] = x.Name;  AddEntry(x.Name,  "pf2e_ancestry",   x.Id); }
+        foreach (var x in _db.Pf2eHeritages.GetAll(cid))    { entityNames[("pf2e_heritage",   x.Id)] = x.Name;  AddEntry(x.Name,  "pf2e_heritage",   x.Id); }
         foreach (var a in _db.EntityAliases.GetAll(cid)) AddEntry(a.Alias, a.EntityType, a.EntityId);
 
         // Group links by entity type — one row per resolved (name, entityId) pair

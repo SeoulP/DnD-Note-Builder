@@ -48,7 +48,7 @@ _resourcesContainer = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/Re
 _notes = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab/Notes")
 _imageCarousel = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/CarouselColumn/ImageCarousel")
 _deleteButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/DeleteButton")
-_aliasChipsRow = NodePath("MainVBox/HeaderMargin/HeaderVBox/AliasChipsRow")
+_aliasChipsRow = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AliasChipsRow")
 _addManualAbilityBtn = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection/AbilityChoicesHeader/AddManualAbilityBtn")
 _statsTabBtn = NodePath("MainVBox/NavTabStrip/StatsTabBtn")
 _actionsTabBtn = NodePath("MainVBox/NavTabStrip/ActionsTabBtn")
@@ -92,11 +92,6 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="AliasChipsRow" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox" unique_id=300000019]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
 [node name="FieldsRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox" unique_id=1275621775]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -106,6 +101,11 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=300000019]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="SpeciesRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=1824731059]
 layout_mode = 2

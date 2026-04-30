@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 _nameInput        = NodePath("Margin/VBox/NameRow/NameInput")
-_aliasChipsRow    = NodePath("Margin/VBox/AliasChipsRow")
+_aliasChipsRow    = NodePath("Margin/VBox/ContentHBox/Fields/AliasChipsRow")
 _deleteButton     = NodePath("Margin/VBox/NameRow/DeleteButton")
 _statusInput      = NodePath("Margin/VBox/ContentHBox/Fields/StatusRow/StatusInput")
 _questGiverInput  = NodePath("Margin/VBox/ContentHBox/Fields/QuestGiverRow/QuestGiverInput")
@@ -54,11 +54,6 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -68,6 +63,11 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="StatusRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields"]
 layout_mode = 2

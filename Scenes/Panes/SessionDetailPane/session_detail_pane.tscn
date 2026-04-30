@@ -14,7 +14,7 @@ grow_vertical = 2
 script = ExtResource("1_sesdet")
 _numberLabel           = NodePath("Margin/VBoxContainer/NumberLabel")
 _titleInput            = NodePath("Margin/VBoxContainer/TitleRow/TitleInput")
-_aliasChipsRow         = NodePath("Margin/VBoxContainer/AliasChipsRow")
+_aliasChipsRow         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/AliasChipsRow")
 _deleteButton          = NodePath("Margin/VBoxContainer/TitleRow/DeleteButton")
 _playedOnInput         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow/PlayedOnInput")
 _notes                 = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/WikiNotes")
@@ -53,11 +53,6 @@ layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -67,6 +62,11 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="PlayedOnRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
 layout_mode = 2

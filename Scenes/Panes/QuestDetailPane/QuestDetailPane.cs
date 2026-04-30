@@ -7,6 +7,8 @@ public partial class QuestDetailPane : ScrollContainer
     private DatabaseService    _db;
     private Quest              _quest;
     private ConfirmationDialog _confirmDialog;
+    private Button             _npcNavBtn;
+    private Button             _locNavBtn;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
     [Signal] public delegate void NameChangedEventHandler(string entityType, int entityId, string displayText);
@@ -33,9 +35,19 @@ public partial class QuestDetailPane : ScrollContainer
         _nameInput.TextChanged  += name => { Save(); EmitSignal(SignalName.NameChanged, "quest", _quest?.Id ?? 0, string.IsNullOrEmpty(name) ? "New Quest" : name); };
         _nameInput.FocusExited  += () => { if (_nameInput.Text == "") _nameInput.Text = "New Quest"; };
         _nameInput.FocusEntered += () => _nameInput.CallDeferred(LineEdit.MethodName.SelectAll);
-        _statusInput.TypeSelected    += _ => Save();
+        _statusInput.TypeSelected     += _ => Save();
         _questGiverInput.TypeSelected += _ => Save();
-        _locationInput.TypeSelected  += _ => Save();
+        _locationInput.TypeSelected   += _ => Save();
+
+        _npcNavBtn = new Button { Text = "→", Flat = true, TooltipText = "Open NPC", Disabled = true, MouseDefaultCursorShape = CursorShape.PointingHand };
+        _questGiverInput.TypeSelected += id => _npcNavBtn.Disabled = id <= 0;
+        _npcNavBtn.Pressed += () => { if (_questGiverInput.SelectedId.HasValue) EmitSignal(SignalName.NavigateTo, "npc", _questGiverInput.SelectedId.Value); };
+        _questGiverInput.GetParent().AddChild(_npcNavBtn);
+
+        _locNavBtn = new Button { Text = "→", Flat = true, TooltipText = "Open Location", Disabled = true, MouseDefaultCursorShape = CursorShape.PointingHand };
+        _locationInput.TypeSelected += id => _locNavBtn.Disabled = id <= 0;
+        _locNavBtn.Pressed += () => { if (_locationInput.SelectedId.HasValue) EmitSignal(SignalName.NavigateTo, "location", _locationInput.SelectedId.Value); };
+        _locationInput.GetParent().AddChild(_locNavBtn);
         _rewardInput.TextChanged     += _ => Save();
         _descInput.TextChanged       += () => Save();
         _notes.TextChanged   += () => Save();
@@ -72,12 +84,14 @@ public partial class QuestDetailPane : ScrollContainer
             () => _db.Npcs.GetAll(quest.CampaignId).ConvertAll(n => (n.Id, n.Name)),
             null, null);
         _questGiverInput.SelectById(quest.QuestGiverId);
+        if (_npcNavBtn != null) _npcNavBtn.Disabled = !(quest.QuestGiverId > 0);
 
         _locationInput.NoneText = "(none)";
         _locationInput.Setup(
             () => _db.Locations.GetAll(quest.CampaignId).ConvertAll(l => (l.Id, l.Name)),
             null, null);
         _locationInput.SelectById(quest.LocationId);
+        if (_locNavBtn != null) _locNavBtn.Disabled = !(quest.LocationId > 0);
 
         _imageCarousel?.Setup(EntityType.Quest, quest.Id, _db, quest.CampaignId);
 
