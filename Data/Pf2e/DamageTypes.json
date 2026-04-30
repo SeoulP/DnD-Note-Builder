@@ -1,0 +1,23 @@
+[
+  { "name": "Piercing",            "is_physical": 1, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Slashing",            "is_physical": 1, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Bludgeoning",         "is_physical": 1, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Acid",                "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Acid (Persistent)",   "is_physical": 0, "is_energy": 1, "is_persistent": 1, "is_splash": 0 },
+  { "name": "Acid (Splash)",       "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 1 },
+  { "name": "Cold",                "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Electricity",         "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Fire",                "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Fire (Persistent)",   "is_physical": 0, "is_energy": 1, "is_persistent": 1, "is_splash": 0 },
+  { "name": "Fire (Splash)",       "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 1 },
+  { "name": "Sonic",               "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Force",               "is_physical": 0, "is_energy": 1, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Poison",              "is_physical": 0, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Poison (Persistent)", "is_physical": 0, "is_energy": 0, "is_persistent": 1, "is_splash": 0 },
+  { "name": "Bleed",               "is_physical": 0, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Bleed (Persistent)",  "is_physical": 0, "is_energy": 0, "is_persistent": 1, "is_splash": 0 },
+  { "name": "Mental",              "is_physical": 0, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Spirit",              "is_physical": 0, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Void",                "is_physical": 0, "is_energy": 0, "is_persistent": 0, "is_splash": 0 },
+  { "name": "Vitality",            "is_physical": 0, "is_energy": 0, "is_persistent": 0, "is_splash": 0 }
+]

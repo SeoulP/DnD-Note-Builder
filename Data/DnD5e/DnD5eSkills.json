@@ -1,0 +1,20 @@
+[
+  { "name": "Acrobatics",      "attribute": "dex" },
+  { "name": "Animal Handling", "attribute": "wis" },
+  { "name": "Arcana",          "attribute": "int" },
+  { "name": "Athletics",       "attribute": "str" },
+  { "name": "Deception",       "attribute": "cha" },
+  { "name": "History",         "attribute": "int" },
+  { "name": "Insight",         "attribute": "wis" },
+  { "name": "Intimidation",    "attribute": "cha" },
+  { "name": "Investigation",   "attribute": "int" },
+  { "name": "Medicine",        "attribute": "wis" },
+  { "name": "Nature",          "attribute": "int" },
+  { "name": "Perception",      "attribute": "wis" },
+  { "name": "Performance",     "attribute": "cha" },
+  { "name": "Persuasion",      "attribute": "cha" },
+  { "name": "Religion",        "attribute": "int" },
+  { "name": "Sleight of Hand", "attribute": "dex" },
+  { "name": "Stealth",         "attribute": "dex" },
+  { "name": "Survival",        "attribute": "wis" }
+]

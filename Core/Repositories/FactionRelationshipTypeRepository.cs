@@ -8,18 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string Name, string Description)[] Defaults =
-        {
-            ("Allied with",          "Actively cooperates and shares goals"),
-            ("Enemy of",             "Openly hostile or in direct conflict"),
-            ("Rival of",             "Competes for the same resources or influence"),
-            ("Neutral toward",       "Neither allied nor hostile; indifferent"),
-            ("Vassal of",            "Subordinate to or controlled by the other faction"),
-            ("Trade Partner of",     "Maintains a commercial or economic relationship"),
-            ("Contested by",         "Relations are disputed or actively shifting"),
-            ("Former Ally of",       "Once allied; now estranged or broken"),
-        };
-
         public FactionRelationshipTypeRepository(SqliteConnection conn)
         {
             _conn = conn;
@@ -44,21 +32,6 @@ namespace DndBuilder.Core.Repositories
                 var alter = _conn.CreateCommand();
                 alter.CommandText = "ALTER TABLE faction_relationship_types ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
-            }
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, desc) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO faction_relationship_types (campaign_id, name, description)
-                    SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM faction_relationship_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", desc);
-                cmd.ExecuteNonQuery();
             }
         }
 

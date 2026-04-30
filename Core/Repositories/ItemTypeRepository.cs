@@ -8,18 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string Name, string Description)[] Defaults =
-        {
-            ("Weapon",    "Swords, axes, bows, and other offensive items"),
-            ("Armor",     "Worn protective equipment"),
-            ("Consumable","Single-use items such as potions and scrolls"),
-            ("Trinket",   "Minor keepsakes and curiosities with no mechanical use"),
-            ("Document",  "Letters, maps, contracts, and written materials"),
-            ("Treasure",  "Coins, gems, art objects, and valuable goods"),
-            ("Key Item",  "Plot-critical items tied to quests or story beats"),
-            ("Misc",      "Anything that does not fit another category"),
-        };
-
         public ItemTypeRepository(SqliteConnection conn)
         {
             _conn = conn;
@@ -44,21 +32,6 @@ namespace DndBuilder.Core.Repositories
                 var alter = _conn.CreateCommand();
                 alter.CommandText = "ALTER TABLE item_types ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
-            }
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, desc) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO item_types (campaign_id, name, description)
-                    SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM item_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", desc);
-                cmd.ExecuteNonQuery();
             }
         }
 

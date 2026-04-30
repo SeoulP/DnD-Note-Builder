@@ -1,0 +1,564 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Panes/Pf2eCharacterDetailPane/Pf2eCharacterDetailPane.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wiki"]
+[ext_resource type="Theme" uid="uid://serwwl5j7fdu" path="res://theme.tres" id="5_theme"]
+[ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]
+
+[node name="Pf2eCharacterDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_ancestryInput", "_heritageInput", "_classInput", "_levelInput", "_currentHpInput", "_maxHpInput", "_heroPip1", "_heroPip2", "_heroPip3", "_deleteButton", "_aliasChipsRow", "_imageCarousel", "_statsTabBtn", "_skillsTabBtn", "_flavorTabBtn", "_statsTab", "_skillsTab", "_flavorTab", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_acInput", "_speedInput", "_fortRank", "_refRank", "_willRank", "_percRank", "_fortMod", "_refMod", "_willMod", "_percMod", "_skillsContainer", "_descInput", "_notes")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+_nameInput        = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/NameInput")
+_deleteButton     = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/DeleteButton")
+_aliasChipsRow    = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AliasChipsRow")
+_ancestryInput    = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AncestryRow/AncestryInput")
+_heritageInput    = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AncestryRow/HeritageInput")
+_classInput       = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow/ClassInput")
+_levelInput       = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow/LevelInput")
+_currentHpInput   = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow/CurrentHpInput")
+_maxHpInput       = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow/MaxHpInput")
+_heroPip1         = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow/HeroPip1")
+_heroPip2         = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow/HeroPip2")
+_heroPip3         = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow/HeroPip3")
+_imageCarousel    = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/CarouselColumn/ImageCarousel")
+_statsTabBtn      = NodePath("MainVBox/NavTabStrip/StatsTabBtn")
+_skillsTabBtn     = NodePath("MainVBox/NavTabStrip/SkillsTabBtn")
+_flavorTabBtn     = NodePath("MainVBox/NavTabStrip/FlavorTabBtn")
+_statsTab         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab")
+_skillsTab        = NodePath("MainVBox/ContentMargin/ContentVBox/SkillsTab")
+_flavorTab        = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab")
+_strInput         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox/StrInput")
+_dexInput         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox/DexInput")
+_conInput         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox/ConInput")
+_intInput         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox/IntInput")
+_wisInput         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox/WisInput")
+_chaInput         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox/ChaInput")
+_strMod           = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox/StrMod")
+_dexMod           = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox/DexMod")
+_conMod           = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox/ConMod")
+_intMod           = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox/IntMod")
+_wisMod           = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox/WisMod")
+_chaMod           = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox/ChaMod")
+_acInput          = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow/AcInput")
+_speedInput       = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow/SpeedInput")
+_fortRank         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/FortRow/FortRank")
+_refRank          = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/RefRow/RefRank")
+_willRank         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/WillRow/WillRank")
+_percRank         = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/PercRow/PercRank")
+_fortMod          = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/FortRow/FortMod")
+_refMod           = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/RefRow/RefMod")
+_willMod          = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/WillRow/WillMod")
+_percMod          = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/PercRow/PercMod")
+_skillsContainer  = NodePath("MainVBox/ContentMargin/ContentVBox/SkillsTab/SkillsContainer")
+_descInput        = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab/DescInput")
+_notes            = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab/Notes")
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="HeaderMargin" type="MarginContainer" parent="MainVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="HeaderVBox" type="VBoxContainer" parent="MainVBox/HeaderMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="NameRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+
+[node name="NameInput" type="LineEdit" parent="MainVBox/HeaderMargin/HeaderVBox/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Character Name"
+theme_override_font_sizes/font_size = 18
+caret_blink = true
+
+[node name="DeleteButton" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/NameRow"]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="FieldsRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="HeaderFields" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="AncestryRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields"]
+layout_mode = 2
+
+[node name="AncestryLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AncestryRow"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Ancestry"
+
+[node name="AncestryInput" type="OptionButton" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AncestryRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HeritageInput" type="OptionButton" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AncestryRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ClassRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields"]
+layout_mode = 2
+
+[node name="ClassLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Class"
+
+[node name="ClassInput" type="OptionButton" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LevelLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow"]
+layout_mode = 2
+text = "Level"
+
+[node name="LevelInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow"]
+layout_mode = 2
+script = ExtResource("6_intinput")
+MinValue = 1
+MaxValue = 20
+Value = 1
+
+[node name="HpRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HpLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "HP"
+
+[node name="CurrentHpInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(70, 0)
+script = ExtResource("6_intinput")
+MinValue = 0
+MaxValue = 999
+
+[node name="SlashLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+layout_mode = 2
+text = "/"
+
+[node name="MaxHpInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(70, 0)
+script = ExtResource("6_intinput")
+MinValue = 0
+MaxValue = 999
+
+[node name="HeroLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+layout_mode = 2
+text = "Hero"
+
+[node name="HeroPip1" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+layout_mode = 2
+toggle_mode = true
+text = "●"
+
+[node name="HeroPip2" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+layout_mode = 2
+toggle_mode = true
+text = "●"
+
+[node name="HeroPip3" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/HpRow"]
+layout_mode = 2
+toggle_mode = true
+text = "●"
+
+[node name="CarouselColumn" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow"]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/CarouselColumn" instance=ExtResource("3_imgcar")]
+layout_mode = 2
+
+[node name="NavTabStrip" type="HBoxContainer" parent="MainVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="StatsTabBtn" type="Button" parent="MainVBox/NavTabStrip"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "Stats"
+
+[node name="SkillsTabBtn" type="Button" parent="MainVBox/NavTabStrip"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Skills"
+
+[node name="FlavorTabBtn" type="Button" parent="MainVBox/NavTabStrip"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Flavor"
+
+[node name="ContentMargin" type="MarginContainer" parent="MainVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ContentVBox" type="VBoxContainer" parent="MainVBox/ContentMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="StatsTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="AbilitySection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AbilityLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection"]
+layout_mode = 2
+text = "Ability Scores"
+
+[node name="AbilityGrid" type="GridContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection"]
+layout_mode = 2
+theme_override_constants/h_separation = 24
+columns = 6
+
+[node name="StrPanel" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid"]
+layout_mode = 2
+
+[node name="StrVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="StrLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox"]
+layout_mode = 2
+text = "STR"
+horizontal_alignment = 1
+
+[node name="StrInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="StrMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/StrPanel/StrVBox"]
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 1
+
+[node name="DexPanel" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid"]
+layout_mode = 2
+
+[node name="DexVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="DexLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox"]
+layout_mode = 2
+text = "DEX"
+horizontal_alignment = 1
+
+[node name="DexInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="DexMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/DexPanel/DexVBox"]
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 1
+
+[node name="ConPanel" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid"]
+layout_mode = 2
+
+[node name="ConVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ConLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox"]
+layout_mode = 2
+text = "CON"
+horizontal_alignment = 1
+
+[node name="ConInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="ConMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ConPanel/ConVBox"]
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 1
+
+[node name="IntPanel" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid"]
+layout_mode = 2
+
+[node name="IntVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="IntLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox"]
+layout_mode = 2
+text = "INT"
+horizontal_alignment = 1
+
+[node name="IntInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="IntMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/IntPanel/IntVBox"]
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 1
+
+[node name="WisPanel" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid"]
+layout_mode = 2
+
+[node name="WisVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="WisLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox"]
+layout_mode = 2
+text = "WIS"
+horizontal_alignment = 1
+
+[node name="WisInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="WisMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/WisPanel/WisVBox"]
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 1
+
+[node name="ChaPanel" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid"]
+layout_mode = 2
+
+[node name="ChaVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ChaLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox"]
+layout_mode = 2
+text = "CHA"
+horizontal_alignment = 1
+
+[node name="ChaInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("5_theme")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="ChaMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilitySection/AbilityGrid/ChaPanel/ChaVBox"]
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 1
+
+[node name="CombatRow" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AcLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
+layout_mode = 2
+text = "AC"
+
+[node name="AcInput" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(72, 0)
+script = ExtResource("6_intinput")
+MaxValue = 99
+Value = 10
+
+[node name="SpeedLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
+layout_mode = 2
+text = "Speed"
+
+[node name="SpeedInput" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(72, 0)
+script = ExtResource("6_intinput")
+MaxValue = 999
+Value = 25
+
+[node name="FtLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/CombatRow"]
+layout_mode = 2
+text = "ft"
+
+[node name="SavesSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SavesLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection"]
+layout_mode = 2
+text = "Saves & Perception"
+
+[node name="FortRow" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FortLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/FortRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "Fortitude"
+
+[node name="FortRank" type="OptionButton" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/FortRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FortMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/FortRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 2
+
+[node name="RefRow" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RefLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/RefRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "Reflex"
+
+[node name="RefRank" type="OptionButton" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/RefRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RefMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/RefRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 2
+
+[node name="WillRow" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WillLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/WillRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "Will"
+
+[node name="WillRank" type="OptionButton" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/WillRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WillMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/WillRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 2
+
+[node name="PercRow" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PercLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/PercRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "Perception"
+
+[node name="PercRank" type="OptionButton" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/PercRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PercMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavesSection/PercRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+0"
+horizontal_alignment = 2
+
+[node name="SkillsTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SkillsLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/SkillsTab"]
+layout_mode = 2
+text = "Skills"
+
+[node name="SkillsContainer" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/SkillsTab"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="FlavorTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DescLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab"]
+layout_mode = 2
+text = "Description"
+
+[node name="DescInput" type="TextEdit" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 100)
+wrap_mode = 1
+
+[node name="Notes" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab" instance=ExtResource("4_wiki")]
+layout_mode = 2

@@ -6,10 +6,10 @@ public partial class App : Control
 	[Export] private BoxContainer _appPanel;
 	[Export] private NavBar _navBar;
 	[Export] PackedScene _campaignListPanelScene;
-	[Export] PackedScene _campaignDashboardScene;
+	[Export] PackedScene _campaignViewScene;
 	[Export] PackedScene _toastScene;
 
-	private CampaignDashboard _currentDashboard;
+	private CampaignView _currentDashboard;
 	private Toast              _toast;
 
 	public override void _Ready()
@@ -51,7 +51,7 @@ public partial class App : Control
 		SetMargins(0, 0, 0, 0);
 		ClearPanel();
 
-		_currentDashboard = _campaignDashboardScene.Instantiate<CampaignDashboard>();
+		_currentDashboard = _campaignViewScene.Instantiate<CampaignView>();
 		_currentDashboard.SizeFlagsHorizontal  = SizeFlags.ExpandFill;
 		_currentDashboard.SizeFlagsVertical    = SizeFlags.ExpandFill;
 		_currentDashboard.SidebarPanelChanged += panel => _navBar.SetActivePanel(panel);

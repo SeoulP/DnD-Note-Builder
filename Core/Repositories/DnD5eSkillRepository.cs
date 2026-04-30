@@ -8,28 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string name, string attr)[] Defaults =
-        {
-            ("Acrobatics",     "dex"),
-            ("Animal Handling","wis"),
-            ("Arcana",         "int"),
-            ("Athletics",      "str"),
-            ("Deception",      "cha"),
-            ("History",        "int"),
-            ("Insight",        "wis"),
-            ("Intimidation",   "cha"),
-            ("Investigation",  "int"),
-            ("Medicine",       "wis"),
-            ("Nature",         "int"),
-            ("Perception",     "wis"),
-            ("Performance",    "cha"),
-            ("Persuasion",     "cha"),
-            ("Religion",       "int"),
-            ("Sleight of Hand","dex"),
-            ("Stealth",        "dex"),
-            ("Survival",       "wis"),
-        };
-
         public DnD5eSkillRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -42,21 +20,6 @@ namespace DndBuilder.Core.Repositories
                 attribute   TEXT    NOT NULL DEFAULT ''
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, attr) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO dnd5e_skills (campaign_id, name, attribute)
-                    SELECT @cid, @name, @attr WHERE NOT EXISTS
-                        (SELECT 1 FROM dnd5e_skills WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@attr", attr);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<DnD5eSkill> GetAll(int campaignId)

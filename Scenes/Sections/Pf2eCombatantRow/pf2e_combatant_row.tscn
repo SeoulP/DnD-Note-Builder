@@ -1,0 +1,89 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Sections/Pf2eCombatantRow/Pf2eCombatantRow.cs" id="1_script"]
+
+[node name="Pf2eCombatantRow" type="PanelContainer" node_paths=PackedStringArray("_colorDot", "_nameLabel", "_initiativeInput", "_hpButton", "_action1Btn", "_action2Btn", "_action3Btn", "_deleteButton")]
+script = ExtResource("1_script")
+_colorDot        = NodePath("HBox/ColorDot")
+_nameLabel       = NodePath("HBox/NameGroup/NameLabel")
+_initiativeInput = NodePath("HBox/InitBox/InitInput")
+_hpButton        = NodePath("HBox/HpButton")
+_action1Btn      = NodePath("HBox/ActionPips/Pip1")
+_action2Btn      = NodePath("HBox/ActionPips/Pip2")
+_action3Btn      = NodePath("HBox/ActionPips/Pip3")
+_deleteButton    = NodePath("HBox/DeleteButton")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ColorDot" type="Panel" parent="HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(12, 12)
+
+[node name="NameGroup" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="NameLabel" type="Button" parent="HBox/NameGroup"]
+layout_mode = 2
+text = "Combatant"
+flat = true
+alignment = 0
+mouse_default_cursor_shape = 2
+
+[node name="InitBox" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="InitLabel" type="Label" parent="HBox/InitBox"]
+layout_mode = 2
+vertical_alignment = 1
+text = "Init"
+
+[node name="InitInput" type="SpinBox" parent="HBox/InitBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(64, 0)
+min_value = -99
+max_value = 99
+
+[node name="HpButton" type="Button" parent="HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(96, 0)
+text = "❤ 0/0"
+
+[node name="ActionPips" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+tooltip_text = "Actions remaining this turn. Click to spend or restore."
+
+[node name="ActLabel" type="Label" parent="HBox/ActionPips"]
+layout_mode = 2
+vertical_alignment = 1
+text = "ACT"
+theme_override_font_sizes/font_size = 10
+
+[node name="Pip1" type="Button" parent="HBox/ActionPips"]
+layout_mode = 2
+custom_minimum_size = Vector2(22, 22)
+text = "●"
+tooltip_text = "Action 1"
+
+[node name="Pip2" type="Button" parent="HBox/ActionPips"]
+layout_mode = 2
+custom_minimum_size = Vector2(22, 22)
+text = "●"
+tooltip_text = "Action 2"
+
+[node name="Pip3" type="Button" parent="HBox/ActionPips"]
+layout_mode = 2
+custom_minimum_size = Vector2(22, 22)
+text = "●"
+tooltip_text = "Action 3"
+
+[node name="DeleteButton" type="Button" parent="HBox"]
+layout_mode = 2
+text = "×"
+flat = true
+mouse_default_cursor_shape = 2

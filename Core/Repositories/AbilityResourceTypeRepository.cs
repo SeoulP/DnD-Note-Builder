@@ -8,15 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string Name, string Description)[] Defaults =
-        {
-            ("Rage", "Rage uses granted by class progression."),
-            ("Second Wind", "Second Wind uses granted by Fighter progression."),
-            ("Action Surge", "Action Surge uses granted by Fighter progression."),
-            ("Indomitable", "Indomitable uses granted by Fighter progression."),
-            ("Superiority Die", "Battle Master superiority dice spent on maneuvers."),
-        };
-
         public AbilityResourceTypeRepository(SqliteConnection conn)
         {
             _conn = conn;
@@ -51,21 +42,6 @@ namespace DndBuilder.Core.Repositories
                 var alter = _conn.CreateCommand();
                 alter.CommandText = $"ALTER TABLE ability_resource_types ADD COLUMN {column} {definition}";
                 alter.ExecuteNonQuery();
-            }
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, desc) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO ability_resource_types (campaign_id, name, description)
-                    SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM ability_resource_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid", campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", desc);
-                cmd.ExecuteNonQuery();
             }
         }
 

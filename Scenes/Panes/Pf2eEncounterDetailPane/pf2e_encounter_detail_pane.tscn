@@ -1,0 +1,117 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Panes/Pf2eEncounterDetailPane/Pf2eEncounterDetailPane.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="PackedScene" path="res://Scenes/Sections/Pf2eCombatantRow/pf2e_combatant_row.tscn" id="3_combrow"]
+
+[node name="Pf2eEncounterDetailPane" type="VBoxContainer" node_paths=PackedStringArray("_deleteButton", "_nameInput", "_sessionOption", "_resolveButton", "_addCombatantButton", "_showDefeatedButton", "_activeCombatantsVBox", "_defeatedDivider", "_defeatedCombatantsVBox", "_nextTurnButton", "_statBlockVBox")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+script = ExtResource("1_script")
+_deleteButton           = NodePath("HeaderMargin/HeaderHBox/DeleteButton")
+_nameInput              = NodePath("HeaderMargin/HeaderHBox/NameInput")
+_sessionOption          = NodePath("HeaderMargin/HeaderHBox/SessionOption")
+_resolveButton          = NodePath("HeaderMargin/HeaderHBox/ResolveButton")
+_addCombatantButton     = NodePath("ListMargin/ListVBox/AddCombatantCenter/AddCombatantButton")
+_showDefeatedButton     = NodePath("ListMargin/ListVBox/ShowDefeatedButton")
+_activeCombatantsVBox   = NodePath("ListMargin/ListVBox/CombatantsScroll/CombatantsVBox/ActiveVBox")
+_defeatedDivider        = NodePath("ListMargin/ListVBox/CombatantsScroll/CombatantsVBox/DefeatedDivider")
+_defeatedCombatantsVBox = NodePath("ListMargin/ListVBox/CombatantsScroll/CombatantsVBox/DefeatedVBox")
+_nextTurnButton         = NodePath("ListMargin/ListVBox/NextTurnCenter/NextTurnButton")
+_statBlockVBox          = NodePath("StatBlockScroll/StatBlockVBox")
+_combatantRowScene      = ExtResource("3_combrow")
+
+[node name="HeaderMargin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left   = 8
+theme_override_constants/margin_right  = 8
+theme_override_constants/margin_top    = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="HeaderHBox" type="HBoxContainer" parent="HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameInput" type="LineEdit" parent="HeaderMargin/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Encounter name"
+caret_blink = true
+
+[node name="SessionOption" type="OptionButton" parent="HeaderMargin/HeaderHBox"]
+layout_mode = 2
+
+[node name="ResolveButton" type="Button" parent="HeaderMargin/HeaderHBox"]
+layout_mode = 2
+text = "☐ Resolve"
+
+[node name="DeleteButton" type="Button" parent="HeaderMargin/HeaderHBox"]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="ListMargin" type="MarginContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left  = 8
+theme_override_constants/margin_right = 8
+
+[node name="ListVBox" type="VBoxContainer" parent="ListMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AddCombatantCenter" type="CenterContainer" parent="ListMargin/ListVBox"]
+layout_mode = 2
+
+[node name="AddCombatantButton" type="Button" parent="ListMargin/ListVBox/AddCombatantCenter"]
+layout_mode = 2
+text = "+ Combatant"
+
+[node name="ShowDefeatedButton" type="Button" parent="ListMargin/ListVBox"]
+layout_mode = 2
+text = "Show Defeated (0)"
+visible = false
+
+[node name="CombatantsScroll" type="ScrollContainer" parent="ListMargin/ListVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CombatantsVBox" type="VBoxContainer" parent="ListMargin/ListVBox/CombatantsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="ActiveVBox" type="VBoxContainer" parent="ListMargin/ListVBox/CombatantsScroll/CombatantsVBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="DefeatedDivider" type="Label" parent="ListMargin/ListVBox/CombatantsScroll/CombatantsVBox"]
+layout_mode = 2
+text = "── Defeated ──"
+visible = false
+horizontal_alignment = 1
+
+[node name="DefeatedVBox" type="VBoxContainer" parent="ListMargin/ListVBox/CombatantsScroll/CombatantsVBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+visible = false
+
+[node name="NextTurnCenter" type="CenterContainer" parent="ListMargin/ListVBox"]
+layout_mode = 2
+
+[node name="NextTurnButton" type="Button" parent="ListMargin/ListVBox/NextTurnCenter"]
+layout_mode = 2
+text = "▶ Next Turn"
+
+[node name="StatBlockScroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 120)
+
+[node name="StatBlockVBox" type="VBoxContainer" parent="StatBlockScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6

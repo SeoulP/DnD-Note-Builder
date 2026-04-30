@@ -1,0 +1,8 @@
+[
+  { "name": "Monster" },
+  { "name": "Animal" },
+  { "name": "Humanoid NPC" },
+  { "name": "Construct" },
+  { "name": "Undead" },
+  { "name": "Other" }
+]

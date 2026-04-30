@@ -1,0 +1,482 @@
+[gd_scene format=3 uid="uid://0g5oesx5h4mk"]
+
+[ext_resource type="Script"  path="res://Scenes/Panes/ClassDetailPane/ClassDetailPane.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="Script" uid="uid://cx5d0l4bcrqvh" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
+[ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_spellcast"]
+allow_unpress = true
+
+[node name="ClassDetailPane" type="ScrollContainer" unique_id=851634716 node_paths=PackedStringArray("_nameInput", "_deleteButton", "_descToggle", "_descInset", "_descInput", "_coreStatsToggle", "_coreStatsInset", "_hitDieInput", "_primaryAbilityContainer", "_spellcastingAbilityInput", "_isRitualCasterInput", "_isPreparedCasterInput", "_proficienciesToggle", "_proficienciesInset", "_savingThrowsContainer", "_armorProfsInput", "_weaponProfsInput", "_toolProfsInput", "_skillChoicesCountInput", "_skillOptionsContainer", "_startingEquipToggle", "_startingEquipInset", "_startingEquipAInput", "_startingEquipBInput", "_levelsToggle", "_levelsInset", "_initLevelsButton", "_levelsContainer", "_subclassesToggle", "_subclassesInset", "_unlockLevelInput", "_subclassesContainer", "_addSubclassButton", "_abilitiesToggle", "_abilitiesInset", "_abilitiesContainer", "_addAbilityButton", "_notesToggle", "_notesInset", "_notes", "_imageCarousel")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+_nameInput = NodePath("Margin/VBox/NameRow/NameInput")
+_deleteButton = NodePath("Margin/VBox/NameRow/DeleteButton")
+_descToggle = NodePath("Margin/VBox/ContentHBox/Fields/DescToggle")
+_descInset = NodePath("Margin/VBox/ContentHBox/Fields/DescInset")
+_descInput = NodePath("Margin/VBox/ContentHBox/Fields/DescInset/DescContent/DescInput")
+_coreStatsToggle = NodePath("Margin/VBox/ContentHBox/Fields/CoreStatsToggle")
+_coreStatsInset = NodePath("Margin/VBox/ContentHBox/Fields/CoreStatsInset")
+_hitDieInput = NodePath("Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/HitDieRow/HitDieInput")
+_primaryAbilityContainer = NodePath("Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/PrimaryAbilitySec/PrimaryAbilityContainer")
+_spellcastingAbilityInput = NodePath("Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/SpellcastingRow/SpellcastingAbilityInput")
+_isRitualCasterInput = NodePath("Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/SpellcastingRow/IsRitualCasterInput")
+_isPreparedCasterInput = NodePath("Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/SpellcastingRow/IsPreparedCasterInput")
+_proficienciesToggle = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesToggle")
+_proficienciesInset = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesInset")
+_savingThrowsContainer = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SavingThrowsSec/SavingThrowsContainer")
+_armorProfsInput = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/ArmorRow/ArmorProfsInput")
+_weaponProfsInput = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/WeaponsRow/WeaponProfsInput")
+_toolProfsInput = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/ToolsRow/ToolProfsInput")
+_skillChoicesCountInput = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillChoicesRow/SkillChoicesCountInput")
+_skillOptionsContainer = NodePath("Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillOptionsSec/SkillOptionsContainer")
+_startingEquipToggle = NodePath("Margin/VBox/ContentHBox/Fields/StartingEquipToggle")
+_startingEquipInset = NodePath("Margin/VBox/ContentHBox/Fields/StartingEquipInset")
+_startingEquipAInput = NodePath("Margin/VBox/ContentHBox/Fields/StartingEquipInset/StartingEquipContent/StartingEquipAInput")
+_startingEquipBInput = NodePath("Margin/VBox/ContentHBox/Fields/StartingEquipInset/StartingEquipContent/StartingEquipBRow/StartingEquipBInput")
+_levelsToggle = NodePath("Margin/VBox/ContentHBox/Fields/LevelsHeader/LevelsToggle")
+_levelsInset = NodePath("Margin/VBox/ContentHBox/Fields/LevelsInset")
+_initLevelsButton = NodePath("Margin/VBox/ContentHBox/Fields/LevelsHeader/InitLevelsButton")
+_levelsContainer = NodePath("Margin/VBox/ContentHBox/Fields/LevelsInset/LevelsContainer")
+_subclassesToggle = NodePath("Margin/VBox/ContentHBox/Fields/SubclassesHeader/SubclassesToggle")
+_subclassesInset = NodePath("Margin/VBox/ContentHBox/Fields/SubclassesInset")
+_unlockLevelInput = NodePath("Margin/VBox/ContentHBox/Fields/SubclassesHeader/UnlockLevelInput")
+_subclassesContainer = NodePath("Margin/VBox/ContentHBox/Fields/SubclassesInset/SubclassesContainer")
+_addSubclassButton = NodePath("Margin/VBox/ContentHBox/Fields/SubclassesInset/SubclassesContainer/AddSubclassButton")
+_abilitiesToggle = NodePath("Margin/VBox/ContentHBox/Fields/AbilitiesHeader/AbilitiesToggle")
+_abilitiesInset = NodePath("Margin/VBox/ContentHBox/Fields/AbilitiesInset")
+_abilitiesContainer = NodePath("Margin/VBox/ContentHBox/Fields/AbilitiesInset/AbilitiesContainer")
+_addAbilityButton = NodePath("Margin/VBox/ContentHBox/Fields/AbilitiesInset/AbilitiesContainer/AddAbilityButton")
+_notesToggle = NodePath("Margin/VBox/ContentHBox/Fields/NotesToggle")
+_notesInset = NodePath("Margin/VBox/ContentHBox/Fields/NotesInset")
+_notes = NodePath("Margin/VBox/ContentHBox/Fields/NotesInset/Notes")
+_imageCarousel = NodePath("Margin/VBox/ContentHBox/CarouselColumn/ImageCarousel")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=701605869]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=325788978]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="NameRow" type="HBoxContainer" parent="Margin/VBox" unique_id=405709539]
+layout_mode = 2
+
+[node name="NameInput" type="LineEdit" parent="Margin/VBox/NameRow" unique_id=2036510886]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Class Name"
+caret_blink = true
+
+[node name="DeleteButton" type="Button" parent="Margin/VBox/NameRow" unique_id=837711102]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="ContentHBox" type="HBoxContainer" parent="Margin/VBox" unique_id=94685073]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Fields" type="VBoxContainer" parent="Margin/VBox/ContentHBox" unique_id=1931589458]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="DescToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields" unique_id=246500314]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Description / Flavour Text"
+flat = true
+alignment = 0
+
+[node name="DescInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1207681128]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="DescLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/DescInset" unique_id=1875720297]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="DescContent" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/DescInset" unique_id=1269635573]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DescInput" type="TextEdit" parent="Margin/VBox/ContentHBox/Fields/DescInset/DescContent" unique_id=351084690]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+placeholder_text = "Class description and flavour text..."
+wrap_mode = 1
+caret_blink = true
+
+[node name="CoreStatsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=1630315479]
+layout_mode = 2
+
+[node name="CoreStatsToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields" unique_id=244712721]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Core Stats"
+flat = true
+alignment = 0
+
+[node name="CoreStatsInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1250117970]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="CoreStatsLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset" unique_id=1874625220]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="CoreStatsContent" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset" unique_id=1968981203]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="HitDieRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent" unique_id=856521972]
+layout_mode = 2
+
+[node name="HitDieLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/HitDieRow" unique_id=468987234]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Hit Die"
+
+[node name="HitDieInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/HitDieRow" unique_id=2023528765]
+layout_mode = 2
+
+[node name="PrimaryAbilitySec" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent" unique_id=501938817]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PrimaryAbilityLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/PrimaryAbilitySec" unique_id=1148467359]
+layout_mode = 2
+text = "Primary Ability"
+
+[node name="PrimaryAbilityContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/PrimaryAbilitySec" unique_id=450052486]
+layout_mode = 2
+
+[node name="SpellcastingRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent" unique_id=1474986716]
+layout_mode = 2
+
+[node name="SpellcastingLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/SpellcastingRow" unique_id=1328109355]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Spellcasting"
+
+[node name="SpellcastingAbilityInput" type="OptionButton" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/SpellcastingRow" unique_id=343010044]
+layout_mode = 2
+
+[node name="IsRitualCasterInput" type="CheckBox" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/SpellcastingRow" unique_id=186764487]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_spellcast")
+text = "Ritual"
+
+[node name="IsPreparedCasterInput" type="CheckBox" parent="Margin/VBox/ContentHBox/Fields/CoreStatsInset/CoreStatsContent/SpellcastingRow" unique_id=1408599000]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_spellcast")
+text = "Prepared"
+
+[node name="ProficienciesSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=877390298]
+layout_mode = 2
+
+[node name="ProficienciesToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields" unique_id=1045736975]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Proficiencies"
+flat = true
+alignment = 0
+
+[node name="ProficienciesInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1807523413]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="ProficienciesLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset" unique_id=1189455425]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="ProficienciesContent" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset" unique_id=183912652]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="SavingThrowsSec" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent" unique_id=480405488]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SavingThrowsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SavingThrowsSec" unique_id=1937057571]
+layout_mode = 2
+text = "Saving Throws"
+
+[node name="SavingThrowsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SavingThrowsSec" unique_id=1379512520]
+layout_mode = 2
+
+[node name="ArmorRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent" unique_id=1321158795]
+layout_mode = 2
+
+[node name="ArmorLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/ArmorRow" unique_id=1709970740]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Armor"
+
+[node name="ArmorProfsInput" type="LineEdit" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/ArmorRow" unique_id=1429621774]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "e.g. Light armor, Medium armor, Shields"
+caret_blink = true
+
+[node name="WeaponsRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent" unique_id=801460613]
+layout_mode = 2
+
+[node name="WeaponsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/WeaponsRow" unique_id=701305177]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Weapons"
+
+[node name="WeaponProfsInput" type="LineEdit" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/WeaponsRow" unique_id=2003285007]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "e.g. Simple weapons, Martial weapons"
+caret_blink = true
+
+[node name="ToolsRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent" unique_id=1998087628]
+layout_mode = 2
+
+[node name="ToolsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/ToolsRow" unique_id=79638136]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Tools"
+
+[node name="ToolProfsInput" type="LineEdit" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/ToolsRow" unique_id=1519841751]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "e.g. Thieves' Tools, or None"
+caret_blink = true
+
+[node name="SkillChoicesRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent" unique_id=864656438]
+layout_mode = 2
+
+[node name="SkillChoicesLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillChoicesRow" unique_id=1490566529]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Skill Choices"
+
+[node name="SkillChoicesCountInput" type="PanelContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillChoicesRow" unique_id=1858666030]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+script = ExtResource("6_intinput")
+MinValue = 1
+MaxValue = 6
+Value = 2
+
+[node name="SkillOptionsSec" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent" unique_id=1569126155]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SkillOptionsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillOptionsSec" unique_id=908761392]
+layout_mode = 2
+text = "Skill Options"
+
+[node name="SkillOptionsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/ProficienciesInset/ProficienciesContent/SkillOptionsSec" unique_id=1844505110]
+layout_mode = 2
+
+[node name="StartingEquipSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=1866760504]
+layout_mode = 2
+
+[node name="StartingEquipToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields" unique_id=940366534]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Starting Equipment"
+flat = true
+alignment = 0
+
+[node name="StartingEquipInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=2018268939]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="StartingEquipLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/StartingEquipInset" unique_id=658925667]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="StartingEquipContent" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/StartingEquipInset" unique_id=1522037529]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="StartingEquipALabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/StartingEquipInset/StartingEquipContent" unique_id=1676767911]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Option A"
+
+[node name="StartingEquipAInput" type="TextEdit" parent="Margin/VBox/ContentHBox/Fields/StartingEquipInset/StartingEquipContent" unique_id=1076651950]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+placeholder_text = "Equipment list..."
+wrap_mode = 1
+caret_blink = true
+
+[node name="StartingEquipBRow" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields/StartingEquipInset/StartingEquipContent" unique_id=1973556085]
+layout_mode = 2
+
+[node name="StartingEquipBLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/StartingEquipInset/StartingEquipContent/StartingEquipBRow" unique_id=1158581739]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Option B (or GP)"
+
+[node name="StartingEquipBInput" type="LineEdit" parent="Margin/VBox/ContentHBox/Fields/StartingEquipInset/StartingEquipContent/StartingEquipBRow" unique_id=934326620]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "e.g. 150 GP"
+caret_blink = true
+
+[node name="LevelsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=2026724957]
+layout_mode = 2
+
+[node name="LevelsHeader" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1975695664]
+layout_mode = 2
+
+[node name="LevelsToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields/LevelsHeader" unique_id=614750219]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Level Progression"
+flat = true
+alignment = 0
+
+[node name="InitLevelsButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/LevelsHeader" unique_id=1500279898]
+layout_mode = 2
+text = "Initialize Levels"
+
+[node name="LevelsInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=200377220]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="LevelsLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/LevelsInset" unique_id=1973772054]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="LevelsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/LevelsInset" unique_id=154956183]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SubclassesSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=579568147]
+layout_mode = 2
+
+[node name="SubclassesHeader" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1483177131]
+layout_mode = 2
+
+[node name="SubclassesToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields/SubclassesHeader" unique_id=485535845]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Subclasses"
+flat = true
+alignment = 0
+
+[node name="UnlockLevelLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields/SubclassesHeader" unique_id=660201131]
+layout_mode = 2
+text = "Unlocks at level"
+
+[node name="UnlockLevelInput" type="PanelContainer" parent="Margin/VBox/ContentHBox/Fields/SubclassesHeader" unique_id=1847786882]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+script = ExtResource("6_intinput")
+MinValue = 1
+MaxValue = 20
+Value = 3
+
+[node name="SubclassesInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=43671794]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="SubclassesLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/SubclassesInset" unique_id=1897278602]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="SubclassesContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/SubclassesInset" unique_id=1579455527]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="AddSubclassButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/SubclassesInset/SubclassesContainer" unique_id=1278877079]
+layout_mode = 2
+text = "+ Add Subclass"
+
+[node name="AbilitiesSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=722039990]
+layout_mode = 2
+
+[node name="AbilitiesHeader" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=432366746]
+layout_mode = 2
+
+[node name="AbilitiesToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields/AbilitiesHeader" unique_id=2048732978]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Abilities"
+flat = true
+alignment = 0
+
+[node name="AbilitiesInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1598016902]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="AbilitiesLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/AbilitiesInset" unique_id=2071465657]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="AbilitiesContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields/AbilitiesInset" unique_id=955500749]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="AddAbilityButton" type="Button" parent="Margin/VBox/ContentHBox/Fields/AbilitiesInset/AbilitiesContainer" unique_id=64339577]
+layout_mode = 2
+script = ExtResource("3_typeopt")
+
+[node name="NotesSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields" unique_id=2009602458]
+layout_mode = 2
+
+[node name="NotesToggle" type="Button" parent="Margin/VBox/ContentHBox/Fields" unique_id=1832281244]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Notes"
+flat = true
+alignment = 0
+
+[node name="NotesInset" type="HBoxContainer" parent="Margin/VBox/ContentHBox/Fields" unique_id=1601764780]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="NotesLeftPad" type="Control" parent="Margin/VBox/ContentHBox/Fields/NotesInset" unique_id=1415072664]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="Notes" parent="Margin/VBox/ContentHBox/Fields/NotesInset" unique_id=700838351 instance=ExtResource("4_wikinotes")]
+
+[node name="CarouselColumn" type="VBoxContainer" parent="Margin/VBox/ContentHBox" unique_id=509038956]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="Margin/VBox/ContentHBox/CarouselColumn" unique_id=878578088 instance=ExtResource("5_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="Margin/VBox/ContentHBox/CarouselColumn" unique_id=922857151]
+layout_mode = 2
+size_flags_vertical = 3

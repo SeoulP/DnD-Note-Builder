@@ -1,0 +1,500 @@
+[gd_scene format=3 uid="uid://bmmsfyidkbcuh"]
+
+[ext_resource type="Script" uid="uid://b6vc312gicham" path="res://Scenes/Panes/PlayerCharacterDetailPane/PlayerCharacterDetailPane.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="Theme" uid="uid://serwwl5j7fdu" path="res://theme.tres" id="3_5j2cg"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
+[ext_resource type="PackedScene" uid="uid://bgpk7xm3y02ql" path="res://Scenes/Modals/BackgroundPickerModal/background_picker_modal.tscn" id="6_bgmodal"]
+[ext_resource type="Script" path="res://Scenes/Components/IntInput/IntInput.cs" id="7_intinput"]
+
+[node name="PlayerCharacterDetailPane" type="ScrollContainer" unique_id=1808163932 node_paths=PackedStringArray("_nameInput", "_speciesLabel", "_classLabel", "_speciesInput", "_subspeciesInput", "_classInput", "_subclassInput", "_levelInput", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_descInput", "_backgroundLabel", "_backgroundButton", "_skillsSection", "_skillsChipsContainer", "_skillsListContainer", "_abilityChoicesSection", "_abilityChoicesContainer", "_resourcesSection", "_resourcesContainer", "_notes", "_imageCarousel", "_deleteButton", "_aliasChipsRow", "_addManualAbilityBtn", "_statsTabBtn", "_actionsTabBtn", "_inventoryTabBtn", "_flavorTabBtn", "_statsTab", "_actionsTab", "_inventoryTab", "_flavorTab")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+_nameInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/NameInput")
+_speciesLabel = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/SpeciesRow/SpeciesLabel")
+_classLabel = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow/ClassLabel")
+_speciesInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/SpeciesRow/SpeciesInput")
+_subspeciesInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/SpeciesRow/SubspeciesInput")
+_classInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow/ClassInput")
+_subclassInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow/SubclassInput")
+_levelInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow/LevelInput")
+_strInput = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer6/StrVBox/StrInput")
+_dexInput = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer5/DexVBox/DexInput")
+_conInput = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer4/ConVBox/ConInput")
+_intInput = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer3/IntVBox/IntInput")
+_wisInput = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer2/WisVBox/WisInput")
+_chaInput = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer/ChaVBox/ChaInput")
+_strMod = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer6/StrVBox/StrMod")
+_dexMod = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer5/DexVBox/DexMod")
+_conMod = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer4/ConVBox/ConMod")
+_intMod = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer3/IntVBox/IntMod")
+_wisMod = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer2/WisVBox/WisMod")
+_chaMod = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer/ChaVBox/ChaMod")
+_descInput = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab/DescInput")
+_backgroundLabel = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab/BackgroundRow/BackgroundLabel")
+_backgroundButton = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab/BackgroundRow/BackgroundButton")
+_skillsSection = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SkillsSection")
+_skillsChipsContainer = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SkillsSection/SkillsHeader/ChipsContainer")
+_skillsListContainer = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SkillsSection/SkillsListContainer")
+_abilityChoicesSection = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection")
+_abilityChoicesContainer = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection/AbilityChoicesContainer")
+_resourcesSection = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/ResourcesSection")
+_resourcesContainer = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/ResourcesSection/ResourcesContainer")
+_notes = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab/Notes")
+_imageCarousel = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/CarouselColumn/ImageCarousel")
+_deleteButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/NameRow/DeleteButton")
+_aliasChipsRow = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/AliasChipsRow")
+_addManualAbilityBtn = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection/AbilityChoicesHeader/AddManualAbilityBtn")
+_statsTabBtn = NodePath("MainVBox/NavTabStrip/StatsTabBtn")
+_actionsTabBtn = NodePath("MainVBox/NavTabStrip/ActionsTabBtn")
+_inventoryTabBtn = NodePath("MainVBox/NavTabStrip/InventoryTabBtn")
+_flavorTabBtn = NodePath("MainVBox/NavTabStrip/FlavorTabBtn")
+_statsTab = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab")
+_actionsTab = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab")
+_inventoryTab = NodePath("MainVBox/ContentMargin/ContentVBox/InventoryTab")
+_flavorTab = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab")
+
+[node name="MainVBox" type="VBoxContainer" parent="." unique_id=300000001]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="HeaderMargin" type="MarginContainer" parent="MainVBox" unique_id=1057178226]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="HeaderVBox" type="VBoxContainer" parent="MainVBox/HeaderMargin" unique_id=2089365964]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="NameRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox" unique_id=632503664]
+layout_mode = 2
+
+[node name="NameInput" type="LineEdit" parent="MainVBox/HeaderMargin/HeaderVBox/NameRow" unique_id=489183060]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Character Name"
+caret_blink = true
+
+[node name="DeleteButton" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/NameRow" unique_id=73664618]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="FieldsRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox" unique_id=1275621775]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="HeaderFields" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow" unique_id=1769238090]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=300000019]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="SpeciesRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=1824731059]
+layout_mode = 2
+
+[node name="SpeciesLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/SpeciesRow" unique_id=1495832963]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Species"
+
+[node name="SpeciesInput" type="OptionButton" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/SpeciesRow" unique_id=504682576]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SubspeciesInput" type="OptionButton" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/SpeciesRow" unique_id=1972156530]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ClassRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=1586086377]
+layout_mode = 2
+
+[node name="ClassLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow" unique_id=1345946248]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Class"
+
+[node name="ClassInput" type="OptionButton" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow" unique_id=812539496]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SubclassInput" type="OptionButton" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/ClassRow" unique_id=348108959]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LevelRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=2110492785]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=607114890]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Level"
+
+[node name="LevelInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=312929853]
+layout_mode = 2
+script = ExtResource("7_intinput")
+MinValue = 1
+MaxValue = 20
+Value = 1
+
+[node name="CarouselColumn" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow" unique_id=897042247]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/CarouselColumn" unique_id=76240780 instance=ExtResource("5_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/CarouselColumn" unique_id=1222612572]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NavTabStrip" type="HBoxContainer" parent="MainVBox" unique_id=300000002]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="StatsTabBtn" type="Button" parent="MainVBox/NavTabStrip" unique_id=300000003]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "⚔  Stats"
+
+[node name="ActionsTabBtn" type="Button" parent="MainVBox/NavTabStrip" unique_id=300000004]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "✨  Actions"
+
+[node name="InventoryTabBtn" type="Button" parent="MainVBox/NavTabStrip" unique_id=300000005]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "🎒  Inventory"
+
+[node name="FlavorTabBtn" type="Button" parent="MainVBox/NavTabStrip" unique_id=300000006]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "📖  Flavor"
+
+[node name="ContentMargin" type="MarginContainer" parent="MainVBox" unique_id=300000009]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ContentVBox" type="VBoxContainer" parent="MainVBox/ContentMargin" unique_id=300000010]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="StatsTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox" unique_id=300000011]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="AbilityScoresSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab" unique_id=1307028771]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AbilityScoresLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection" unique_id=1077955617]
+layout_mode = 2
+text = "Ability Scores"
+
+[node name="AbilityScoresGrid" type="GridContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection" unique_id=150435820]
+layout_mode = 2
+theme_override_constants/h_separation = 24
+columns = 6
+
+[node name="PanelContainer6" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid" unique_id=1631274671]
+layout_mode = 2
+
+[node name="StrVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer6" unique_id=611354139]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="StrLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer6/StrVBox" unique_id=426029633]
+layout_mode = 2
+text = "STR"
+horizontal_alignment = 1
+
+[node name="StrInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer6/StrVBox" unique_id=1293137307]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_5j2cg")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="StrMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer6/StrVBox" unique_id=840120054]
+layout_mode = 2
+text = "(+0)"
+horizontal_alignment = 1
+
+[node name="PanelContainer5" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid" unique_id=1403237106]
+layout_mode = 2
+
+[node name="DexVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer5" unique_id=1000310130]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="DexLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer5/DexVBox" unique_id=13889345]
+layout_mode = 2
+text = "DEX"
+horizontal_alignment = 1
+
+[node name="DexInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer5/DexVBox" unique_id=1574121468]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_5j2cg")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="DexMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer5/DexVBox" unique_id=354806997]
+layout_mode = 2
+text = "(+0)"
+horizontal_alignment = 1
+
+[node name="PanelContainer4" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid" unique_id=1946995413]
+layout_mode = 2
+
+[node name="ConVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer4" unique_id=1377148811]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ConLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer4/ConVBox" unique_id=113535505]
+layout_mode = 2
+text = "CON"
+horizontal_alignment = 1
+
+[node name="ConInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer4/ConVBox" unique_id=1645133332]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_5j2cg")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="ConMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer4/ConVBox" unique_id=1896425111]
+layout_mode = 2
+text = "(+0)"
+horizontal_alignment = 1
+
+[node name="PanelContainer3" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid" unique_id=958786312]
+layout_mode = 2
+
+[node name="IntVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer3" unique_id=1991380307]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="IntLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer3/IntVBox" unique_id=623289944]
+layout_mode = 2
+text = "INT"
+horizontal_alignment = 1
+
+[node name="IntInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer3/IntVBox" unique_id=456034705]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_5j2cg")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="IntMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer3/IntVBox" unique_id=581310687]
+layout_mode = 2
+text = "(+0)"
+horizontal_alignment = 1
+
+[node name="PanelContainer2" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid" unique_id=2141938094]
+layout_mode = 2
+
+[node name="WisVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer2" unique_id=1140282788]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="WisLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer2/WisVBox" unique_id=2080955227]
+layout_mode = 2
+text = "WIS"
+horizontal_alignment = 1
+
+[node name="WisInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer2/WisVBox" unique_id=173054788]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_5j2cg")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="WisMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer2/WisVBox" unique_id=1745294493]
+layout_mode = 2
+text = "(+0)"
+horizontal_alignment = 1
+
+[node name="PanelContainer" type="PanelContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid" unique_id=54669578]
+layout_mode = 2
+
+[node name="ChaVBox" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer" unique_id=1185223398]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ChaLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer/ChaVBox" unique_id=435244298]
+layout_mode = 2
+text = "CHA"
+horizontal_alignment = 1
+
+[node name="ChaInput" type="LineEdit" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer/ChaVBox" unique_id=1054563273]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_5j2cg")
+theme_override_constants/minimum_character_width = 2
+theme_override_font_sizes/font_size = 24
+text = "10"
+placeholder_text = "1–30"
+alignment = 1
+
+[node name="ChaMod" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/AbilityScoresSection/AbilityScoresGrid/PanelContainer/ChaVBox" unique_id=359298472]
+layout_mode = 2
+text = "(+0)"
+horizontal_alignment = 1
+
+[node name="SkillsSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab" unique_id=-1194967290]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SkillsHeader" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SkillsSection" unique_id=-1194967289]
+layout_mode = 2
+
+[node name="SkillsLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SkillsSection/SkillsHeader" unique_id=-1194967288]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skills"
+
+[node name="ChipsContainer" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SkillsSection/SkillsHeader" unique_id=-1194967287]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SkillsListContainer" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SkillsSection" unique_id=-1194967285]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ActionsTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox" unique_id=300000012]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ResourcesSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab" unique_id=-1246676295]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ResourcesLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/ResourcesSection" unique_id=-1246676294]
+layout_mode = 2
+text = "Resources"
+
+[node name="ResourcesContainer" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/ResourcesSection" unique_id=-1246676293]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HSeparator" type="HSeparator" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab" unique_id=417659881]
+layout_mode = 2
+
+[node name="AbilityChoicesSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab" unique_id=64197964]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="AbilityChoicesHeader" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection" unique_id=300000017]
+layout_mode = 2
+
+[node name="AbilityChoicesLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection/AbilityChoicesHeader" unique_id=701682382]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Abilities"
+
+[node name="AddManualAbilityBtn" type="Button" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection/AbilityChoicesHeader" unique_id=300000018]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+"
+
+[node name="AbilityChoicesContainer" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/AbilityChoicesSection" unique_id=70386654]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InventoryTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox" unique_id=300000013]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="InventoryPlaceholder" type="Label" parent="MainVBox/ContentMargin/ContentVBox/InventoryTab" unique_id=300000014]
+layout_mode = 2
+text = "Inventory coming soon."
+
+[node name="FlavorTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox" unique_id=300000015]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DescLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab" unique_id=1717974268]
+layout_mode = 2
+text = "Description"
+
+[node name="DescInput" type="TextEdit" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab" unique_id=726574772]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+placeholder_text = "Appearance, backstory..."
+wrap_mode = 1
+caret_blink = true
+
+[node name="BackgroundRow" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab" unique_id=-1194967295]
+layout_mode = 2
+
+[node name="BackgroundKeyLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab/BackgroundRow" unique_id=-1194967294]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Background"
+
+[node name="BackgroundLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab/BackgroundRow" unique_id=-1194967293]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "(None)"
+
+[node name="BackgroundButton" type="Button" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab/BackgroundRow" unique_id=-1194967292]
+layout_mode = 2
+text = "Choose"
+
+[node name="Notes" parent="MainVBox/ContentMargin/ContentVBox/FlavorTab" unique_id=821090930 instance=ExtResource("4_wikinotes")]
+
+[node name="BackgroundPickerModal" parent="." unique_id=-1194967276 instance=ExtResource("6_bgmodal")]
+visible = false

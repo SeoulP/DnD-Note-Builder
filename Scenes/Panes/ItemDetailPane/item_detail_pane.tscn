@@ -1,0 +1,126 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Panes/ItemDetailPane/ItemDetailPane.cs" id="1_itemdet"]
+[ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
+[ext_resource type="Script" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="5_wikinotes"]
+
+[node name="ItemDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_typeInput", "_isUniqueInput", "_descInput", "_notes", "_deleteButton", "_imageCarousel")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_itemdet")
+_nameInput     = NodePath("Margin/VBoxContainer/NameRow/NameInput")
+_aliasChipsRow = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/AliasChipsRow")
+_typeInput     = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow/TypeInput")
+_isUniqueInput = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow/IsUniqueInput")
+_deleteButton  = NodePath("Margin/VBoxContainer/NameRow/DeleteButton")
+_descInput     = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/DescriptionInput")
+_notes         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/WikiNotes")
+_imageCarousel = NodePath("Margin/VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="NameRow" type="HBoxContainer" parent="Margin/VBoxContainer"]
+layout_mode = 2
+
+[node name="NameInput" type="LineEdit" parent="Margin/VBoxContainer/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+theme_override_font_sizes/font_size = 22
+placeholder_text = "Item name..."
+
+[node name="DeleteButton" type="Button" parent="Margin/VBoxContainer/NameRow"]
+layout_mode = 2
+icon = ExtResource("2_trash")
+flat = true
+
+[node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="FieldsLeft" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="TypeRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TypeLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Type"
+
+[node name="TypeInput" type="Button" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_typeopt")
+
+[node name="IsUniqueRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="IsUniqueLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Unique Item"
+
+[node name="IsUniqueInput" type="CheckBox" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/IsUniqueRow"]
+layout_mode = 2
+text = "Named / one-of-a-kind"
+
+[node name="DescriptionLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Description"
+
+[node name="DescriptionInput" type="TextEdit" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+caret_blink = true
+size_flags_horizontal = 3
+placeholder_text = "Describe this item..."
+wrap_mode = 1
+
+[node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Notes"
+
+[node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("5_wikinotes")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CarouselColumn" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox"]
+layout_mode = 2
+
+[node name="ImageCarousel" parent="Margin/VBoxContainer/ContentHBox/CarouselColumn" instance=ExtResource("4_imgcar")]
+layout_mode = 2
+
+[node name="CarouselSpacer" type="Control" parent="Margin/VBoxContainer/ContentHBox/CarouselColumn"]
+layout_mode = 2
+size_flags_vertical = 3

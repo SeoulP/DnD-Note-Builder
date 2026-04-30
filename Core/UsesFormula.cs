@@ -38,16 +38,16 @@ namespace DndBuilder.Core
                 _        => 0,
             };
 
-            if (p[2] == "prof") result += (charLevel - 1) / 4 + 2;
+            if (p[2] == "prof") result += DnD5eMath.ProfBonus(charLevel);
 
             result += p[3] switch
             {
-                "str" => Mod(str),
-                "dex" => Mod(dex),
-                "con" => Mod(con),
-                "int" => Mod(intel),
-                "wis" => Mod(wis),
-                "cha" => Mod(cha),
+                "str" => DnD5eMath.AbilityMod(str),
+                "dex" => DnD5eMath.AbilityMod(dex),
+                "con" => DnD5eMath.AbilityMod(con),
+                "int" => DnD5eMath.AbilityMod(intel),
+                "wis" => DnD5eMath.AbilityMod(wis),
+                "cha" => DnD5eMath.AbilityMod(cha),
                 _     => 0,
             };
 
@@ -90,6 +90,5 @@ namespace DndBuilder.Core
             return sb.Length > 0 ? sb.ToString() : "0";
         }
 
-        private static int Mod(int score) => (score - 10) / 2;
     }
 }

@@ -8,21 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string Name, string Description)[] Defaults =
-        {
-            ("Friend of",        "A trusted companion or close acquaintance"),
-            ("Enemy of",         "Actively hostile or in personal conflict"),
-            ("Rival of",         "Competes or clashes without full hostility"),
-            ("Mentor of",        "Guides or teaches the other character"),
-            ("Student of",       "Is guided or taught by the other character"),
-            ("Family of",        "A blood relative or adoptive family member"),
-            ("Ally of",          "Works toward shared goals without deep friendship"),
-            ("Informant of",     "Secretly supplies information to the other"),
-            ("Former Friend of", "Once close; now estranged or fallen out"),
-            ("Colleague of",     "Works alongside without strong personal bond"),
-            ("Acquainted with",  "Knows of each other — extent unknown"),
-        };
-
         public CharacterRelationshipTypeRepository(SqliteConnection conn)
         {
             _conn = conn;
@@ -56,21 +41,6 @@ namespace DndBuilder.Core.Repositories
                 var alter = _conn.CreateCommand();
                 alter.CommandText = "ALTER TABLE character_relationship_types ADD COLUMN reverse_label TEXT";
                 alter.ExecuteNonQuery();
-            }
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, desc) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO character_relationship_types (campaign_id, name, description)
-                    SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM character_relationship_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", desc);
-                cmd.ExecuteNonQuery();
             }
         }
 

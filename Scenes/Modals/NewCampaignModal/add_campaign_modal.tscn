@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://buc11k7dyc1de"]
 
-[ext_resource type="Script" uid="uid://cqrco8en66rb" path="res://Scenes/Modals/NewCampaignModal/AddCampaignModal.cs" id="1_tl31d"]
+[ext_resource type="Script" uid="uid://cqrco8en66rb" path="res://Scenes/Modals/NewCampaignModal/NewCampaignModal.cs" id="1_tl31d"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_8kldk"]
 font_color = Color(1, 0, 0, 1)
 
-[node name="AddCampaignModal" type="Window" unique_id=1978320447 node_paths=PackedStringArray("_nameInput", "_systemInput", "_descInput", "_dateLabel", "_errorLabel", "_cancelButton", "_createButton")]
+[node name="NewCampaignModal" type="Window" unique_id=1978320447 node_paths=PackedStringArray("_nameInput", "_systemInput", "_descInput", "_dateLabel", "_errorLabel", "_cancelButton", "_createButton")]
 oversampling_override = 1.0
 position = Vector2i(0, 36)
 size = Vector2i(500, 300)

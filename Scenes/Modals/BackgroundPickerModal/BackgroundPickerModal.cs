@@ -31,8 +31,8 @@ public partial class BackgroundPickerModal : Window
     private string                _currentAsi  = "";
     private string[]              _standardAttrList = Array.Empty<string>();
     private List<DnD5eBackground> _backgrounds = new();
-    private TypeOptionButton      _featPicker;
-    private TypeOptionButton      _toolsPicker;
+    private TypesDropdown      _featPicker;
+    private TypesDropdown      _toolsPicker;
     private Action                _featButtonHandler;
     private LineEdit.TextChangedEventHandler      _nameChangedHandler;
     private Action                                _descEditChangedHandler;
@@ -271,7 +271,7 @@ public partial class BackgroundPickerModal : Window
         BuildSkillCheckboxes(bg);
 
         // Feat picker
-        _featPicker = new TypeOptionButton
+        _featPicker = new TypesDropdown
         {
             NoneText            = "(none)",
             SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
@@ -292,7 +292,7 @@ public partial class BackgroundPickerModal : Window
         };
 
         // Tools dropdown
-        _toolsPicker = new TypeOptionButton
+        _toolsPicker = new TypesDropdown
         {
             NoneText            = "(none)",
             SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,

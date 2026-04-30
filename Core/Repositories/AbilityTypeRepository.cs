@@ -8,20 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly string[] Defaults =
-        {
-            "Class Feature",
-            "Subclass Feature",
-            "Species Trait",
-            "Subspecies Trait",
-            "Feat",
-            "Fighting Style",
-            "Maneuver",
-            "Eldritch Invocation",
-            "Metamagic",
-            "Passive",
-        };
-
         public AbilityTypeRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -34,20 +20,6 @@ namespace DndBuilder.Core.Repositories
                 inactive    INTEGER NOT NULL DEFAULT 0
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var name in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO ability_types (campaign_id, name)
-                    SELECT @cid, @name WHERE NOT EXISTS
-                        (SELECT 1 FROM ability_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<AbilityType> GetAll(int campaignId)

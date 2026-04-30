@@ -1,0 +1,8 @@
+[
+  { "name": "Strength",     "abbreviation": "STR" },
+  { "name": "Dexterity",    "abbreviation": "DEX" },
+  { "name": "Constitution", "abbreviation": "CON" },
+  { "name": "Intelligence", "abbreviation": "INT" },
+  { "name": "Wisdom",       "abbreviation": "WIS" },
+  { "name": "Charisma",     "abbreviation": "CHA" }
+]
