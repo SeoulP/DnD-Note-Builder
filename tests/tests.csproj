@@ -30,6 +30,6 @@
                       ..\Core\Seeding\JsonSeedLoader.cs;
                       ..\Core\Seeding\DnD5eSeedingService.cs;
                       ..\Core\Seeding\Pf2eSeedingService.cs;
-                      ..\Core\ImportExportService.cs" />
+                      ..\Core\Services\ImportExportService.cs" />
   </ItemGroup>
 </Project>

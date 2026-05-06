@@ -4,108 +4,103 @@
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="Script" path="res://Scenes/Components/DatePicker/DatePicker.cs" id="5_datepick"]
 
-[node name="SessionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_numberLabel", "_titleInput", "_aliasChipsRow", "_playedOnInput", "_notes", "_deleteButton", "_imageCarousel", "_relatedLinksContainer")]
+[node name="SessionDetailPane" type="HBoxContainer" node_paths=PackedStringArray("_numberLabel", "_titleInput", "_aliasChipsRow", "_playedOnInput", "_notes", "_deleteButton", "_imageCarousel", "_relatedLinksContainer")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_sesdet")
-_numberLabel           = NodePath("Margin/VBoxContainer/NumberLabel")
-_titleInput            = NodePath("Margin/VBoxContainer/TitleRow/TitleInput")
-_aliasChipsRow         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/AliasChipsRow")
-_deleteButton          = NodePath("Margin/VBoxContainer/TitleRow/DeleteButton")
-_playedOnInput         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow/PlayedOnInput")
-_notes                 = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/WikiNotes")
-_imageCarousel         = NodePath("Margin/VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
-_relatedLinksContainer = NodePath("Margin/VBoxContainer/ContentHBox/CarouselColumn/RelatedLinks")
+_numberLabel           = NodePath("ScrollContainer/Margin/VBoxContainer/NumberLabel")
+_titleInput            = NodePath("ScrollContainer/Margin/VBoxContainer/TitleRow/TitleInput")
+_aliasChipsRow         = NodePath("ScrollContainer/Margin/VBoxContainer/AliasChipsRow")
+_deleteButton          = NodePath("ScrollContainer/Margin/VBoxContainer/TitleRow/DeleteButton")
+_playedOnInput         = NodePath("ScrollContainer/Margin/VBoxContainer/PlayedOnRow/DatePicker")
+_notes                 = NodePath("ScrollContainer/Margin/VBoxContainer/WikiNotes")
+_imageCarousel         = NodePath("CarouselColumn/ImageCarousel")
+_relatedLinksContainer = NodePath("CarouselColumn/RelatedLinks")
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Margin"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="NumberLabel" type="Label" parent="Margin/VBoxContainer"]
+[node name="NumberLabel" type="Label" parent="ScrollContainer/Margin/VBoxContainer"]
 layout_mode = 2
 text = "Session #001"
 theme_override_font_sizes/font_size = 17
 
-[node name="TitleRow" type="HBoxContainer" parent="Margin/VBoxContainer"]
+[node name="TitleRow" type="HBoxContainer" parent="ScrollContainer/Margin/VBoxContainer"]
 layout_mode = 2
 
-[node name="TitleInput" type="LineEdit" parent="Margin/VBoxContainer/TitleRow"]
+[node name="TitleInput" type="LineEdit" parent="ScrollContainer/Margin/VBoxContainer/TitleRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 caret_blink = true
 placeholder_text = "Session title..."
 theme_override_font_sizes/font_size = 22
 
-[node name="DeleteButton" type="Button" parent="Margin/VBoxContainer/TitleRow"]
+[node name="DeleteButton" type="Button" parent="ScrollContainer/Margin/VBoxContainer/TitleRow"]
 layout_mode = 2
 icon = ExtResource("2_trash")
 flat = true
 
-[node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-
-[node name="FieldsLeft" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-
-[node name="AliasChipsRow" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+[node name="AliasChipsRow" type="VBoxContainer" parent="ScrollContainer/Margin/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="PlayedOnRow" type="HBoxContainer" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+[node name="PlayedOnRow" type="HBoxContainer" parent="ScrollContainer/Margin/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="PlayedOnLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow"]
+[node name="PlayedOnLabel" type="Label" parent="ScrollContainer/Margin/VBoxContainer/PlayedOnRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
 theme_override_font_sizes/font_size = 17
 text = "Played On"
 
-[node name="PlayedOnInput" type="LineEdit" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft/PlayedOnRow"]
+[node name="DatePicker" type="HBoxContainer" parent="ScrollContainer/Margin/VBoxContainer/PlayedOnRow"]
 layout_mode = 2
-size_flags_horizontal = 3
-caret_blink = true
-placeholder_text = "yyyy-mm-dd"
+script = ExtResource("5_datepick")
 
-[node name="NotesLabel" type="Label" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft"]
+[node name="NotesLabel" type="Label" parent="ScrollContainer/Margin/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Notes"
 
-[node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("4_wikinotes")]
+[node name="WikiNotes" parent="ScrollContainer/Margin/VBoxContainer" instance=ExtResource("4_wikinotes")]
 layout_mode = 2
 size_flags_horizontal = 3
 PlaceholderText = "Session recap... use [[Name]] to link"
 
-[node name="CarouselColumn" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox"]
+[node name="CarouselColumn" type="VBoxContainer" parent="."]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 0)
+
+[node name="ImageCarousel" parent="CarouselColumn" instance=ExtResource("3_imgcar")]
 layout_mode = 2
 
-[node name="ImageCarousel" parent="Margin/VBoxContainer/ContentHBox/CarouselColumn" instance=ExtResource("3_imgcar")]
-layout_mode = 2
-
-[node name="RelatedLinks" type="VBoxContainer" parent="Margin/VBoxContainer/ContentHBox/CarouselColumn"]
+[node name="RelatedLinks" type="VBoxContainer" parent="CarouselColumn"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 visible = false
 
-[node name="CarouselSpacer" type="Control" parent="Margin/VBoxContainer/ContentHBox/CarouselColumn"]
+[node name="CarouselSpacer" type="Control" parent="CarouselColumn"]
 layout_mode = 2
 size_flags_vertical = 3

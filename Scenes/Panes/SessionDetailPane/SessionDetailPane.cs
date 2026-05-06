@@ -4,7 +4,7 @@ using DndBuilder.Core.Models;
 using Godot;
 
 
-public partial class SessionDetailPane : ScrollContainer
+public partial class SessionDetailPane : HBoxContainer
 {
     private DatabaseService    _db;
     private Session            _session;
@@ -17,7 +17,7 @@ public partial class SessionDetailPane : ScrollContainer
 
     [Export] private Label         _numberLabel;
     [Export] private LineEdit      _titleInput;
-    [Export] private LineEdit      _playedOnInput;
+    [Export] private DatePicker    _playedOnInput;
     [Export] private WikiNotes     _notes;
     [Export] private Button        _deleteButton;
     [Export] private VBoxContainer _aliasChipsRow;
@@ -50,7 +50,7 @@ public partial class SessionDetailPane : ScrollContainer
         _titleInput.TextChanged    += title => { Save(); EmitSignal(SignalName.NameChanged, "session", _session?.Id ?? 0, string.IsNullOrEmpty(title) ? "Untitled Session" : title); };
         _titleInput.FocusExited    += () => { if (_titleInput.Text == "") _titleInput.Text = "New Session"; };
         _titleInput.FocusEntered   += () => _titleInput.CallDeferred(LineEdit.MethodName.SelectAll);
-        _playedOnInput.TextChanged += _ => Save();
+        _playedOnInput.ValueChanged += _ => Save();
         _notes.TextChanged   += () => { Save(); RefreshRelatedLinks(); };
         _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
         _notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
@@ -72,8 +72,8 @@ public partial class SessionDetailPane : ScrollContainer
 
         _imageCarousel?.Setup(EntityType.Session, session.Id, _db, session.CampaignId);
 
-        _titleInput.Text    = string.IsNullOrEmpty(session.Title) ? "New Session" : session.Title;
-        _playedOnInput.Text = session.PlayedOn;
+        _titleInput.Text        = string.IsNullOrEmpty(session.Title) ? "New Session" : session.Title;
+        _playedOnInput.Value    = System.DateTime.TryParse(session.PlayedOn, out var d) ? d : (System.DateTime?)null;
         _notes.Setup(session.CampaignId, _db);
         _notes.Text = session.Notes;
 
@@ -291,7 +291,7 @@ public partial class SessionDetailPane : ScrollContainer
     {
         if (_session == null) return;
         _session.Title    = string.IsNullOrEmpty(_titleInput.Text) ? "New Session" : _titleInput.Text;
-        _session.PlayedOn = _playedOnInput.Text;
+        _session.PlayedOn = _playedOnInput.Value?.ToString("yyyy-MM-dd") ?? "";
         _session.Notes    = _notes.Text;
         _db.Sessions.Edit(_session);
     }

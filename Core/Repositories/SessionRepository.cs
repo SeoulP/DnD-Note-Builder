@@ -60,7 +60,9 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@num",    session.Number);
             cmd.Parameters.AddWithValue("@title",  session.Title);
             cmd.Parameters.AddWithValue("@notes",  session.Notes);
-            cmd.Parameters.AddWithValue("@played", session.PlayedOn);
+            cmd.Parameters.AddWithValue("@played", string.IsNullOrEmpty(session.PlayedOn)
+                ? System.DateTime.Today.ToString("yyyy-MM-dd")
+                : session.PlayedOn);
             return (int)(long)cmd.ExecuteScalar();
         }
 
