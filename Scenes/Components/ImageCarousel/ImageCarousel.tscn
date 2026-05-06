@@ -1,6 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://Scenes/Components/ImageCarousel/ImageCarousel.cs" id="1_imgcar"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ImageLightbox/ImageLightbox.tscn" id="2_lightbox"]
 
 [node name="ImageCarousel" type="Control"]
 script = ExtResource("1_imgcar")
+_imageLightboxScene = ExtResource("2_lightbox")
