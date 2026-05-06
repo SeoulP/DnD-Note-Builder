@@ -13,7 +13,7 @@ using Godot;
 /// Usage: AddChild(popup), Setup(...), subscribe to Saved, PopupCentered().
 /// Popup calls QueueFree() on save or cancel.
 /// </summary>
-public partial class UsageProgressionPopup : Window
+public partial class DnD5eUsageProgressionPopup : Window
 {
     public event Action<string> Saved;
 

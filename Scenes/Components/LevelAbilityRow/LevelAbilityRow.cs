@@ -33,7 +33,7 @@ public static class LevelAbilityRow
         };
         usesBtn.Pressed += () =>
         {
-            var popup = new UsageProgressionPopup();
+            var popup = new DnD5eUsageProgressionPopup();
             addPopupChild(popup);
             popup.Setup(abilityName, formula);
             popup.Saved += newFormula =>

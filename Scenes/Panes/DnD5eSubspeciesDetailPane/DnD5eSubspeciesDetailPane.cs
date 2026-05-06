@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using DndBuilder.Core.Models;
 using Godot;
 
-public partial class SubspeciesDetailPane : ScrollContainer
+public partial class DnD5eSubspeciesDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
     private DnD5eSubspecies         _subspecies;

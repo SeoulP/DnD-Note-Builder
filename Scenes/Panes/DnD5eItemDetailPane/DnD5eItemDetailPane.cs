@@ -2,7 +2,7 @@ using DndBuilder.Core.Models;
 using Godot;
 
 
-public partial class ItemDetailPane : ScrollContainer
+public partial class DnD5eItemDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
     private DnD5eItem               _item;

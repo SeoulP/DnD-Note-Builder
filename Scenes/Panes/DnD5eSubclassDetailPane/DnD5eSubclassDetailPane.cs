@@ -3,7 +3,7 @@ using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using Godot;
 
-public partial class SubclassDetailPane : ScrollContainer
+public partial class DnD5eSubclassDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
     private DnD5eSubclass           _subclass;

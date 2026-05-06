@@ -1,12 +1,12 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scenes/Panes/ItemDetailPane/ItemDetailPane.cs" id="1_itemdet"]
+[ext_resource type="Script" path="res://Scenes/Panes/DnD5eItemDetailPane/DnD5eItemDetailPane.cs" id="1_itemdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Script" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="5_wikinotes"]
 
-[node name="ItemDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_typeInput", "_isUniqueInput", "_descInput", "_notes", "_deleteButton", "_imageCarousel")]
+[node name="DnD5eItemDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_typeInput", "_isUniqueInput", "_descInput", "_notes", "_deleteButton", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

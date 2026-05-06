@@ -275,7 +275,7 @@ public partial class CampaignView : Control
             case "item":
             {
                 var e = _db.Items.Get(entityId); if (e == null) return (null, null, null);
-                var p = _itemDetailPaneScene.Instantiate<ItemDetailPane>();
+                var p = _itemDetailPaneScene.Instantiate<DnD5eItemDetailPane>();
                 p.NavigateTo    += ShowDetailPane; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 p.EntityCreated += (type, _) => { _notesSidebar?.Reload(type); };
                 return (p, string.IsNullOrEmpty(e.Name) ? "New Item" : e.Name, () => p.Load(e));
@@ -291,14 +291,14 @@ public partial class CampaignView : Control
             case "ability":
             {
                 var e = _db.Abilities.Get(entityId); if (e == null) return (null, null, null);
-                var p = _abilityDetailPaneScene.Instantiate<AbilityDetailPane>();
+                var p = _abilityDetailPaneScene.Instantiate<DnD5eAbilityDetailPane>();
                 p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Ability}" : e.Name, () => p.Load(e));
             }
             case "class":
             {
                 var e = _db.Classes.Get(entityId); if (e == null) return (null, null, null);
-                var p = _classDetailPaneScene.Instantiate<ClassDetailPane>();
+                var p = _classDetailPaneScene.Instantiate<DnD5eClassDetailPane>();
                 p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 p.SubclassAdded += (_, __) => _systemSidebar?.Reload("subclass");
                 return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Class}" : e.Name, () => p.Load(e));
@@ -306,14 +306,14 @@ public partial class CampaignView : Control
             case "subclass":
             {
                 var e = _db.Classes.GetSubclass(entityId); if (e == null) return (null, null, null);
-                var p = _subclassDetailPaneScene.Instantiate<SubclassDetailPane>();
+                var p = _subclassDetailPaneScene.Instantiate<DnD5eSubclassDetailPane>();
                 p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Subclass}" : e.Name, () => p.Load(e));
             }
             case "species":
             {
                 var e = _db.Species.Get(entityId); if (e == null) return (null, null, null);
-                var p = _speciesDetailPaneScene.Instantiate<SpeciesDetailPane>();
+                var p = _speciesDetailPaneScene.Instantiate<DnD5eSpeciesDetailPane>();
                 p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 p.SubspeciesAdded += (_, __) => _systemSidebar?.Reload("subspecies");
                 return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Species}" : e.Name, () => p.Load(e));
@@ -321,14 +321,14 @@ public partial class CampaignView : Control
             case "subspecies":
             {
                 var e = _db.Subspecies.Get(entityId); if (e == null) return (null, null, null);
-                var p = _subspeciesDetailPaneScene.Instantiate<SubspeciesDetailPane>();
+                var p = _subspeciesDetailPaneScene.Instantiate<DnD5eSubspeciesDetailPane>();
                 p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 return (p, string.IsNullOrEmpty(e.Name) ? $"New {_vocab.Subspecies}" : e.Name, () => p.Load(e));
             }
             case "playercharacter":
             {
                 var e = _db.PlayerCharacters.Get(entityId); if (e == null) return (null, null, null);
-                var p = _playerCharacterDetailPaneScene.Instantiate<PlayerCharacterDetailPane>();
+                var p = _playerCharacterDetailPaneScene.Instantiate<DnD5ePlayerCharacterDetailPane>();
                 p.NavigateTo += ShowDetailPane; p.NavigateToNewTab += ShowDetailPaneInNewTab; p.NameChanged += OnNameChanged; p.Deleted += OnEntityDeleted;
                 return (p, string.IsNullOrEmpty(e.Name) ? "New Character" : e.Name, () => p.Load(e));
             }

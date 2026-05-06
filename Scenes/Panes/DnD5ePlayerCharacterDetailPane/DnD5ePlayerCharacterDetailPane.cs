@@ -4,7 +4,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public partial class PlayerCharacterDetailPane : ScrollContainer
+public partial class DnD5ePlayerCharacterDetailPane : ScrollContainer
 {
     private DatabaseService          _db;
     private DnD5ePlayerCharacter          _pc;
@@ -15,7 +15,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     private HashSet<int>             _openAbilityDropdowns  = new();
     private HashSet<string>          _closedAbilitySections = new();
     private SkillExpectationService  _skillExpectations;
-    private BackgroundPickerModal    _backgroundModal;
+    private DnD5eBackgroundPickerModal    _backgroundModal;
     private EffectPreviewPopup       _effectPreview;
 
     private static readonly string[] _abilityActionSectionOrder =
@@ -82,7 +82,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
         _skillExpectations = new SkillExpectationService(_db.Classes, _db.Abilities, _db.DnD5eBackgrounds);
-        _backgroundModal   = GetNode<BackgroundPickerModal>("BackgroundPickerModal");
+        _backgroundModal   = GetNode<DnD5eBackgroundPickerModal>("BackgroundPickerModal");
         _backgroundModal.Confirmed   += OnBackgroundSelected;
         _backgroundModal.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
 

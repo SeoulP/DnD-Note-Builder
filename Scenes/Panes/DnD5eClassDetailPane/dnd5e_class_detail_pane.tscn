@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://0g5oesx5h4mk"]
 
-[ext_resource type="Script"  path="res://Scenes/Panes/ClassDetailPane/ClassDetailPane.cs" id="1_script"]
+[ext_resource type="Script"  path="res://Scenes/Panes/DnD5eClassDetailPane/DnD5eClassDetailPane.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Script" uid="uid://cx5d0l4bcrqvh" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
@@ -10,7 +10,7 @@
 [sub_resource type="ButtonGroup" id="ButtonGroup_spellcast"]
 allow_unpress = true
 
-[node name="ClassDetailPane" type="ScrollContainer" unique_id=851634716 node_paths=PackedStringArray("_nameInput", "_deleteButton", "_descToggle", "_descInset", "_descInput", "_coreStatsToggle", "_coreStatsInset", "_hitDieInput", "_primaryAbilityContainer", "_spellcastingAbilityInput", "_isRitualCasterInput", "_isPreparedCasterInput", "_proficienciesToggle", "_proficienciesInset", "_savingThrowsContainer", "_armorProfsInput", "_weaponProfsInput", "_toolProfsInput", "_skillChoicesCountInput", "_skillOptionsContainer", "_startingEquipToggle", "_startingEquipInset", "_startingEquipAInput", "_startingEquipBInput", "_levelsToggle", "_levelsInset", "_initLevelsButton", "_levelsContainer", "_subclassesToggle", "_subclassesInset", "_unlockLevelInput", "_subclassesContainer", "_addSubclassButton", "_abilitiesToggle", "_abilitiesInset", "_abilitiesContainer", "_addAbilityButton", "_notesToggle", "_notesInset", "_notes", "_imageCarousel")]
+[node name="DnD5eClassDetailPane" type="ScrollContainer" unique_id=851634716 node_paths=PackedStringArray("_nameInput", "_deleteButton", "_descToggle", "_descInset", "_descInput", "_coreStatsToggle", "_coreStatsInset", "_hitDieInput", "_primaryAbilityContainer", "_spellcastingAbilityInput", "_isRitualCasterInput", "_isPreparedCasterInput", "_proficienciesToggle", "_proficienciesInset", "_savingThrowsContainer", "_armorProfsInput", "_weaponProfsInput", "_toolProfsInput", "_skillChoicesCountInput", "_skillOptionsContainer", "_startingEquipToggle", "_startingEquipInset", "_startingEquipAInput", "_startingEquipBInput", "_levelsToggle", "_levelsInset", "_initLevelsButton", "_levelsContainer", "_subclassesToggle", "_subclassesInset", "_unlockLevelInput", "_subclassesContainer", "_addSubclassButton", "_abilitiesToggle", "_abilitiesInset", "_abilitiesContainer", "_addAbilityButton", "_notesToggle", "_notesInset", "_notes", "_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

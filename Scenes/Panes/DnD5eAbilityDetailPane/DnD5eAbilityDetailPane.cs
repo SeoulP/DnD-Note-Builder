@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DndBuilder.Core.Models;
 using Godot;
 
-public partial class AbilityDetailPane : ScrollContainer
+public partial class DnD5eAbilityDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
     private DnD5eAbility            _ability;

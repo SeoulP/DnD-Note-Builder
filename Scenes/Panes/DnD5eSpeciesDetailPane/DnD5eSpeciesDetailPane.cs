@@ -5,7 +5,7 @@ using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using Godot;
 
-public partial class SpeciesDetailPane : ScrollContainer
+public partial class DnD5eSpeciesDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
     private DnD5eSpecies            _species;

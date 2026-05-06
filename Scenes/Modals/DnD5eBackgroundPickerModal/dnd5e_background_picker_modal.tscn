@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://bgpk7xm3yz2ql"]
 
-[ext_resource type="Script" path="res://Scenes/Modals/BackgroundPickerModal/BackgroundPickerModal.cs" id="1_script"]
+[ext_resource type="Script" path="res://Scenes/Modals/DnD5eBackgroundPickerModal/DnD5eBackgroundPickerModal.cs" id="1_script"]
 
-[node name="BackgroundPickerModal" type="Window" unique_id=100 node_paths=PackedStringArray("_listContainer", "_confirmButton", "_cancelButton", "_addCustomButton", "_emptyHint", "_standardDetail", "_standardName", "_standardAttrsLabel", "_standardSkillsLabel", "_standardFeatButton", "_standardToolsLabel", "_standardDesc", "_customDetail", "_customNameInput", "_customSkillCheckboxes", "_customFeatRow", "_customToolsRow", "_customDescEdit", "_deleteCustomButton", "_standardAsiBon1", "_standardAsiBon2", "_standardAsiBon3", "_customAsiBon1", "_customAsiBon2", "_customAsiBon3")]
+[node name="DnD5eBackgroundPickerModal" type="Window" unique_id=100 node_paths=PackedStringArray("_listContainer", "_confirmButton", "_cancelButton", "_addCustomButton", "_emptyHint", "_standardDetail", "_standardName", "_standardAttrsLabel", "_standardSkillsLabel", "_standardFeatButton", "_standardToolsLabel", "_standardDesc", "_customDetail", "_customNameInput", "_customSkillCheckboxes", "_customFeatRow", "_customToolsRow", "_customDescEdit", "_deleteCustomButton", "_standardAsiBon1", "_standardAsiBon2", "_standardAsiBon3", "_customAsiBon1", "_customAsiBon2", "_customAsiBon3")]
 size = Vector2i(720, 560)
 min_size = Vector2i(620, 440)
 title = "Choose Background"

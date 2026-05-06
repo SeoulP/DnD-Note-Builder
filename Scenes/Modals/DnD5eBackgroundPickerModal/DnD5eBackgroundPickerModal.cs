@@ -4,7 +4,7 @@ using System.Linq;
 using DndBuilder.Core.Models;
 using Godot;
 
-public partial class BackgroundPickerModal : Window
+public partial class DnD5eBackgroundPickerModal : Window
 {
     private static readonly string[] AttrAbbrevs   = { "str", "dex", "con", "int", "wis", "cha" };
     private static readonly string[] AttrFullNames  = { "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma" };
