@@ -78,12 +78,12 @@ _acButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/Le
 _speedInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/SpeedRow/SpeedInput")
 _ppButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/PpButton")
 _inspirationCb = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/InspirationCb")
-_deathSucc1 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathSucc1")
-_deathSucc2 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathSucc2")
-_deathSucc3 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathSucc3")
-_deathFail1 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathFail1")
-_deathFail2 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathFail2")
-_deathFail3 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathFail3")
+_deathSucc1 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer/DeathSucc1")
+_deathSucc2 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer/DeathSucc2")
+_deathSucc3 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer/DeathSucc3")
+_deathFail1 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer2/DeathFail1")
+_deathFail2 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer2/DeathFail2")
+_deathFail3 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer2/DeathFail3")
 _inventoryNotes = NodePath("MainVBox/ContentMargin/ContentVBox/InventoryTab/InventoryNotes")
 
 [node name="MainVBox" type="VBoxContainer" parent="." unique_id=300000001]
@@ -173,8 +173,8 @@ theme_override_constants/separation = 6
 [node name="LevelLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=607114890]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
-vertical_alignment = 1
 text = "Level"
+vertical_alignment = 1
 
 [node name="LevelInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=312929853]
 layout_mode = 2
@@ -222,61 +222,66 @@ theme_override_constants/separation = 4
 
 [node name="SpeedLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/SpeedRow" unique_id=400000019]
 layout_mode = 2
-vertical_alignment = 1
 text = "Speed"
+vertical_alignment = 1
 
 [node name="SpeedInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/SpeedRow" unique_id=400000020]
 layout_mode = 2
 script = ExtResource("7_intinput")
-MinValue = 0
 MaxValue = 200
 Value = 30
 
-[node name="DeathSavesRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=400000050]
+[node name="DeathSavesRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=146238389]
 layout_mode = 2
 theme_override_constants/separation = 4
 
 [node name="DeathSavesLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000060]
 layout_mode = 2
-vertical_alignment = 1
-text = "Death Saves"
+size_flags_vertical = 1
+text = "Death Saves: "
 
-[node name="DeathSuccLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000051]
+[node name="VBoxContainer" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=1790414988]
 layout_mode = 2
-vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer" unique_id=432227577]
+layout_mode = 2
+
+[node name="DeathSuccLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer" unique_id=400000051]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
 text = "Success"
-
-[node name="DeathSucc1" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000052]
-layout_mode = 2
-theme_override_constants/icon_max_width = 14
-
-[node name="DeathSucc2" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000053]
-layout_mode = 2
-theme_override_constants/icon_max_width = 14
-
-[node name="DeathSucc3" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000054]
-layout_mode = 2
-theme_override_constants/icon_max_width = 14
-
-[node name="EmDash" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000055]
-layout_mode = 2
 vertical_alignment = 1
-text = " — "
 
-[node name="DeathFailLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000056]
+[node name="DeathSucc1" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer" unique_id=400000052]
 layout_mode = 2
-vertical_alignment = 1
+theme_override_constants/icon_max_width = 14
+
+[node name="DeathSucc2" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer" unique_id=400000053]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+
+[node name="DeathSucc3" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer" unique_id=400000054]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer" unique_id=1079339094]
+layout_mode = 2
+
+[node name="DeathFailLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer2" unique_id=400000056]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
 text = "Failure"
+vertical_alignment = 1
 
-[node name="DeathFail1" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000057]
+[node name="DeathFail1" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer2" unique_id=400000057]
 layout_mode = 2
 theme_override_constants/icon_max_width = 14
 
-[node name="DeathFail2" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000058]
+[node name="DeathFail2" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer2" unique_id=400000058]
 layout_mode = 2
 theme_override_constants/icon_max_width = 14
 
-[node name="DeathFail3" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000059]
+[node name="DeathFail3" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/VBoxContainer/HBoxContainer2" unique_id=400000059]
 layout_mode = 2
 theme_override_constants/icon_max_width = 14
 
@@ -514,15 +519,15 @@ layout_mode = 2
 text = "(+0)"
 horizontal_alignment = 1
 
-[node name="SavingThrowsSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab" unique_id=400000020]
+[node name="SavingThrowsSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab" unique_id=186248075]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="SavingThrowsLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection" unique_id=400000021]
+[node name="SavingThrowsLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection" unique_id=1393119832]
 layout_mode = 2
 text = "Saving Throws"
 
-[node name="SavesList" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection" unique_id=400000022]
+[node name="SavesList" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection" unique_id=1368556548]
 layout_mode = 2
 theme_override_constants/separation = 4
 
@@ -539,14 +544,14 @@ theme_override_constants/icon_max_width = 14
 [node name="StrSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/StrSaveRow" unique_id=400000025]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "STR"
+horizontal_alignment = 1
 
 [node name="SaveStrTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/StrSaveRow" unique_id=400000026]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "+0"
+horizontal_alignment = 1
 
 [node name="DexSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000027]
 layout_mode = 2
@@ -561,14 +566,14 @@ theme_override_constants/icon_max_width = 14
 [node name="DexSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/DexSaveRow" unique_id=400000029]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "DEX"
+horizontal_alignment = 1
 
 [node name="SaveDexTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/DexSaveRow" unique_id=400000030]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "+0"
+horizontal_alignment = 1
 
 [node name="ConSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000031]
 layout_mode = 2
@@ -583,14 +588,14 @@ theme_override_constants/icon_max_width = 14
 [node name="ConSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ConSaveRow" unique_id=400000033]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "CON"
+horizontal_alignment = 1
 
 [node name="SaveConTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ConSaveRow" unique_id=400000034]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "+0"
+horizontal_alignment = 1
 
 [node name="IntSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000035]
 layout_mode = 2
@@ -605,14 +610,14 @@ theme_override_constants/icon_max_width = 14
 [node name="IntSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/IntSaveRow" unique_id=400000037]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "INT"
+horizontal_alignment = 1
 
 [node name="SaveIntTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/IntSaveRow" unique_id=400000038]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "+0"
+horizontal_alignment = 1
 
 [node name="WisSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000039]
 layout_mode = 2
@@ -627,14 +632,14 @@ theme_override_constants/icon_max_width = 14
 [node name="WisSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/WisSaveRow" unique_id=400000041]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "WIS"
+horizontal_alignment = 1
 
 [node name="SaveWisTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/WisSaveRow" unique_id=400000042]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "+0"
+horizontal_alignment = 1
 
 [node name="ChaSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000043]
 layout_mode = 2
@@ -649,14 +654,14 @@ theme_override_constants/icon_max_width = 14
 [node name="ChaSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ChaSaveRow" unique_id=400000045]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "CHA"
+horizontal_alignment = 1
 
 [node name="SaveChaTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ChaSaveRow" unique_id=400000046]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "+0"
+horizontal_alignment = 1
 
 [node name="SkillsSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab" unique_id=-1194967290]
 layout_mode = 2
@@ -683,24 +688,24 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="WeaponAttacksSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab" unique_id=400000050]
+[node name="WeaponAttacksSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab" unique_id=356230137]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="WeaponAttacksHeader" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection" unique_id=400000051]
+[node name="WeaponAttacksHeader" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection" unique_id=670734248]
 layout_mode = 2
 
-[node name="WeaponAttacksLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponAttacksHeader" unique_id=400000052]
+[node name="WeaponAttacksLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponAttacksHeader" unique_id=1057318876]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Weapon Attacks"
 
-[node name="AddWeaponButton" type="Button" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponAttacksHeader" unique_id=400000053]
+[node name="AddWeaponButton" type="Button" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponAttacksHeader" unique_id=785436748]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 text = "+"
 
-[node name="WeaponsContainer" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection" unique_id=400000054]
+[node name="WeaponsContainer" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection" unique_id=1421785361]
 layout_mode = 2
 theme_override_constants/separation = 6
 
@@ -748,7 +753,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="InventoryNotes" parent="MainVBox/ContentMargin/ContentVBox/InventoryTab" unique_id=300000014 instance=ExtResource("4_wikinotes")]
-layout_mode = 2
 
 [node name="FlavorTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox" unique_id=300000015]
 visible = false
