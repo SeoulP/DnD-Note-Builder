@@ -4,11 +4,11 @@ using DndBuilder.Core.Models;
 
 namespace DndBuilder.Core.Repositories
 {
-    public class SubspeciesRepository
+    public class DnD5eSubspeciesRepository
     {
         private readonly SqliteConnection _conn;
 
-        public SubspeciesRepository(SqliteConnection conn) => _conn = conn;
+        public DnD5eSubspeciesRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
         {
@@ -24,9 +24,9 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        public List<Subspecies> GetAllForSpecies(int speciesId)
+        public List<DnD5eSubspecies> GetAllForSpecies(int speciesId)
         {
-            var list = new List<Subspecies>();
+            var list = new List<DnD5eSubspecies>();
             var cmd  = _conn.CreateCommand();
             cmd.CommandText = @"SELECT id, campaign_id, species_id, name, description, notes
                                 FROM subspecies WHERE species_id = @sid ORDER BY name ASC";
@@ -36,9 +36,9 @@ namespace DndBuilder.Core.Repositories
             return list;
         }
 
-        public List<Subspecies> GetAll(int campaignId)
+        public List<DnD5eSubspecies> GetAll(int campaignId)
         {
-            var list = new List<Subspecies>();
+            var list = new List<DnD5eSubspecies>();
             var cmd  = _conn.CreateCommand();
             cmd.CommandText = @"SELECT id, campaign_id, species_id, name, description, notes
                                 FROM subspecies WHERE campaign_id = @cid ORDER BY name ASC";
@@ -48,7 +48,7 @@ namespace DndBuilder.Core.Repositories
             return list;
         }
 
-        public Subspecies Get(int id)
+        public DnD5eSubspecies Get(int id)
         {
             var cmd = _conn.CreateCommand();
             cmd.CommandText = @"SELECT id, campaign_id, species_id, name, description, notes
@@ -58,7 +58,7 @@ namespace DndBuilder.Core.Repositories
             return reader.Read() ? Map(reader) : null;
         }
 
-        public int Add(Subspecies sub)
+        public int Add(DnD5eSubspecies sub)
         {
             var cmd = _conn.CreateCommand();
             cmd.CommandText = @"INSERT INTO subspecies (campaign_id, species_id, name, description, notes)
@@ -68,7 +68,7 @@ namespace DndBuilder.Core.Repositories
             return (int)(long)cmd.ExecuteScalar();
         }
 
-        public void Edit(Subspecies sub)
+        public void Edit(DnD5eSubspecies sub)
         {
             var cmd = _conn.CreateCommand();
             cmd.CommandText = @"UPDATE subspecies SET name = @name, description = @desc, notes = @notes WHERE id = @id";
@@ -85,7 +85,7 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        private static void Bind(SqliteCommand cmd, Subspecies s)
+        private static void Bind(SqliteCommand cmd, DnD5eSubspecies s)
         {
             cmd.Parameters.AddWithValue("@cid",   s.CampaignId);
             cmd.Parameters.AddWithValue("@sid",   s.SpeciesId);
@@ -94,7 +94,7 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@notes", s.Notes);
         }
 
-        private static Subspecies Map(SqliteDataReader r) => new Subspecies
+        private static DnD5eSubspecies Map(SqliteDataReader r) => new DnD5eSubspecies
         {
             Id          = r.GetInt32(0),
             CampaignId  = r.GetInt32(1),

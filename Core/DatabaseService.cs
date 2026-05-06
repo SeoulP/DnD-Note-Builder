@@ -12,7 +12,7 @@ public partial class DatabaseService : Node
     public CampaignRepository             Campaigns             { get; private set; }
     public SessionRepository              Sessions              { get; private set; }
     public FactionRepository              Factions              { get; private set; }
-    public SpeciesRepository              Species               { get; private set; }
+    public DnD5eSpeciesRepository              Species               { get; private set; }
     public LocationFactionRoleRepository  LocationFactionRoles  { get; private set; }
     public LocationRepository             Locations             { get; private set; }
     public NpcRelationshipTypeRepository  NpcRelationshipTypes  { get; private set; }
@@ -32,7 +32,7 @@ public partial class DatabaseService : Node
     public DnD5eAbilityRepository              Abilities             { get; private set; }
     public DnD5eAbilityTypeRepository          AbilityTypes          { get; private set; }
     public DnD5eAbilityResourceTypeRepository  AbilityResourceTypes  { get; private set; }
-    public SubspeciesRepository           Subspecies            { get; private set; }
+    public DnD5eSubspeciesRepository           Subspecies            { get; private set; }
     public DnD5ePlayerCharacterRepository      PlayerCharacters      { get; private set; }
     public DnD5eSkillRepository           DnD5eSkills           { get; private set; }
     public DnD5eBackgroundRepository      DnD5eBackgrounds      { get; private set; }
@@ -161,7 +161,7 @@ public partial class DatabaseService : Node
         Campaigns            = new CampaignRepository(_conn);
         Sessions             = new SessionRepository(_conn);
         Factions             = new FactionRepository(_conn);
-        Species              = new SpeciesRepository(_conn);
+        Species              = new DnD5eSpeciesRepository(_conn);
         LocationFactionRoles = new LocationFactionRoleRepository(_conn);
         Locations            = new LocationRepository(_conn);
         NpcRelationshipTypes = new NpcRelationshipTypeRepository(_conn);
@@ -181,7 +181,7 @@ public partial class DatabaseService : Node
         Abilities            = new DnD5eAbilityRepository(_conn);
         AbilityTypes         = new DnD5eAbilityTypeRepository(_conn);
         AbilityResourceTypes = new DnD5eAbilityResourceTypeRepository(_conn);
-        Subspecies           = new SubspeciesRepository(_conn);
+        Subspecies           = new DnD5eSubspeciesRepository(_conn);
         PlayerCharacters     = new DnD5ePlayerCharacterRepository(_conn);
         DnD5eSkills          = new DnD5eSkillRepository(_conn);
         DnD5eBackgrounds     = new DnD5eBackgroundRepository(_conn);

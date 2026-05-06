@@ -1,1 +1,0 @@
-// Superseded by NpcRelationshipType.cs — this file can be deleted.

@@ -8,7 +8,7 @@ using Godot;
 public partial class SpeciesDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
-    private Species            _species;
+    private DnD5eSpecies            _species;
     private ConfirmationDialog _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
@@ -58,7 +58,7 @@ public partial class SpeciesDetailPane : ScrollContainer
         _deleteButton.Pressed    += () => DialogHelper.Show(_confirmDialog, $"Delete \"{_species?.Name}\"? All subspecies will also be deleted. This cannot be undone.");
     }
 
-    public void Load(Species species)
+    public void Load(DnD5eSpecies species)
     {
         _species = species;
         _nameInput.Text = species.Name;
@@ -108,7 +108,7 @@ public partial class SpeciesDetailPane : ScrollContainer
     private void AddSubspecies()
     {
         if (_species == null) return;
-        var sub = new Subspecies { CampaignId = _species.CampaignId, SpeciesId = _species.Id, Name = "New Subspecies" };
+        var sub = new DnD5eSubspecies { CampaignId = _species.CampaignId, SpeciesId = _species.Id, Name = "New Subspecies" };
         int newId = _db.Subspecies.Add(sub);
         LoadSubspecies();
         EmitSignal(SignalName.SubspeciesAdded, _species.Id, newId);
@@ -177,7 +177,7 @@ public partial class SpeciesDetailPane : ScrollContainer
             _levelsContainer.AddChild(BuildLevelRow(lvl));
     }
 
-    private Control BuildLevelRow(SpeciesLevel lvl)
+    private Control BuildLevelRow(DnD5eSpeciesLevel lvl)
     {
         var box = new VBoxContainer();
         box.AddThemeConstantOverride("separation", 2);
@@ -279,5 +279,5 @@ public partial class SpeciesDetailPane : ScrollContainer
         return box;
     }
 
-    private static string FormatLevelHeader(SpeciesLevel lvl) => $"Level {lvl.Level,2}";
+    private static string FormatLevelHeader(DnD5eSpeciesLevel lvl) => $"Level {lvl.Level,2}";
 }

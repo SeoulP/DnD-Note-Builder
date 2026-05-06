@@ -199,7 +199,7 @@ namespace DndBuilder.Core
         private static void ApplyPackageInner(int campaignId, ExportPackage pkg, ExportSelection sel, DatabaseService db)
         {
             // ── Step 1: types ─────────────────────────────────────────────────
-            var speciesMap    = ImportTypes(pkg.Species,                   sel.AllTypes || sel.Species,                    campaignId, db.Species.GetAll(campaignId),                   (t, cid) => db.Species.Add(new Models.Species                   { CampaignId = cid, Name = t.Name }));
+            var speciesMap    = ImportTypes(pkg.Species,                   sel.AllTypes || sel.Species,                    campaignId, db.Species.GetAll(campaignId),                   (t, cid) => db.Species.Add(new Models.DnD5eSpecies                   { CampaignId = cid, Name = t.Name }));
             var statusMap     = ImportTypes(pkg.NpcStatuses,               sel.AllTypes || sel.NpcStatuses,                campaignId, db.NpcStatuses.GetAll(campaignId),               (t, cid) => db.NpcStatuses.Add(new NpcStatus                   { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var relTypeMap    = ImportTypes(pkg.NpcRelationshipTypes,      sel.AllTypes || sel.NpcRelationshipTypes,       campaignId, db.NpcRelationshipTypes.GetAll(campaignId),      (t, cid) => db.NpcRelationshipTypes.Add(new NpcRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var npcRoleMap    = ImportTypes(pkg.NpcFactionRoles,           sel.AllTypes || sel.NpcFactionRoles,            campaignId, db.NpcFactionRoles.GetAll(campaignId),           (t, cid) => db.NpcFactionRoles.Add(new NpcFactionRole           { CampaignId = cid, Name = t.Name, Description = t.Description }));
@@ -260,7 +260,7 @@ namespace DndBuilder.Core
                 if (existingSsub != null)
                     subspeciesMap[ssub.Id] = existingSsub.Id;
                 else
-                    subspeciesMap[ssub.Id] = db.Subspecies.Add(new Models.Subspecies
+                    subspeciesMap[ssub.Id] = db.Subspecies.Add(new Models.DnD5eSubspecies
                     {
                         CampaignId  = campaignId,
                         SpeciesId   = newSpeciesId,

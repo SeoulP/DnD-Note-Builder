@@ -4,11 +4,11 @@ using DndBuilder.Core.Models;
 
 namespace DndBuilder.Core.Repositories
 {
-    public class SpeciesRepository
+    public class DnD5eSpeciesRepository
     {
         private readonly SqliteConnection _conn;
 
-        public SpeciesRepository(SqliteConnection conn)
+        public DnD5eSpeciesRepository(SqliteConnection conn)
         {
             _conn = conn;
         }
@@ -64,9 +64,9 @@ namespace DndBuilder.Core.Repositories
             }
         }
 
-        public List<Species> GetAll(int campaignId)
+        public List<DnD5eSpecies> GetAll(int campaignId)
         {
-            var list = new List<Species>();
+            var list = new List<DnD5eSpecies>();
             var cmd  = _conn.CreateCommand();
             cmd.CommandText = "SELECT id, campaign_id, name, description, notes FROM species WHERE campaign_id = @cid AND inactive = 0 ORDER BY name ASC";
             cmd.Parameters.AddWithValue("@cid", campaignId);
@@ -76,7 +76,7 @@ namespace DndBuilder.Core.Repositories
             return list;
         }
 
-        public Species Get(int id)
+        public DnD5eSpecies Get(int id)
         {
             var cmd = _conn.CreateCommand();
             cmd.CommandText = "SELECT id, campaign_id, name, description, notes FROM species WHERE id = @id";
@@ -85,7 +85,7 @@ namespace DndBuilder.Core.Repositories
             return reader.Read() ? Map(reader) : null;
         }
 
-        public int Add(Species species)
+        public int Add(DnD5eSpecies species)
         {
             var cmd = _conn.CreateCommand();
             cmd.CommandText = "INSERT INTO species (campaign_id, name, description, notes) VALUES (@cid, @name, @desc, @notes); SELECT last_insert_rowid();";
@@ -96,7 +96,7 @@ namespace DndBuilder.Core.Repositories
             return (int)(long)cmd.ExecuteScalar();
         }
 
-        public void Edit(Species species)
+        public void Edit(DnD5eSpecies species)
         {
             var cmd = _conn.CreateCommand();
             cmd.CommandText = "UPDATE species SET name = @name, description = @desc, notes = @notes WHERE id = @id";
@@ -115,7 +115,7 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        private static Species Map(SqliteDataReader r) => new Species
+        private static DnD5eSpecies Map(SqliteDataReader r) => new DnD5eSpecies
         {
             Id          = r.GetInt32(0),
             CampaignId  = r.GetInt32(1),
@@ -126,9 +126,9 @@ namespace DndBuilder.Core.Repositories
 
         // ── Level Progression ─────────────────────────────────────────────────
 
-        public List<SpeciesLevel> GetLevelsForSpecies(int speciesId)
+        public List<DnD5eSpeciesLevel> GetLevelsForSpecies(int speciesId)
         {
-            var list = new List<SpeciesLevel>();
+            var list = new List<DnD5eSpeciesLevel>();
             var cmd  = _conn.CreateCommand();
             cmd.CommandText = "SELECT id, species_id, level, features, class_data FROM species_levels WHERE species_id = @sid ORDER BY level ASC";
             cmd.Parameters.AddWithValue("@sid", speciesId);
@@ -137,7 +137,7 @@ namespace DndBuilder.Core.Repositories
             return list;
         }
 
-        public void SaveLevel(SpeciesLevel lvl)
+        public void SaveLevel(DnD5eSpeciesLevel lvl)
         {
             var cmd = _conn.CreateCommand();
             if (lvl.Id == 0)
@@ -175,7 +175,7 @@ namespace DndBuilder.Core.Repositories
             }
         }
 
-        private static SpeciesLevel MapLevel(SqliteDataReader r) => new SpeciesLevel
+        private static DnD5eSpeciesLevel MapLevel(SqliteDataReader r) => new DnD5eSpeciesLevel
         {
             Id        = r.GetInt32(0),
             SpeciesId = r.GetInt32(1),

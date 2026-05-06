@@ -5,7 +5,7 @@ using Godot;
 public partial class SubspeciesDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
-    private Subspecies         _subspecies;
+    private DnD5eSubspecies         _subspecies;
     private ConfirmationDialog _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
@@ -39,7 +39,7 @@ public partial class SubspeciesDetailPane : ScrollContainer
         _deleteButton.Pressed    += () => DialogHelper.Show(_confirmDialog, $"Delete \"{_subspecies?.Name}\"? This cannot be undone.");
     }
 
-    public void Load(Subspecies subspecies)
+    public void Load(DnD5eSubspecies subspecies)
     {
         _subspecies = subspecies;
         _nameInput.Text = subspecies.Name;

@@ -69,7 +69,7 @@ public partial class SystemSidebar : VBoxContainer
             }
             else
             {
-                var species = new Species { CampaignId = _campaignId, Name = $"New {_vocab.Species}" };
+                var species = new DnD5eSpecies { CampaignId = _campaignId, Name = $"New {_vocab.Species}" };
                 int id      = _db.Species.Add(species);
                 LoadSpecies();
                 EmitSignal(SignalName.EntitySelected, "species", id);

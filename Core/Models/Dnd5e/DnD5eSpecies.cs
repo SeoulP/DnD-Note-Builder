@@ -1,6 +1,6 @@
 namespace DndBuilder.Core.Models
 {
-    public class Species
+    public class DnD5eSpecies
     {
         public int    Id          { get; set; }
         public int    CampaignId  { get; set; }

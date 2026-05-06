@@ -1,6 +1,6 @@
 namespace DndBuilder.Core.Models
 {
-    public class SpeciesLevel
+    public class DnD5eSpeciesLevel
     {
         public int    Id        { get; set; }
         public int    SpeciesId { get; set; }

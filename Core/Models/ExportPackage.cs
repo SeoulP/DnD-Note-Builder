@@ -9,7 +9,7 @@ namespace DndBuilder.Core.Models
         public string ExportedAt { get; set; } = DateTime.UtcNow.ToString("o");
 
         // Seeded types
-        public List<Species>                   Species                   { get; set; } = new();
+        public List<DnD5eSpecies>                   Species                   { get; set; } = new();
         public List<NpcStatus>                 NpcStatuses               { get; set; } = new();
         public List<NpcRelationshipType>       NpcRelationshipTypes      { get; set; } = new();
         public List<NpcFactionRole>            NpcFactionRoles           { get; set; } = new();
@@ -30,7 +30,7 @@ namespace DndBuilder.Core.Models
         // System entities
         public List<DnD5eClass>      Classes    { get; set; } = new();
         public List<DnD5eSubclass>   Subclasses { get; set; } = new();
-        public List<Subspecies> Subspecies { get; set; } = new();
+        public List<DnD5eSubspecies> Subspecies { get; set; } = new();
 
         // Images (base64-encoded file bytes, keyed to entity by OldEntityId + EntityType)
         public List<EntityImageExport> Images { get; set; } = new();
