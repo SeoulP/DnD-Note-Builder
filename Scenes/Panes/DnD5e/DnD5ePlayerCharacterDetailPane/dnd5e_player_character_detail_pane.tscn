@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://bgpk7xm3y02ql" path="res://Scenes/Modals/DnD5e/DnD5eBackgroundPickerModal/dnd5e_background_picker_modal.tscn" id="6_bgmodal"]
 [ext_resource type="Script" uid="uid://doequwy7gt0a7" path="res://Scenes/Components/IntInput/IntInput.cs" id="7_intinput"]
 
-[node name="DnD5ePlayerCharacterDetailPane" type="ScrollContainer" unique_id=1808163932 node_paths=PackedStringArray("_nameInput", "_speciesLabel", "_classLabel", "_speciesInput", "_subspeciesInput", "_classInput", "_subclassInput", "_levelInput", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_descInput", "_backgroundLabel", "_backgroundButton", "_skillsSection", "_skillsChipsContainer", "_skillsListContainer", "_abilityChoicesSection", "_abilityChoicesContainer", "_resourcesSection", "_resourcesContainer", "_notes", "_imageCarousel", "_deleteButton", "_aliasChipsRow", "_addManualAbilityBtn", "_statsTabBtn", "_actionsTabBtn", "_inventoryTabBtn", "_flavorTabBtn", "_statsTab", "_actionsTab", "_inventoryTab", "_flavorTab")]
+[node name="DnD5ePlayerCharacterDetailPane" type="ScrollContainer" unique_id=1808163932 node_paths=PackedStringArray("_nameInput", "_speciesLabel", "_classLabel", "_speciesInput", "_subspeciesInput", "_classInput", "_subclassInput", "_levelInput", "_strInput", "_dexInput", "_conInput", "_intInput", "_wisInput", "_chaInput", "_strMod", "_dexMod", "_conMod", "_intMod", "_wisMod", "_chaMod", "_descInput", "_backgroundLabel", "_backgroundButton", "_skillsSection", "_skillsChipsContainer", "_skillsListContainer", "_abilityChoicesSection", "_abilityChoicesContainer", "_resourcesSection", "_resourcesContainer", "_notes", "_imageCarousel", "_deleteButton", "_aliasChipsRow", "_addManualAbilityBtn", "_statsTabBtn", "_actionsTabBtn", "_inventoryTabBtn", "_flavorTabBtn", "_statsTab", "_actionsTab", "_inventoryTab", "_flavorTab", "_hpButton", "_initButton", "_saveProfStrCb", "_saveProfDexCb", "_saveProfConCb", "_saveProfIntCb", "_saveProfWisCb", "_saveProfChaCb", "_saveStrTotal", "_saveDexTotal", "_saveConTotal", "_saveIntTotal", "_saveWisTotal", "_saveChaTotal", "_weaponsContainer", "_addWeaponButton", "_acButton", "_speedInput", "_ppButton", "_inspirationCb", "_deathSucc1", "_deathSucc2", "_deathSucc3", "_deathFail1", "_deathFail2", "_deathFail3", "_inventoryNotes")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -58,6 +58,33 @@ _statsTab = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab")
 _actionsTab = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab")
 _inventoryTab = NodePath("MainVBox/ContentMargin/ContentVBox/InventoryTab")
 _flavorTab = NodePath("MainVBox/ContentMargin/ContentVBox/FlavorTab")
+_hpButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow/HpButton")
+_initButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow/InitButton")
+_saveProfStrCb = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/StrSaveRow/SaveProfStrCb")
+_saveProfDexCb = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/DexSaveRow/SaveProfDexCb")
+_saveProfConCb = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ConSaveRow/SaveProfConCb")
+_saveProfIntCb = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/IntSaveRow/SaveProfIntCb")
+_saveProfWisCb = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/WisSaveRow/SaveProfWisCb")
+_saveProfChaCb = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ChaSaveRow/SaveProfChaCb")
+_saveStrTotal = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/StrSaveRow/SaveStrTotal")
+_saveDexTotal = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/DexSaveRow/SaveDexTotal")
+_saveConTotal = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ConSaveRow/SaveConTotal")
+_saveIntTotal = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/IntSaveRow/SaveIntTotal")
+_saveWisTotal = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/WisSaveRow/SaveWisTotal")
+_saveChaTotal = NodePath("MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ChaSaveRow/SaveChaTotal")
+_weaponsContainer = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponsContainer")
+_addWeaponButton = NodePath("MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponAttacksHeader/AddWeaponButton")
+_acButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow/AcButton")
+_speedInput = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/SpeedRow/SpeedInput")
+_ppButton = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/PpButton")
+_inspirationCb = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/InspirationCb")
+_deathSucc1 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathSucc1")
+_deathSucc2 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathSucc2")
+_deathSucc3 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathSucc3")
+_deathFail1 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathFail1")
+_deathFail2 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathFail2")
+_deathFail3 = NodePath("MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow/DeathFail3")
+_inventoryNotes = NodePath("MainVBox/ContentMargin/ContentVBox/InventoryTab/InventoryNotes")
 
 [node name="MainVBox" type="VBoxContainer" parent="." unique_id=300000001]
 layout_mode = 2
@@ -141,10 +168,12 @@ size_flags_horizontal = 3
 
 [node name="LevelRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=2110492785]
 layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="LevelLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=607114890]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
+vertical_alignment = 1
 text = "Level"
 
 [node name="LevelInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=312929853]
@@ -153,6 +182,103 @@ script = ExtResource("7_intinput")
 MinValue = 1
 MaxValue = 20
 Value = 1
+
+[node name="LevelSpacer" type="Control" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=400000047]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="InitButton" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=400000010]
+layout_mode = 2
+text = "Init +0"
+
+[node name="AcButton" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=400000016]
+layout_mode = 2
+text = "AC 10"
+
+[node name="HpButton" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/LevelRow" unique_id=400000002]
+layout_mode = 2
+text = "HP 0/0"
+
+[node name="PpRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=400000048]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PpButton" type="Button" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow" unique_id=400000021]
+layout_mode = 2
+text = "PP 10"
+
+[node name="InspirationCb" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow" unique_id=400000022]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+text = "Insp."
+
+[node name="PpSpacer" type="Control" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow" unique_id=400000049]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SpeedRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow" unique_id=400000018]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SpeedLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/SpeedRow" unique_id=400000019]
+layout_mode = 2
+vertical_alignment = 1
+text = "Speed"
+
+[node name="SpeedInput" type="PanelContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/PpRow/SpeedRow" unique_id=400000020]
+layout_mode = 2
+script = ExtResource("7_intinput")
+MinValue = 0
+MaxValue = 200
+Value = 30
+
+[node name="DeathSavesRow" type="HBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields" unique_id=400000050]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="DeathSavesLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000060]
+layout_mode = 2
+vertical_alignment = 1
+text = "Death Saves"
+
+[node name="DeathSuccLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000051]
+layout_mode = 2
+vertical_alignment = 1
+text = "Success"
+
+[node name="DeathSucc1" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000052]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+
+[node name="DeathSucc2" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000053]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+
+[node name="DeathSucc3" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000054]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+
+[node name="EmDash" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000055]
+layout_mode = 2
+vertical_alignment = 1
+text = " — "
+
+[node name="DeathFailLabel" type="Label" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000056]
+layout_mode = 2
+vertical_alignment = 1
+text = "Failure"
+
+[node name="DeathFail1" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000057]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+
+[node name="DeathFail2" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000058]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
+
+[node name="DeathFail3" type="CheckBox" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow/HeaderFields/DeathSavesRow" unique_id=400000059]
+layout_mode = 2
+theme_override_constants/icon_max_width = 14
 
 [node name="CarouselColumn" type="VBoxContainer" parent="MainVBox/HeaderMargin/HeaderVBox/FieldsRow" unique_id=897042247]
 layout_mode = 2
@@ -388,6 +514,150 @@ layout_mode = 2
 text = "(+0)"
 horizontal_alignment = 1
 
+[node name="SavingThrowsSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab" unique_id=400000020]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SavingThrowsLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection" unique_id=400000021]
+layout_mode = 2
+text = "Saving Throws"
+
+[node name="SavesList" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection" unique_id=400000022]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StrSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000023]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SaveProfStrCb" type="CheckBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/StrSaveRow" unique_id=400000024]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/icon_max_width = 14
+
+[node name="StrSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/StrSaveRow" unique_id=400000025]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "STR"
+
+[node name="SaveStrTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/StrSaveRow" unique_id=400000026]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "+0"
+
+[node name="DexSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000027]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SaveProfDexCb" type="CheckBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/DexSaveRow" unique_id=400000028]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/icon_max_width = 14
+
+[node name="DexSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/DexSaveRow" unique_id=400000029]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "DEX"
+
+[node name="SaveDexTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/DexSaveRow" unique_id=400000030]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "+0"
+
+[node name="ConSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000031]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SaveProfConCb" type="CheckBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ConSaveRow" unique_id=400000032]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/icon_max_width = 14
+
+[node name="ConSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ConSaveRow" unique_id=400000033]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "CON"
+
+[node name="SaveConTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ConSaveRow" unique_id=400000034]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "+0"
+
+[node name="IntSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000035]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SaveProfIntCb" type="CheckBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/IntSaveRow" unique_id=400000036]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/icon_max_width = 14
+
+[node name="IntSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/IntSaveRow" unique_id=400000037]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "INT"
+
+[node name="SaveIntTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/IntSaveRow" unique_id=400000038]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "+0"
+
+[node name="WisSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000039]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SaveProfWisCb" type="CheckBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/WisSaveRow" unique_id=400000040]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/icon_max_width = 14
+
+[node name="WisSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/WisSaveRow" unique_id=400000041]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "WIS"
+
+[node name="SaveWisTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/WisSaveRow" unique_id=400000042]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "+0"
+
+[node name="ChaSaveRow" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList" unique_id=400000043]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SaveProfChaCb" type="CheckBox" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ChaSaveRow" unique_id=400000044]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/icon_max_width = 14
+
+[node name="ChaSaveLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ChaSaveRow" unique_id=400000045]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "CHA"
+
+[node name="SaveChaTotal" type="Label" parent="MainVBox/ContentMargin/ContentVBox/StatsTab/SavingThrowsSection/SavesList/ChaSaveRow" unique_id=400000046]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "+0"
+
 [node name="SkillsSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/StatsTab" unique_id=-1194967290]
 layout_mode = 2
 theme_override_constants/separation = 4
@@ -412,6 +682,27 @@ theme_override_constants/separation = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="WeaponAttacksSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab" unique_id=400000050]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="WeaponAttacksHeader" type="HBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection" unique_id=400000051]
+layout_mode = 2
+
+[node name="WeaponAttacksLabel" type="Label" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponAttacksHeader" unique_id=400000052]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Weapon Attacks"
+
+[node name="AddWeaponButton" type="Button" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection/WeaponAttacksHeader" unique_id=400000053]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+"
+
+[node name="WeaponsContainer" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab/WeaponAttacksSection" unique_id=400000054]
+layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="ResourcesSection" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox/ActionsTab" unique_id=-1246676295]
 visible = false
@@ -456,9 +747,8 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="InventoryPlaceholder" type="Label" parent="MainVBox/ContentMargin/ContentVBox/InventoryTab" unique_id=300000014]
+[node name="InventoryNotes" parent="MainVBox/ContentMargin/ContentVBox/InventoryTab" unique_id=300000014 instance=ExtResource("4_wikinotes")]
 layout_mode = 2
-text = "Inventory coming soon."
 
 [node name="FlavorTab" type="VBoxContainer" parent="MainVBox/ContentMargin/ContentVBox" unique_id=300000015]
 visible = false

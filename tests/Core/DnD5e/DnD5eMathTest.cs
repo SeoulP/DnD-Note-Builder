@@ -139,5 +139,100 @@ namespace DndBuilder.Tests.Core.DnD5e
         [TestCase]
         public void SignStr_Negative_HasMinus() =>
             AssertThat(DnD5eMath.SignStr(-2)).IsEqual("-2");
+
+        // ── ScoreFor ─────────────────────────────────────────────────────────
+
+        [TestCase]
+        public void ScoreFor_ReturnsCorrectScore()
+        {
+            var pc = new DnD5ePlayerCharacter { Strength = 18, Dexterity = 14, Constitution = 12,
+                                                Intelligence = 10, Wisdom = 8, Charisma = 16 };
+            AssertThat(DnD5eMath.ScoreFor(pc, "str")).IsEqual(18);
+            AssertThat(DnD5eMath.ScoreFor(pc, "dex")).IsEqual(14);
+            AssertThat(DnD5eMath.ScoreFor(pc, "con")).IsEqual(12);
+            AssertThat(DnD5eMath.ScoreFor(pc, "int")).IsEqual(10);
+            AssertThat(DnD5eMath.ScoreFor(pc, "wis")).IsEqual(8);
+            AssertThat(DnD5eMath.ScoreFor(pc, "cha")).IsEqual(16);
+        }
+
+        [TestCase]
+        public void ScoreFor_Unknown_Returns10() =>
+            AssertThat(DnD5eMath.ScoreFor(new DnD5ePlayerCharacter(), "xyz")).IsEqual(10);
+
+        // ── SaveBonus ─────────────────────────────────────────────────────────
+
+        [TestCase]
+        public void SaveBonus_NotProficient_IsJustMod()
+        {
+            var pc = new DnD5ePlayerCharacter { Strength = 16 };
+            AssertThat(DnD5eMath.SaveBonus(pc, "str", profBonus: 3)).IsEqual(3);
+        }
+
+        [TestCase]
+        public void SaveBonus_Proficient_AddsProfBonus()
+        {
+            var pc = new DnD5ePlayerCharacter { Constitution = 14, SaveProfCon = true };
+            AssertThat(DnD5eMath.SaveBonus(pc, "con", profBonus: 3)).IsEqual(5);
+        }
+
+        // ── InitiativeBonus ───────────────────────────────────────────────────
+
+        [TestCase]
+        public void InitiativeBonus_DexModPlusMisc()
+        {
+            var pc = new DnD5ePlayerCharacter { Dexterity = 16, InitiativeMisc = 2 };
+            AssertThat(DnD5eMath.InitiativeBonus(pc)).IsEqual(5);
+        }
+
+        [TestCase]
+        public void InitiativeBonus_NoMisc_IsJustDexMod()
+        {
+            var pc = new DnD5ePlayerCharacter { Dexterity = 12 };
+            AssertThat(DnD5eMath.InitiativeBonus(pc)).IsEqual(1);
+        }
+
+        // ── WeaponAttackBonus ─────────────────────────────────────────────────
+
+        [TestCase]
+        public void WeaponAttackBonus_DeriveStr_ProfAndMod()
+        {
+            var pc = new DnD5ePlayerCharacter { Strength = 18 };
+            var w  = new DnD5ePlayerCharacterWeapon { DeriveFromAbility = true, DeriveAbility = "str", IsProficient = true };
+            AssertThat(DnD5eMath.WeaponAttackBonus(pc, w, profBonus: 3)).IsEqual(7);
+        }
+
+        [TestCase]
+        public void WeaponAttackBonus_NoDerive_OnlyProfAndManual()
+        {
+            var pc = new DnD5ePlayerCharacter { Strength = 20 };
+            var w  = new DnD5ePlayerCharacterWeapon { DeriveFromAbility = false, IsProficient = true, AttackBonus = 1 };
+            AssertThat(DnD5eMath.WeaponAttackBonus(pc, w, profBonus: 2)).IsEqual(3);
+        }
+
+        [TestCase]
+        public void WeaponAttackBonus_Finesse_UsesHigherMod()
+        {
+            var pc = new DnD5ePlayerCharacter { Strength = 10, Dexterity = 18 };
+            var w  = new DnD5ePlayerCharacterWeapon { DeriveFromAbility = true, DeriveAbility = "fin", IsProficient = false };
+            AssertThat(DnD5eMath.WeaponAttackBonus(pc, w, profBonus: 2)).IsEqual(4);
+        }
+
+        // ── WeaponDamageMod ───────────────────────────────────────────────────
+
+        [TestCase]
+        public void WeaponDamageMod_DeriveStrAndMod_ReturnsAttrMod()
+        {
+            var pc = new DnD5ePlayerCharacter { Strength = 18 };
+            var w  = new DnD5ePlayerCharacterWeapon { DeriveFromAbility = true, DeriveDamageMod = true, DeriveAbility = "str" };
+            AssertThat(DnD5eMath.WeaponDamageMod(pc, w)).IsEqual(4);
+        }
+
+        [TestCase]
+        public void WeaponDamageMod_NoDeriveOrNoMod_OnlyManual()
+        {
+            var pc = new DnD5ePlayerCharacter { Strength = 20 };
+            var w  = new DnD5ePlayerCharacterWeapon { DeriveFromAbility = false, DeriveDamageMod = true, DamageBonus = 2 };
+            AssertThat(DnD5eMath.WeaponDamageMod(pc, w)).IsEqual(2);
+        }
     }
 }

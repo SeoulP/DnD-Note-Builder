@@ -108,6 +108,56 @@ namespace DndBuilder.Core.Repositories
                 alter.CommandText = "ALTER TABLE player_characters ADD COLUMN background_asi TEXT NOT NULL DEFAULT ''";
                 alter.ExecuteNonQuery();
             }
+
+            foreach (var (col, sql) in new[]
+            {
+                ("current_hp",           "ALTER TABLE player_characters ADD COLUMN current_hp           INTEGER NOT NULL DEFAULT 0"),
+                ("max_hp",               "ALTER TABLE player_characters ADD COLUMN max_hp               INTEGER NOT NULL DEFAULT 0"),
+                ("temp_hp",              "ALTER TABLE player_characters ADD COLUMN temp_hp              INTEGER NOT NULL DEFAULT 0"),
+                ("initiative_misc",      "ALTER TABLE player_characters ADD COLUMN initiative_misc      INTEGER NOT NULL DEFAULT 0"),
+                ("save_prof_str",        "ALTER TABLE player_characters ADD COLUMN save_prof_str        INTEGER NOT NULL DEFAULT 0"),
+                ("save_prof_dex",        "ALTER TABLE player_characters ADD COLUMN save_prof_dex        INTEGER NOT NULL DEFAULT 0"),
+                ("save_prof_con",        "ALTER TABLE player_characters ADD COLUMN save_prof_con        INTEGER NOT NULL DEFAULT 0"),
+                ("save_prof_int",        "ALTER TABLE player_characters ADD COLUMN save_prof_int        INTEGER NOT NULL DEFAULT 0"),
+                ("save_prof_wis",        "ALTER TABLE player_characters ADD COLUMN save_prof_wis        INTEGER NOT NULL DEFAULT 0"),
+                ("save_prof_cha",        "ALTER TABLE player_characters ADD COLUMN save_prof_cha        INTEGER NOT NULL DEFAULT 0"),
+                ("armor_class_base",     "ALTER TABLE player_characters ADD COLUMN armor_class_base     INTEGER NOT NULL DEFAULT 10"),
+                ("ac_use_dex_mod",       "ALTER TABLE player_characters ADD COLUMN ac_use_dex_mod       INTEGER NOT NULL DEFAULT 1"),
+                ("ac_misc",              "ALTER TABLE player_characters ADD COLUMN ac_misc              INTEGER NOT NULL DEFAULT 0"),
+                ("speed",                "ALTER TABLE player_characters ADD COLUMN speed                INTEGER NOT NULL DEFAULT 30"),
+                ("inspiration",          "ALTER TABLE player_characters ADD COLUMN inspiration          INTEGER NOT NULL DEFAULT 0"),
+                ("death_save_successes", "ALTER TABLE player_characters ADD COLUMN death_save_successes INTEGER NOT NULL DEFAULT 0"),
+                ("death_save_failures",  "ALTER TABLE player_characters ADD COLUMN death_save_failures  INTEGER NOT NULL DEFAULT 0"),
+                ("inventory_notes",      "ALTER TABLE player_characters ADD COLUMN inventory_notes      TEXT    NOT NULL DEFAULT ''"),
+            })
+            {
+                var check = _conn.CreateCommand();
+                check.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('player_characters') WHERE name = '{col}'";
+                if ((long)check.ExecuteScalar() == 0)
+                {
+                    var alter = _conn.CreateCommand();
+                    alter.CommandText = sql;
+                    alter.ExecuteNonQuery();
+                }
+            }
+
+            var weapons = _conn.CreateCommand();
+            weapons.CommandText = @"CREATE TABLE IF NOT EXISTS player_character_weapons (
+                id                  INTEGER PRIMARY KEY,
+                player_character_id INTEGER NOT NULL REFERENCES player_characters(id) ON DELETE CASCADE,
+                sort_order          INTEGER NOT NULL DEFAULT 0,
+                name                TEXT    NOT NULL DEFAULT '',
+                damage_dice         TEXT    NOT NULL DEFAULT '',
+                damage_type         TEXT    NOT NULL DEFAULT '',
+                notes               TEXT    NOT NULL DEFAULT '',
+                derive_from_ability INTEGER NOT NULL DEFAULT 1,
+                derive_ability      TEXT    NOT NULL DEFAULT 'str',
+                is_proficient       INTEGER NOT NULL DEFAULT 0,
+                derive_damage_mod   INTEGER NOT NULL DEFAULT 1,
+                attack_bonus        INTEGER NOT NULL DEFAULT 0,
+                damage_bonus        INTEGER NOT NULL DEFAULT 0
+            )";
+            weapons.ExecuteNonQuery();
         }
 
         // ── Manual abilities ──────────────────────────────────────────────────
@@ -482,7 +532,14 @@ namespace DndBuilder.Core.Repositories
             c.description, c.personality, c.notes, c.species_id,
             pc.class_id, pc.subclass_id, pc.subspecies_id, pc.level,
             pc.str, pc.dex, pc.con, pc.int, pc.wis, pc.cha,
-            pc.background_id, pc.background_asi";
+            pc.background_id, pc.background_asi,
+            pc.current_hp, pc.max_hp, pc.temp_hp, pc.initiative_misc,
+            pc.save_prof_str, pc.save_prof_dex, pc.save_prof_con,
+            pc.save_prof_int, pc.save_prof_wis, pc.save_prof_cha,
+            pc.armor_class_base, pc.ac_use_dex_mod, pc.ac_misc,
+            pc.speed, pc.inspiration,
+            pc.death_save_successes, pc.death_save_failures,
+            pc.inventory_notes";
 
         private const string FromJoin = @"
             FROM characters c
@@ -523,8 +580,19 @@ namespace DndBuilder.Core.Repositories
 
             // Insert PC-specific row
             cmd = _conn.CreateCommand();
-            cmd.CommandText = @"INSERT INTO player_characters (id, class_id, subclass_id, subspecies_id, level, str, dex, con, int, wis, cha, background_id, background_asi)
-                                VALUES (@id, @clid, @scid, @ssid, @level, @str, @dex, @con, @int, @wis, @cha, @bgid, @bgasi)";
+            cmd.CommandText = @"INSERT INTO player_characters
+                                    (id, class_id, subclass_id, subspecies_id, level, str, dex, con, int, wis, cha,
+                                     background_id, background_asi,
+                                     current_hp, max_hp, temp_hp, initiative_misc,
+                                     save_prof_str, save_prof_dex, save_prof_con, save_prof_int, save_prof_wis, save_prof_cha,
+                                     armor_class_base, ac_use_dex_mod, ac_misc,
+                                     speed, inspiration, death_save_successes, death_save_failures, inventory_notes)
+                                VALUES
+                                    (@id, @clid, @scid, @ssid, @level, @str, @dex, @con, @int, @wis, @cha,
+                                     @bgid, @bgasi,
+                                     @cur_hp, @max_hp, @temp_hp, @init_misc,
+                                     @sp_str, @sp_dex, @sp_con, @sp_int, @sp_wis, @sp_cha,
+                                     @ac_base, @ac_dex, @ac_misc, @speed, @insp, @ds_succ, @ds_fail, @inv_notes)";
             cmd.Parameters.AddWithValue("@id", newId);
             BindPc(cmd, pc);
             cmd.ExecuteNonQuery();
@@ -548,7 +616,14 @@ namespace DndBuilder.Core.Repositories
             cmd.CommandText = @"UPDATE player_characters
                                 SET class_id = @clid, subclass_id = @scid, subspecies_id = @ssid, level = @level,
                                     str = @str, dex = @dex, con = @con, int = @int, wis = @wis, cha = @cha,
-                                    background_id = @bgid, background_asi = @bgasi
+                                    background_id = @bgid, background_asi = @bgasi,
+                                    current_hp = @cur_hp, max_hp = @max_hp, temp_hp = @temp_hp, initiative_misc = @init_misc,
+                                    save_prof_str = @sp_str, save_prof_dex = @sp_dex, save_prof_con = @sp_con,
+                                    save_prof_int = @sp_int, save_prof_wis = @sp_wis, save_prof_cha = @sp_cha,
+                                    armor_class_base = @ac_base, ac_use_dex_mod = @ac_dex, ac_misc = @ac_misc,
+                                    speed = @speed, inspiration = @insp,
+                                    death_save_successes = @ds_succ, death_save_failures = @ds_fail,
+                                    inventory_notes = @inv_notes
                                 WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", pc.Id);
             BindPc(cmd, pc);
@@ -579,18 +654,36 @@ namespace DndBuilder.Core.Repositories
 
         private static void BindPc(SqliteCommand cmd, DnD5ePlayerCharacter pc)
         {
-            cmd.Parameters.AddWithValue("@clid",  pc.ClassId.HasValue      ? pc.ClassId.Value      : DBNull.Value);
-            cmd.Parameters.AddWithValue("@scid",  pc.SubclassId.HasValue   ? pc.SubclassId.Value   : DBNull.Value);
-            cmd.Parameters.AddWithValue("@ssid",  pc.SubspeciesId.HasValue ? pc.SubspeciesId.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@level", pc.Level);
-            cmd.Parameters.AddWithValue("@str",   pc.Strength);
-            cmd.Parameters.AddWithValue("@dex",   pc.Dexterity);
-            cmd.Parameters.AddWithValue("@con",   pc.Constitution);
-            cmd.Parameters.AddWithValue("@int",   pc.Intelligence);
-            cmd.Parameters.AddWithValue("@wis",   pc.Wisdom);
-            cmd.Parameters.AddWithValue("@cha",   pc.Charisma);
-            cmd.Parameters.AddWithValue("@bgid",  pc.BackgroundId.HasValue ? pc.BackgroundId.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@bgasi", pc.BackgroundAsi ?? "");
+            cmd.Parameters.AddWithValue("@clid",     pc.ClassId.HasValue      ? pc.ClassId.Value      : DBNull.Value);
+            cmd.Parameters.AddWithValue("@scid",     pc.SubclassId.HasValue   ? pc.SubclassId.Value   : DBNull.Value);
+            cmd.Parameters.AddWithValue("@ssid",     pc.SubspeciesId.HasValue ? pc.SubspeciesId.Value : DBNull.Value);
+            cmd.Parameters.AddWithValue("@level",    pc.Level);
+            cmd.Parameters.AddWithValue("@str",      pc.Strength);
+            cmd.Parameters.AddWithValue("@dex",      pc.Dexterity);
+            cmd.Parameters.AddWithValue("@con",      pc.Constitution);
+            cmd.Parameters.AddWithValue("@int",      pc.Intelligence);
+            cmd.Parameters.AddWithValue("@wis",      pc.Wisdom);
+            cmd.Parameters.AddWithValue("@cha",      pc.Charisma);
+            cmd.Parameters.AddWithValue("@bgid",     pc.BackgroundId.HasValue ? pc.BackgroundId.Value : DBNull.Value);
+            cmd.Parameters.AddWithValue("@bgasi",    pc.BackgroundAsi ?? "");
+            cmd.Parameters.AddWithValue("@cur_hp",   pc.CurrentHp);
+            cmd.Parameters.AddWithValue("@max_hp",   pc.MaxHp);
+            cmd.Parameters.AddWithValue("@temp_hp",  pc.TempHp);
+            cmd.Parameters.AddWithValue("@init_misc",pc.InitiativeMisc);
+            cmd.Parameters.AddWithValue("@sp_str",   pc.SaveProfStr ? 1 : 0);
+            cmd.Parameters.AddWithValue("@sp_dex",   pc.SaveProfDex ? 1 : 0);
+            cmd.Parameters.AddWithValue("@sp_con",   pc.SaveProfCon ? 1 : 0);
+            cmd.Parameters.AddWithValue("@sp_int",   pc.SaveProfInt ? 1 : 0);
+            cmd.Parameters.AddWithValue("@sp_wis",   pc.SaveProfWis ? 1 : 0);
+            cmd.Parameters.AddWithValue("@sp_cha",   pc.SaveProfCha ? 1 : 0);
+            cmd.Parameters.AddWithValue("@ac_base",  pc.ArmorClassBase);
+            cmd.Parameters.AddWithValue("@ac_dex",   pc.AcUseDexMod ? 1 : 0);
+            cmd.Parameters.AddWithValue("@ac_misc",  pc.AcMisc);
+            cmd.Parameters.AddWithValue("@speed",    pc.Speed);
+            cmd.Parameters.AddWithValue("@insp",     pc.Inspiration ? 1 : 0);
+            cmd.Parameters.AddWithValue("@ds_succ",    pc.DeathSaveSuccesses);
+            cmd.Parameters.AddWithValue("@ds_fail",    pc.DeathSaveFailures);
+            cmd.Parameters.AddWithValue("@inv_notes",  pc.InventoryNotes ?? "");
         }
 
         private static DnD5ePlayerCharacter Map(SqliteDataReader r) => new DnD5ePlayerCharacter
@@ -617,8 +710,128 @@ namespace DndBuilder.Core.Repositories
             Intelligence = r.IsDBNull(17) ? 10   : r.GetInt32(17),
             Wisdom       = r.IsDBNull(18) ? 10   : r.GetInt32(18),
             Charisma     = r.IsDBNull(19) ? 10   : r.GetInt32(19),
-            BackgroundId  = r.IsDBNull(20) ? null : r.GetInt32(20),
-            BackgroundAsi = r.IsDBNull(21) ? ""   : r.GetString(21),
+            BackgroundId  = r.IsDBNull(20) ? null  : r.GetInt32(20),
+            BackgroundAsi = r.IsDBNull(21) ? ""    : r.GetString(21),
+            CurrentHp     = r.IsDBNull(22) ? 0     : r.GetInt32(22),
+            MaxHp         = r.IsDBNull(23) ? 0     : r.GetInt32(23),
+            TempHp        = r.IsDBNull(24) ? 0     : r.GetInt32(24),
+            InitiativeMisc= r.IsDBNull(25) ? 0     : r.GetInt32(25),
+            SaveProfStr          = !r.IsDBNull(26) && r.GetInt32(26) != 0,
+            SaveProfDex          = !r.IsDBNull(27) && r.GetInt32(27) != 0,
+            SaveProfCon          = !r.IsDBNull(28) && r.GetInt32(28) != 0,
+            SaveProfInt          = !r.IsDBNull(29) && r.GetInt32(29) != 0,
+            SaveProfWis          = !r.IsDBNull(30) && r.GetInt32(30) != 0,
+            SaveProfCha          = !r.IsDBNull(31) && r.GetInt32(31) != 0,
+            ArmorClassBase       = r.IsDBNull(32)  ? 10   : r.GetInt32(32),
+            AcUseDexMod          = r.IsDBNull(33)  ? true : r.GetInt32(33) != 0,
+            AcMisc               = r.IsDBNull(34)  ? 0    : r.GetInt32(34),
+            Speed                = r.IsDBNull(35)  ? 30   : r.GetInt32(35),
+            Inspiration          = !r.IsDBNull(36) && r.GetInt32(36) != 0,
+            DeathSaveSuccesses   = r.IsDBNull(37)  ? 0    : r.GetInt32(37),
+            DeathSaveFailures    = r.IsDBNull(38)  ? 0    : r.GetInt32(38),
+            InventoryNotes       = r.IsDBNull(39)  ? ""   : r.GetString(39),
         };
+
+        // ── Weapon CRUD ───────────────────────────────────────────────────────
+
+        public List<DnD5ePlayerCharacterWeapon> GetWeapons(int pcId)
+        {
+            var list = new List<DnD5ePlayerCharacterWeapon>();
+            var cmd  = _conn.CreateCommand();
+            cmd.CommandText = @"SELECT id, player_character_id, sort_order, name, damage_dice, damage_type,
+                                       notes, derive_from_ability, derive_ability, is_proficient,
+                                       derive_damage_mod, attack_bonus, damage_bonus
+                                FROM player_character_weapons
+                                WHERE player_character_id = @pcid ORDER BY sort_order ASC, id ASC";
+            cmd.Parameters.AddWithValue("@pcid", pcId);
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+                list.Add(MapWeapon(r));
+            return list;
+        }
+
+        public int AddWeapon(DnD5ePlayerCharacterWeapon weapon)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"INSERT INTO player_character_weapons
+                                    (player_character_id, sort_order, name, damage_dice, damage_type, notes,
+                                     derive_from_ability, derive_ability, is_proficient, derive_damage_mod,
+                                     attack_bonus, damage_bonus)
+                                VALUES (@pcid, @sort, @name, @dice, @dtype, @notes, @derive, @dattr, @prof, @dmod, @atk, @dmg)";
+            BindWeapon(cmd, weapon);
+            cmd.ExecuteNonQuery();
+            var idCmd = _conn.CreateCommand();
+            idCmd.CommandText = "SELECT last_insert_rowid()";
+            return (int)(long)idCmd.ExecuteScalar();
+        }
+
+        public void EditWeapon(DnD5ePlayerCharacterWeapon weapon)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = @"UPDATE player_character_weapons SET
+                                    sort_order = @sort, name = @name, damage_dice = @dice, damage_type = @dtype,
+                                    notes = @notes, derive_from_ability = @derive, derive_ability = @dattr,
+                                    is_proficient = @prof, derive_damage_mod = @dmod,
+                                    attack_bonus = @atk, damage_bonus = @dmg
+                                WHERE id = @id";
+            cmd.Parameters.AddWithValue("@id", weapon.Id);
+            BindWeapon(cmd, weapon);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void DeleteWeapon(int id)
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM player_character_weapons WHERE id = @id";
+            cmd.Parameters.AddWithValue("@id", id);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void ReorderWeapons(int pcId, List<int> orderedIds)
+        {
+            for (int i = 0; i < orderedIds.Count; i++)
+            {
+                var cmd = _conn.CreateCommand();
+                cmd.CommandText = "UPDATE player_character_weapons SET sort_order = @sort WHERE id = @id AND player_character_id = @pcid";
+                cmd.Parameters.AddWithValue("@sort", i);
+                cmd.Parameters.AddWithValue("@id",   orderedIds[i]);
+                cmd.Parameters.AddWithValue("@pcid", pcId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private static DnD5ePlayerCharacterWeapon MapWeapon(SqliteDataReader r) =>
+            new DnD5ePlayerCharacterWeapon
+            {
+                Id                = r.GetInt32(0),
+                PlayerCharacterId = r.GetInt32(1),
+                SortOrder         = r.GetInt32(2),
+                Name              = r.GetString(3),
+                DamageDice        = r.GetString(4),
+                DamageType        = r.GetString(5),
+                Notes             = r.GetString(6),
+                DeriveFromAbility = r.GetInt32(7) != 0,
+                DeriveAbility     = r.GetString(8),
+                IsProficient      = r.GetInt32(9) != 0,
+                DeriveDamageMod   = r.GetInt32(10) != 0,
+                AttackBonus       = r.GetInt32(11),
+                DamageBonus       = r.GetInt32(12),
+            };
+
+        private static void BindWeapon(SqliteCommand cmd, DnD5ePlayerCharacterWeapon weapon)
+        {
+            cmd.Parameters.AddWithValue("@pcid",  weapon.PlayerCharacterId);
+            cmd.Parameters.AddWithValue("@sort",  weapon.SortOrder);
+            cmd.Parameters.AddWithValue("@name",  weapon.Name);
+            cmd.Parameters.AddWithValue("@dice",  weapon.DamageDice);
+            cmd.Parameters.AddWithValue("@dtype", weapon.DamageType);
+            cmd.Parameters.AddWithValue("@notes", weapon.Notes);
+            cmd.Parameters.AddWithValue("@derive",weapon.DeriveFromAbility ? 1 : 0);
+            cmd.Parameters.AddWithValue("@dattr", weapon.DeriveAbility);
+            cmd.Parameters.AddWithValue("@prof",  weapon.IsProficient ? 1 : 0);
+            cmd.Parameters.AddWithValue("@dmod",  weapon.DeriveDamageMod ? 1 : 0);
+            cmd.Parameters.AddWithValue("@atk",   weapon.AttackBonus);
+            cmd.Parameters.AddWithValue("@dmg",   weapon.DamageBonus);
+        }
     }
 }

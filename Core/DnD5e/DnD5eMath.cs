@@ -38,5 +38,59 @@ namespace DndBuilder.Core
         }
 
         public static string SignStr(int v) => v >= 0 ? $"+{v}" : $"{v}";
+
+        public static int ScoreFor(DnD5ePlayerCharacter pc, string attr) => attr switch
+        {
+            "str" => pc.Strength,
+            "dex" => pc.Dexterity,
+            "con" => pc.Constitution,
+            "int" => pc.Intelligence,
+            "wis" => pc.Wisdom,
+            "cha" => pc.Charisma,
+            _     => 10,
+        };
+
+        public static int SaveBonus(DnD5ePlayerCharacter pc, string attr, int profBonus)
+        {
+            bool prof = attr switch
+            {
+                "str" => pc.SaveProfStr,
+                "dex" => pc.SaveProfDex,
+                "con" => pc.SaveProfCon,
+                "int" => pc.SaveProfInt,
+                "wis" => pc.SaveProfWis,
+                "cha" => pc.SaveProfCha,
+                _     => false,
+            };
+            return AbilityMod(ScoreFor(pc, attr)) + (prof ? profBonus : 0);
+        }
+
+        public static int InitiativeBonus(DnD5ePlayerCharacter pc) =>
+            AbilityMod(pc.Dexterity) + pc.InitiativeMisc;
+
+        public static int ArmorClass(DnD5ePlayerCharacter pc) =>
+            pc.ArmorClassBase + (pc.AcUseDexMod ? AbilityMod(pc.Dexterity) : 0) + pc.AcMisc;
+
+        public static int WeaponAttackBonus(DnD5ePlayerCharacter pc, DnD5ePlayerCharacterWeapon weapon, int profBonus)
+        {
+            int attrMod = 0;
+            if (weapon.DeriveFromAbility)
+                attrMod = AbilityMod(ScoreFor(pc, ResolveWeaponAttr(pc, weapon.DeriveAbility)));
+            return attrMod + (weapon.IsProficient ? profBonus : 0) + weapon.AttackBonus;
+        }
+
+        public static int WeaponDamageMod(DnD5ePlayerCharacter pc, DnD5ePlayerCharacterWeapon weapon)
+        {
+            int attrMod = 0;
+            if (weapon.DeriveFromAbility && weapon.DeriveDamageMod)
+                attrMod = AbilityMod(ScoreFor(pc, ResolveWeaponAttr(pc, weapon.DeriveAbility)));
+            return attrMod + weapon.DamageBonus;
+        }
+
+        private static string ResolveWeaponAttr(DnD5ePlayerCharacter pc, string deriveAbility)
+        {
+            if (deriveAbility != "fin") return deriveAbility;
+            return AbilityMod(pc.Strength) >= AbilityMod(pc.Dexterity) ? "str" : "dex";
+        }
     }
 }
