@@ -1,0 +1,6 @@
+[
+  { "name": "Active",    "description": "Currently being pursued" },
+  { "name": "Completed", "description": "Successfully resolved" },
+  { "name": "Failed",    "description": "Abandoned or ended in failure" },
+  { "name": "On Hold",   "description": "Paused — not currently being pursued" }
+]

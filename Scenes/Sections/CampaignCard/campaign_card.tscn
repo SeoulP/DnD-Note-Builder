@@ -1,0 +1,112 @@
+[gd_scene format=3 uid="uid://ddivlvwirarno"]
+
+[ext_resource type="Script" uid="uid://dtpli84lswtll" path="res://Scenes/Sections/CampaignCard/CampaignCard.cs" id="1_240op"]
+[ext_resource type="Texture2D" uid="uid://btosnwkfg2b0q" path="res://Scenes/Icons/Clipboard.png" id="2_i4ydu"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_bdrn8"]
+font_size = 24
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_2lxw5"]
+load_path = "res://.godot/imported/Trashcan.png-3889f011272283ba86f64214d9d39a16.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_1t3fk"]
+load_path = "res://.godot/imported/Cave.png-2b92aa4c58b43492efe315bd1bb33b7f.ctex"
+
+[node name="CampaignCard" type="PanelContainer" unique_id=759523217 node_paths=PackedStringArray("_nameLabel", "_systemLabel", "_descLabel", "_dateLabel", "_editButton", "_deleteButton", "_delveButton")]
+offset_right = 438.0
+offset_bottom = 105.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_240op")
+_nameLabel = NodePath("FullHBoxContainer/VBoxContainer/HBoxContainer/NameLabel")
+_systemLabel = NodePath("FullHBoxContainer/VBoxContainer/HBoxContainer/SystemLabel")
+_descLabel = NodePath("FullHBoxContainer/VBoxContainer/DescriptionLabel")
+_dateLabel = NodePath("FullHBoxContainer/VBoxContainer/DateLabel")
+_editButton = NodePath("FullHBoxContainer/VBoxContainer/ButtonHBoxContainer/EditButton")
+_deleteButton = NodePath("FullHBoxContainer/VBoxContainer/ButtonHBoxContainer/DeleteButton")
+_delveButton = NodePath("FullHBoxContainer/VBoxContainer/ButtonHBoxContainer/DelveButton")
+
+[node name="FullHBoxContainer" type="HBoxContainer" parent="." unique_id=1042459781]
+layout_mode = 2
+
+[node name="LeftMarginContainer" type="MarginContainer" parent="FullHBoxContainer" unique_id=288052898]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="FullHBoxContainer" unique_id=1962156965]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TopMarginContainer" type="MarginContainer" parent="FullHBoxContainer/VBoxContainer" unique_id=653887573]
+layout_mode = 2
+theme_override_constants/margin_top = 12
+
+[node name="HBoxContainer" type="HBoxContainer" parent="FullHBoxContainer/VBoxContainer" unique_id=62556870]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="FullHBoxContainer/VBoxContainer/HBoxContainer" unique_id=2114015336]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Campaign"
+label_settings = SubResource("LabelSettings_bdrn8")
+
+[node name="SystemLabel" type="Label" parent="FullHBoxContainer/VBoxContainer/HBoxContainer" unique_id=1668276862]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "New System"
+horizontal_alignment = 2
+
+[node name="DescriptionLabel" type="Label" parent="FullHBoxContainer/VBoxContainer" unique_id=1979199903]
+layout_mode = 2
+text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud ex"
+autowrap_mode = 3
+text_overrun_behavior = 5
+max_lines_visible = 3
+
+[node name="DateLabel" type="Label" parent="FullHBoxContainer/VBoxContainer" unique_id=317703110]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "01-01-2026"
+horizontal_alignment = 2
+
+[node name="ButtonHBoxContainer" type="HBoxContainer" parent="FullHBoxContainer/VBoxContainer" unique_id=636324807]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="EditButton" type="Button" parent="FullHBoxContainer/VBoxContainer/ButtonHBoxContainer" unique_id=743356436]
+texture_filter = 1
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Edit"
+icon = ExtResource("2_i4ydu")
+autowrap_trim_flags = 192
+
+[node name="DeleteButton" type="Button" parent="FullHBoxContainer/VBoxContainer/ButtonHBoxContainer" unique_id=1832729752]
+texture_filter = 1
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Delete"
+icon = SubResource("CompressedTexture2D_2lxw5")
+alignment = 0
+
+[node name="Control" type="Control" parent="FullHBoxContainer/VBoxContainer/ButtonHBoxContainer" unique_id=311248515]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DelveButton" type="Button" parent="FullHBoxContainer/VBoxContainer/ButtonHBoxContainer" unique_id=732973192]
+texture_filter = 1
+layout_mode = 2
+text = "Delve"
+icon = SubResource("CompressedTexture2D_1t3fk")
+
+[node name="BottomMarginContainer" type="MarginContainer" parent="FullHBoxContainer/VBoxContainer" unique_id=1746317920]
+layout_mode = 2
+theme_override_constants/margin_bottom = 12
+
+[node name="RightMarginContainer" type="MarginContainer" parent="FullHBoxContainer" unique_id=2101038305]
+layout_mode = 2
+theme_override_constants/margin_right = 24

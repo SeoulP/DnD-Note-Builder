@@ -1,0 +1,7 @@
+[
+  { "name": "Rage",            "description": "Rage uses granted by class progression." },
+  { "name": "Second Wind",     "description": "Second Wind uses granted by Fighter progression." },
+  { "name": "Action Surge",    "description": "Action Surge uses granted by Fighter progression." },
+  { "name": "Indomitable",     "description": "Indomitable uses granted by Fighter progression." },
+  { "name": "Superiority Die", "description": "Battle Master superiority dice spent on maneuvers." }
+]

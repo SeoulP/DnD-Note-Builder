@@ -1,0 +1,298 @@
+[
+  {
+    "name": "Ability Score Improvement",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Increase one ability score by 2, or two ability scores by 1 (max 20 each). Alternatively, take a Feat."
+  },
+  {
+    "name": "Extra Attack",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "Attack action",
+    "recovery": "",
+    "effect": "Attack twice instead of once when you take the Attack action on your turn."
+  },
+  {
+    "name": "Weapon Mastery",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Use the mastery properties of 2 Simple or Martial weapons you're proficient with. Swap choices on Long Rest."
+  },
+  {
+    "name": "Rage",
+    "type": "Class Feature",
+    "action": "Bonus Action",
+    "trigger": "",
+    "recovery": "Long Rest",
+    "effect": "Enter a rage: advantage on STR checks and saves, bonus damage on STR attacks, resistance to Bludgeoning/Piercing/Slashing damage. Lasts 1 minute."
+  },
+  {
+    "name": "Unarmored Defense",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Without armor, AC = 10 + DEX modifier + CON modifier."
+  },
+  {
+    "name": "Danger Sense",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Advantage on DEX saves against visible effects while not blinded, deafened, or incapacitated."
+  },
+  {
+    "name": "Reckless Attack",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Before your first attack, choose to attack recklessly: advantage on STR-based attack rolls this turn, but attacks against you also have advantage until your next turn."
+  },
+  {
+    "name": "Primal Knowledge",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Gain proficiency in one skill from the Barbarian class list. You can use STR instead of a skill's normal ability when using a proficient skill."
+  },
+  {
+    "name": "Fast Movement",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Speed increases by 10 ft while not wearing Heavy armor."
+  },
+  {
+    "name": "Feral Instinct",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Advantage on Initiative rolls. If surprised, you can still act normally on your first turn if you enter a Rage before doing anything else."
+  },
+  {
+    "name": "Instinctive Pounce",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Move up to half your speed as part of the Bonus Action used to activate Rage."
+  },
+  {
+    "name": "Brutal Strike",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Forgo Reckless Attack advantage to apply a Brutal Strike effect on a hit: Forceful Blow (push 15 ft) or Hamstring Blow (speed halved until start of your next turn)."
+  },
+  {
+    "name": "Relentless Rage",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Short Rest",
+    "effect": "When you drop to 0 HP while raging, make a DC 10 CON save to drop to 1 HP instead. DC increases by 5 each use; resets on Short or Long Rest."
+  },
+  {
+    "name": "Persistent Rage",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Your Rage ends only if you fall unconscious or choose to end it; it no longer ends from failing to attack or taking damage."
+  },
+  {
+    "name": "Improved Brutal Strike",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Improved Brutal Strike options available; can apply two Brutal Strike effects on the same hit."
+  },
+  {
+    "name": "Indomitable Might",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "If your total for a STR check is less than your STR score, use your STR score for the total instead."
+  },
+  {
+    "name": "Primal Champion",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "STR and CON each increase by 4 (can exceed 20)."
+  },
+  {
+    "name": "Fighting Style",
+    "type": "Fighting Style",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Choose a Fighting Style feat as a bonus feat (Archery, Defense, Dueling, Great Weapon Fighting, Protection, Two-Weapon Fighting, Thrown Weapon Fighting, Unarmed Fighting, Blind Fighting, or Interception)."
+  },
+  {
+    "name": "Second Wind",
+    "type": "Class Feature",
+    "action": "Bonus Action",
+    "trigger": "",
+    "recovery": "Short Rest",
+    "effect": "Regain 1d10 + Fighter level HP."
+  },
+  {
+    "name": "Tactical Mind",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "When you fail an ability check, spend a Superiority Die (no action) to add the die roll to the check, potentially turning failure into success."
+  },
+  {
+    "name": "Action Surge",
+    "type": "Class Feature",
+    "action": "No Action",
+    "trigger": "",
+    "recovery": "Short Rest",
+    "effect": "Take one additional action on your turn."
+  },
+  {
+    "name": "Tactical Shift",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "When you activate Second Wind, choose a creature you can see within 5 ft; it can move up to half its speed without provoking opportunity attacks."
+  },
+  {
+    "name": "Indomitable",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Long Rest",
+    "effect": "Reroll a failed saving throw, using the new roll."
+  },
+  {
+    "name": "Studied Attacks",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "When you miss with a weapon attack, you have Advantage on your next weapon attack roll against that target this turn."
+  },
+  {
+    "name": "Master of Armaments",
+    "type": "Class Feature",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Long Rest",
+    "effect": "When you finish a Long Rest, you can change any of your Weapon Masteries to another eligible mastery."
+  },
+  {
+    "name": "Alert",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Add Proficiency Bonus to Initiative. Allies you can't see don't impose Disadvantage on your attack rolls."
+  },
+  {
+    "name": "Crafter",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Tool Proficiency (3 of your choice). Nonmagical item purchases cost 20% less. During a Long Rest, craft a permanent Tiny item (Artisan's Tools required)."
+  },
+  {
+    "name": "Healer",
+    "type": "Feat",
+    "action": "Action",
+    "trigger": "",
+    "recovery": "Short Rest",
+    "effect": "Use Healer's Kit to stabilize a creature (Action). Spend a Healer's Kit use to restore 1d6 + 4 + MaxHitDice HP to a creature (once per Short/Long Rest per creature)."
+  },
+  {
+    "name": "Lucky",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Long Rest",
+    "effect": "Gain 2 Luck Points. Spend to roll an extra d20 on an attack, ability check, or saving throw and choose which result to use. Also usable when you are attacked."
+  },
+  {
+    "name": "Magic Initiate (Cleric)",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Long Rest",
+    "effect": "Learn 2 Cleric cantrips and 1 Cleric 1st-level spell. Cast the 1st-level spell once per Long Rest without a slot; also castable with slots if available."
+  },
+  {
+    "name": "Magic Initiate (Druid)",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Long Rest",
+    "effect": "Learn 2 Druid cantrips and 1 Druid 1st-level spell. Cast the 1st-level spell once per Long Rest without a slot; also castable with slots if available."
+  },
+  {
+    "name": "Magic Initiate (Wizard)",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Long Rest",
+    "effect": "Learn 2 Wizard cantrips and 1 Wizard 1st-level spell. Cast the 1st-level spell once per Long Rest without a slot; also castable with slots if available."
+  },
+  {
+    "name": "Musician",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "Short Rest",
+    "effect": "Proficiency with 3 Musical Instruments. After a Short or Long Rest, you and allies who hear you play gain Heroic Inspiration."
+  },
+  {
+    "name": "Savage Attacker",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Once per turn when you hit with a weapon, roll the damage dice twice and use either result."
+  },
+  {
+    "name": "Skilled",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Gain proficiency in any combination of 3 skills or tools of your choice."
+  },
+  {
+    "name": "Tavern Brawler",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "Unarmed strikes deal 1d4 + STR damage. Proficiency with improvised weapons. After hitting with an unarmed strike or improvised weapon, attempt to Grapple as a Bonus Action."
+  },
+  {
+    "name": "Tough",
+    "type": "Feat",
+    "action": "Passive",
+    "trigger": "",
+    "recovery": "",
+    "effect": "HP Maximum increases by twice your character level (retroactive). Gain 2 additional HP Max on every level-up thereafter."
+  }
+]

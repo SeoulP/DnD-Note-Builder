@@ -1,0 +1,13 @@
+[
+  { "name": "Friend of",        "description": "A trusted companion or close acquaintance" },
+  { "name": "Enemy of",         "description": "Actively hostile or in personal conflict" },
+  { "name": "Rival of",         "description": "Competes or clashes without full hostility" },
+  { "name": "Mentor of",        "description": "Guides or teaches the other character" },
+  { "name": "Student of",       "description": "Is guided or taught by the other character" },
+  { "name": "Family of",        "description": "A blood relative or adoptive family member" },
+  { "name": "Ally of",          "description": "Works toward shared goals without deep friendship" },
+  { "name": "Informant of",     "description": "Secretly supplies information to the other" },
+  { "name": "Former Friend of", "description": "Once close; now estranged or fallen out" },
+  { "name": "Colleague of",     "description": "Works alongside without strong personal bond" },
+  { "name": "Acquainted with",  "description": "Knows of each other — extent unknown" }
+]

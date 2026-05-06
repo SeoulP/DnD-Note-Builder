@@ -1,0 +1,14 @@
+[
+  { "name": "Allied",      "description": "Actively supports and cooperates with the faction" },
+  { "name": "Enemy",       "description": "Opposed to the faction; in open or hidden conflict" },
+  { "name": "Neutral",     "description": "Neither allied nor hostile; indifferent to the faction" },
+  { "name": "Unaware Of",  "description": "Does not know this faction exists" },
+  { "name": "Member",      "description": "A rank-and-file member of the faction" },
+  { "name": "Leader",      "description": "Leads or commands the faction or a division of it" },
+  { "name": "Agent",       "description": "Covert operative acting on behalf of the faction" },
+  { "name": "Informant",   "description": "Secretly feeds information to the faction" },
+  { "name": "Defector",    "description": "Formerly a member; now estranged or turned against them" },
+  { "name": "Captive",     "description": "Held by the faction against their will" },
+  { "name": "Sympathiser", "description": "Not a member but broadly shares the faction's goals" },
+  { "name": "Rival",       "description": "Competes with the faction without outright hostility" }
+]

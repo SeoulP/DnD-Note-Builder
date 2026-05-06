@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
 using DndBuilder.Core.Models;
@@ -58,8 +59,8 @@ namespace DndBuilder.Core.Repositories
                                 SELECT last_insert_rowid();";
             cmd.Parameters.AddWithValue("@name",   campaign.Name);
             cmd.Parameters.AddWithValue("@system", campaign.System);
-            cmd.Parameters.AddWithValue("@desc",   campaign.Description);
-            cmd.Parameters.AddWithValue("@date",   campaign.DateStarted);
+            cmd.Parameters.AddWithValue("@desc",   (object)campaign.Description ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@date",   (object)campaign.DateStarted ?? DBNull.Value);
             return (int)(long)cmd.ExecuteScalar();
         }
 
@@ -72,8 +73,8 @@ namespace DndBuilder.Core.Repositories
             cmd.Parameters.AddWithValue("@id",     campaign.Id);
             cmd.Parameters.AddWithValue("@name",   campaign.Name);
             cmd.Parameters.AddWithValue("@system", campaign.System);
-            cmd.Parameters.AddWithValue("@desc",   campaign.Description);
-            cmd.Parameters.AddWithValue("@date",   campaign.DateStarted);
+            cmd.Parameters.AddWithValue("@desc",   (object)campaign.Description ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@date",   (object)campaign.DateStarted ?? DBNull.Value);
             cmd.ExecuteNonQuery();
         }
 

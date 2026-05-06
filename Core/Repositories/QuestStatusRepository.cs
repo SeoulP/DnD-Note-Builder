@@ -8,14 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string Name, string Description)[] Defaults =
-        {
-            ("Active",    "Currently being pursued"),
-            ("Completed", "Successfully resolved"),
-            ("Failed",    "Abandoned or ended in failure"),
-            ("On Hold",   "Paused — not currently being pursued"),
-        };
-
         public QuestStatusRepository(SqliteConnection conn) => _conn = conn;
 
         public void Migrate()
@@ -28,21 +20,6 @@ namespace DndBuilder.Core.Repositories
                 description TEXT    NOT NULL DEFAULT ''
             )";
             cmd.ExecuteNonQuery();
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, desc) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO quest_statuses (campaign_id, name, description)
-                    SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM quest_statuses WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", desc);
-                cmd.ExecuteNonQuery();
-            }
         }
 
         public List<QuestStatus> GetAll(int campaignId)

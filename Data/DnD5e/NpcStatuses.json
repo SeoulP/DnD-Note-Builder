@@ -1,0 +1,7 @@
+[
+  { "name": "Unknown",  "description": "Status not yet established" },
+  { "name": "Alive",    "description": "Currently living" },
+  { "name": "Dead",     "description": "Deceased" },
+  { "name": "Missing",  "description": "Whereabouts unknown" },
+  { "name": "Captured", "description": "Held against their will" }
+]

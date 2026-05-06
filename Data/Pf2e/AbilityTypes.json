@@ -1,0 +1,8 @@
+[
+  { "name": "Strike" },
+  { "name": "Active" },
+  { "name": "Reactive" },
+  { "name": "Passive" },
+  { "name": "Innate Spell" },
+  { "name": "Aura" }
+]

@@ -1,0 +1,7 @@
+[
+  { "name": "Untrained", "rank_value": 0 },
+  { "name": "Trained",   "rank_value": 1 },
+  { "name": "Expert",    "rank_value": 2 },
+  { "name": "Master",    "rank_value": 3 },
+  { "name": "Legendary", "rank_value": 4 }
+]

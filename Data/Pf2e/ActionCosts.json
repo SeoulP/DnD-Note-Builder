@@ -1,0 +1,9 @@
+[
+  { "name": "None",        "sort_order": 0 },
+  { "name": "1 Action",    "sort_order": 1 },
+  { "name": "2 Actions",   "sort_order": 2 },
+  { "name": "3 Actions",   "sort_order": 3 },
+  { "name": "Reaction",    "sort_order": 4 },
+  { "name": "Free Action", "sort_order": 5 },
+  { "name": "Variable",    "sort_order": 6 }
+]

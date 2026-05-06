@@ -8,22 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string Name, string Description)[] Defaults =
-        {
-            ("Allied",      "Actively supports and cooperates with the faction"),
-            ("Enemy",       "Opposed to the faction; in open or hidden conflict"),
-            ("Neutral",     "Neither allied nor hostile; indifferent to the faction"),
-            ("Unaware Of",  "Does not know this faction exists"),
-            ("Member",      "A rank-and-file member of the faction"),
-            ("Leader",      "Leads or commands the faction or a division of it"),
-            ("Agent",       "Covert operative acting on behalf of the faction"),
-            ("Informant",   "Secretly feeds information to the faction"),
-            ("Defector",    "Formerly a member; now estranged or turned against them"),
-            ("Captive",     "Held by the faction against their will"),
-            ("Sympathiser", "Not a member but broadly shares the faction's goals"),
-            ("Rival",       "Competes with the faction without outright hostility"),
-        };
-
         public NpcFactionRoleRepository(SqliteConnection conn)
         {
             _conn = conn;
@@ -48,21 +32,6 @@ namespace DndBuilder.Core.Repositories
                 var alter = _conn.CreateCommand();
                 alter.CommandText = "ALTER TABLE npc_faction_roles ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
-            }
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, desc) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO npc_faction_roles (campaign_id, name, description)
-                    SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM npc_faction_roles WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", desc);
-                cmd.ExecuteNonQuery();
             }
         }
 

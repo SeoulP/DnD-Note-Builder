@@ -1,0 +1,7 @@
+[
+  { "name": "Hostile",    "description": "Actively hostile; will attack or obstruct the party" },
+  { "name": "Unfriendly", "description": "Distrustful or uncooperative" },
+  { "name": "Neutral",    "description": "No strong feelings either way" },
+  { "name": "Friendly",   "description": "Cooperative and well-disposed toward the party" },
+  { "name": "Allied",     "description": "Actively supportive; will assist the party when possible" }
+]

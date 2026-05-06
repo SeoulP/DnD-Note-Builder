@@ -1,0 +1,8 @@
+[
+  { "name": "Tiny",       "sort_order": 1 },
+  { "name": "Small",      "sort_order": 2 },
+  { "name": "Medium",     "sort_order": 3 },
+  { "name": "Large",      "sort_order": 4 },
+  { "name": "Huge",       "sort_order": 5 },
+  { "name": "Gargantuan", "sort_order": 6 }
+]

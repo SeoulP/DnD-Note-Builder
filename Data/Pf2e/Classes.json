@@ -1,0 +1,22 @@
+[
+  { "name": "Alchemist",    "key_ability": "Intelligence", "hp_per_level": 8,  "description": "Masters of the formula book who create bombs, elixirs, and mutagens through advanced alchemy." },
+  { "name": "Barbarian",   "key_ability": "Strength",     "hp_per_level": 12, "description": "Powerful warriors who channel primal rage to enhance their combat abilities and shrug off injury." },
+  { "name": "Bard",        "key_ability": "Charisma",     "hp_per_level": 8,  "description": "Performers and magical historians who use occult magic drawn from the power of art and emotion." },
+  { "name": "Champion",    "key_ability": "Strength",     "hp_per_level": 10, "description": "Holy warriors bound to a divine cause, protecting allies and smiting foes with divine power." },
+  { "name": "Cleric",      "key_ability": "Wisdom",       "hp_per_level": 8,  "description": "Divine spellcasters and healers devoted to a deity, channeling divine power through prayer." },
+  { "name": "Druid",       "key_ability": "Wisdom",       "hp_per_level": 8,  "description": "Primal spellcasters who draw power from nature, able to wildshape and command natural forces." },
+  { "name": "Fighter",     "key_ability": "Strength",     "hp_per_level": 10, "description": "Consummate warriors who master every type of weapon and armor through rigorous training." },
+  { "name": "Investigator","key_ability": "Intelligence", "hp_per_level": 8,  "description": "Skilled detectives who combine alchemical knowledge and sharp minds to uncover the truth." },
+  { "name": "Magus",       "key_ability": "Strength",     "hp_per_level": 8,  "description": "Hybrid martial-arcane warriors who channel arcane power directly into their strikes." },
+  { "name": "Monk",        "key_ability": "Strength",     "hp_per_level": 10, "description": "Disciplined martial artists who train body and spirit, using unarmed strikes and ki abilities." },
+  { "name": "Oracle",      "key_ability": "Charisma",     "hp_per_level": 8,  "description": "Mysterious divine spellcasters who channel divine power through a cursed mystery beyond their control." },
+  { "name": "Psychic",     "key_ability": "Charisma",     "hp_per_level": 6,  "description": "Occult spellcasters who manifest power through the strength of their subconscious mind." },
+  { "name": "Ranger",      "key_ability": "Strength",     "hp_per_level": 10, "description": "Skilled hunters who track prey, form bonds with animal companions, and master the wilderness." },
+  { "name": "Rogue",       "key_ability": "Dexterity",    "hp_per_level": 8,  "description": "Cunning and adaptable, rogues use finesse and wit to outmaneuver enemies and seize the advantage." },
+  { "name": "Sorcerer",    "key_ability": "Charisma",     "hp_per_level": 6,  "description": "Innate spellcasters who draw power from their bloodline, casting spells of their chosen tradition." },
+  { "name": "Summoner",    "key_ability": "Charisma",     "hp_per_level": 10, "description": "Spellcasters bonded to a powerful eidolon, sharing their power and actions across two bodies." },
+  { "name": "Swashbuckler","key_ability": "Dexterity",    "hp_per_level": 10, "description": "Dashing combatants who use panache and flair to gain advantages and finish fights in style." },
+  { "name": "Thaumaturge", "key_ability": "Charisma",     "hp_per_level": 8,  "description": "Arcane theorists who exploit the weaknesses of supernatural creatures using esoterica and implements." },
+  { "name": "Witch",       "key_ability": "Intelligence", "hp_per_level": 6,  "description": "Mysterious spellcasters who forge a pact with a magical patron, gaining spells through their familiar." },
+  { "name": "Wizard",      "key_ability": "Intelligence", "hp_per_level": 6,  "description": "Scholarly arcane spellcasters who learn magic through intense study and a spell book." }
+]

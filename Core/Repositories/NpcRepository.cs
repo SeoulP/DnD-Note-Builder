@@ -240,15 +240,15 @@ namespace DndBuilder.Core.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        public List<CharacterRelationship> GetRelationships(int characterId)
+        public List<DnD5eCharacterRelationship> GetRelationships(int characterId)
         {
-            var list = new List<CharacterRelationship>();
+            var list = new List<DnD5eCharacterRelationship>();
             var cmd  = _conn.CreateCommand();
             cmd.CommandText = "SELECT character_id, related_character_id, relationship_type_id FROM character_relationships WHERE character_id = @cid";
             cmd.Parameters.AddWithValue("@cid", characterId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
-                list.Add(new CharacterRelationship
+                list.Add(new DnD5eCharacterRelationship
                 {
                     CharacterId        = reader.GetInt32(0),
                     RelatedCharacterId = reader.GetInt32(1),

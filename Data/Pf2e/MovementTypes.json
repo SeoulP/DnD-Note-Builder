@@ -1,0 +1,8 @@
+[
+  { "name": "Land" },
+  { "name": "Fly" },
+  { "name": "Swim" },
+  { "name": "Climb" },
+  { "name": "Burrow" },
+  { "name": "Troop Movement" }
+]

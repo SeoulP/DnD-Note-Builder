@@ -8,15 +8,6 @@ namespace DndBuilder.Core.Repositories
     {
         private readonly SqliteConnection _conn;
 
-        private static readonly (string Name, string Description)[] Defaults =
-        {
-            ("Hostile",    "Actively hostile; will attack or obstruct the party"),
-            ("Unfriendly", "Distrustful or uncooperative"),
-            ("Neutral",    "No strong feelings either way"),
-            ("Friendly",   "Cooperative and well-disposed toward the party"),
-            ("Allied",     "Actively supportive; will assist the party when possible"),
-        };
-
         public NpcRelationshipTypeRepository(SqliteConnection conn)
         {
             _conn = conn;
@@ -41,21 +32,6 @@ namespace DndBuilder.Core.Repositories
                 var alter = _conn.CreateCommand();
                 alter.CommandText = "ALTER TABLE npc_relationship_types ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
-            }
-        }
-
-        public void SeedDefaults(int campaignId)
-        {
-            foreach (var (name, desc) in Defaults)
-            {
-                var cmd = _conn.CreateCommand();
-                cmd.CommandText = @"INSERT INTO npc_relationship_types (campaign_id, name, description)
-                    SELECT @cid, @name, @desc WHERE NOT EXISTS
-                        (SELECT 1 FROM npc_relationship_types WHERE campaign_id = @cid AND name = @name)";
-                cmd.Parameters.AddWithValue("@cid",  campaignId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", desc);
-                cmd.ExecuteNonQuery();
             }
         }
 

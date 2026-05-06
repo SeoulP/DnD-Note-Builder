@@ -1,0 +1,10 @@
+[
+  { "name": "At Will",  "sort_order": 0 },
+  { "name": "Constant", "sort_order": 1 },
+  { "name": "1/Round",  "sort_order": 2 },
+  { "name": "3/Day",    "sort_order": 3 },
+  { "name": "2/Day",    "sort_order": 4 },
+  { "name": "1/Day",    "sort_order": 5 },
+  { "name": "1/Hour",   "sort_order": 6 },
+  { "name": "1/Week",   "sort_order": 7 }
+]

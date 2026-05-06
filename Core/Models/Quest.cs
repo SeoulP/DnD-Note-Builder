@@ -14,7 +14,8 @@ namespace DndBuilder.Core.Models
         public int?   LocationId     { get; set; }  // FK -> locations.Id (optional)
         public string Reward         { get; set; } = "";
 
-        // Loaded on demand; not a DB column
+        // Loaded on demand; not DB columns
         public List<QuestHistory> History { get; set; } = new();
+        public List<QuestReward>  Rewards { get; set; } = new();
     }
 }
