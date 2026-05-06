@@ -161,7 +161,7 @@ public partial class DnD5eUsageProgressionPopup : Window
     // ── Statics — delegate to UsesFormula ────────────────────────────────────
 
     /// <summary>Human-readable summary of a formula string (used on the level row button).</summary>
-    public static string FormatForDisplay(string formula) => UsesFormula.FormatForDisplay(formula);
+    public static string FormatForDisplay(string formula) => DnD5eUsesFormula.FormatForDisplay(formula);
 
     private void OnSave() { Saved?.Invoke(BuildFormula()); QueueFree(); }
 

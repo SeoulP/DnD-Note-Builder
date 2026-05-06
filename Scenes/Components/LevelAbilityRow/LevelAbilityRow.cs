@@ -27,7 +27,7 @@ public static class LevelAbilityRow
         string formula  = initialFormula;
         var usesBtn = new Button
         {
-            Text              = UsesFormula.FormatForDisplay(formula),
+            Text              = DnD5eUsesFormula.FormatForDisplay(formula),
             CustomMinimumSize = new Vector2(80, 0),
             TooltipText       = "Click to edit usage scaling",
         };
@@ -40,7 +40,7 @@ public static class LevelAbilityRow
             {
                 formula      = newFormula;
                 onFormulaSaved(newFormula);
-                usesBtn.Text = UsesFormula.FormatForDisplay(newFormula);
+                usesBtn.Text = DnD5eUsesFormula.FormatForDisplay(newFormula);
             };
             popup.PopupCentered();
         };

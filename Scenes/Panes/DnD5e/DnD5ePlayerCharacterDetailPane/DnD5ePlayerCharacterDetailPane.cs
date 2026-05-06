@@ -14,7 +14,7 @@ public partial class DnD5ePlayerCharacterDetailPane : ScrollContainer
     private string                   _activeTab             = "Stats";
     private HashSet<int>             _openAbilityDropdowns  = new();
     private HashSet<string>          _closedAbilitySections = new();
-    private SkillExpectationService  _skillExpectations;
+    private DnD5eSkillExpectationService  _skillExpectations;
     private DnD5eBackgroundPickerModal    _backgroundModal;
     private EffectPreviewPopup       _effectPreview;
 
@@ -81,7 +81,7 @@ public partial class DnD5ePlayerCharacterDetailPane : ScrollContainer
     public override void _Ready()
     {
         _db = GetNode<DatabaseService>("/root/DatabaseService");
-        _skillExpectations = new SkillExpectationService(_db.Classes, _db.Abilities, _db.DnD5eBackgrounds);
+        _skillExpectations = new DnD5eSkillExpectationService(_db.Classes, _db.Abilities, _db.DnD5eBackgrounds);
         _backgroundModal   = GetNode<DnD5eBackgroundPickerModal>("BackgroundPickerModal");
         _backgroundModal.Confirmed   += OnBackgroundSelected;
         _backgroundModal.NavigateTo  += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);

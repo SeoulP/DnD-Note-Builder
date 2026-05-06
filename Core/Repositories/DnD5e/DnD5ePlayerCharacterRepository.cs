@@ -303,7 +303,7 @@ namespace DndBuilder.Core.Repositories
         }
 
         private static int EvaluateUsesFormula(string formula, DnD5ePlayerCharacter pc) =>
-            UsesFormula.Evaluate(formula, pc.Level,
+            DnD5eUsesFormula.Evaluate(formula, pc.Level,
                 pc.Strength, pc.Dexterity, pc.Constitution,
                 pc.Intelligence, pc.Wisdom, pc.Charisma);
 

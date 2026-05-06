@@ -15,7 +15,7 @@ namespace DndBuilder.Core
     ///   "--"           = no uses specified (returns 0)
     ///   plain integer  = flat base, no modifiers (backward-compatible)
     /// </summary>
-    public static class UsesFormula
+    public static class DnD5eUsesFormula
     {
         public static int Evaluate(string formula, int charLevel, int str, int dex, int con, int intel, int wis, int cha)
         {

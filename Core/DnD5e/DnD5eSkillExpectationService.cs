@@ -8,13 +8,13 @@ namespace DndBuilder.Core
     /// Pure calculation service — no DB writes.
     /// Returns expected skill slot counts per source for a given DnD5ePlayerCharacter.
     /// </summary>
-    public class SkillExpectationService
+    public class DnD5eSkillExpectationService
     {
         private readonly DnD5eClassRepository         _classes;
         private readonly DnD5eAbilityRepository       _abilities;
         private readonly DnD5eBackgroundRepository _backgrounds;
 
-        public SkillExpectationService(
+        public DnD5eSkillExpectationService(
             DnD5eClassRepository classes,
             DnD5eAbilityRepository abilities,
             DnD5eBackgroundRepository backgrounds)
