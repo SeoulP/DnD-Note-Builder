@@ -1,6 +1,10 @@
 # Godot 4+ specific ignores
 .godot/
 
+# .NET build artifacts
+bin/
+obj/
+
 # Planning and AI tooling — local only
 Agents/
 .claude/
