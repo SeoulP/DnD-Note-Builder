@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://c2ucqtiaq5xhk" path="res://Scenes/Panes/DnD5e/DnD5eSpeciesDetailPane/DnD5eSpeciesDetailPane.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Script" uid="uid://cx5d0l4bcrqvh" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/MarkdownNotes/markdown_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
 
 [node name="DnD5eSpeciesDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_descInput","_notes","_subspeciesContainer","_addSubspeciesButton","_abilitiesContainer","_addAbilityButton","_levelsToggle","_levelsInset","_initLevelsButton","_levelsContainer","_deleteButton","_imageCarousel")]

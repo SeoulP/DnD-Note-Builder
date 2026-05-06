@@ -2,7 +2,7 @@ using GdUnit4;
 using DndBuilder.Core;
 using static GdUnit4.Assertions;
 
-namespace DndBuilder.Tests.Unit.Core.DnD5e
+namespace DndBuilder.Tests.Core.DnD5e
 {
     [TestSuite]
     public class DnD5eUsesFormulaTest
@@ -28,15 +28,13 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         [TestCase]
         public void Evaluate_FullLevel_AddsLevel()
         {
-            // "2|full||" → 2 + level
             int result = DnD5eUsesFormula.Evaluate("2|full||", 3, 10, 10, 10, 10, 10, 10);
-            AssertThat(result).IsEqual(5); // 2 + 3
+            AssertThat(result).IsEqual(5);
         }
 
         [TestCase]
         public void Evaluate_HalfLevel_FloorDivides()
         {
-            // "0|half||" at level 5 → 0 + 5/2 = 2 (integer division)
             int result = DnD5eUsesFormula.Evaluate("0|half||", 5, 10, 10, 10, 10, 10, 10);
             AssertThat(result).IsEqual(2);
         }
@@ -44,7 +42,6 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         [TestCase]
         public void Evaluate_CeilLevel_CeilDivides()
         {
-            // "0|ceil||" at level 5 → (5+1)/2 = 3
             int result = DnD5eUsesFormula.Evaluate("0|ceil||", 5, 10, 10, 10, 10, 10, 10);
             AssertThat(result).IsEqual(3);
         }
@@ -52,7 +49,6 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         [TestCase]
         public void Evaluate_DoubleLevel_DoublesLevel()
         {
-            // "0|double||" at level 3 → 0 + 6 = 6
             int result = DnD5eUsesFormula.Evaluate("0|double||", 3, 10, 10, 10, 10, 10, 10);
             AssertThat(result).IsEqual(6);
         }
@@ -60,7 +56,6 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         [TestCase]
         public void Evaluate_ProfBonus_AddsProfAtLevel5()
         {
-            // "0||prof|" at level 5 → ProfBonus(5) = 3
             int result = DnD5eUsesFormula.Evaluate("0||prof|", 5, 10, 10, 10, 10, 10, 10);
             AssertThat(result).IsEqual(3);
         }
@@ -68,7 +63,6 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         [TestCase]
         public void Evaluate_WisMod_AddsWisdomMod()
         {
-            // "0|||wis" with Wis 14 → AbilityMod(14) = 2
             int result = DnD5eUsesFormula.Evaluate("0|||wis", 1, 10, 10, 10, 10, 14, 10);
             AssertThat(result).IsEqual(2);
         }
@@ -76,8 +70,6 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         [TestCase]
         public void Evaluate_AllComponents_SumsCorrectly()
         {
-            // "1|full|prof|wis" at level 4, Wis 14
-            // 1 + 4(full) + 2(prof at lvl4) + 2(wis mod) = 9
             int result = DnD5eUsesFormula.Evaluate("1|full|prof|wis", 4, 10, 10, 10, 10, 14, 10);
             AssertThat(result).IsEqual(9);
         }
@@ -85,7 +77,6 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         [TestCase]
         public void Evaluate_NeverReturnsNegative()
         {
-            // "0|||cha" with Cha 1 → AbilityMod(1) = -5; clamped to 0
             int result = DnD5eUsesFormula.Evaluate("0|||cha", 1, 10, 10, 10, 10, 10, 1);
             AssertThat(result).IsEqual(0);
         }

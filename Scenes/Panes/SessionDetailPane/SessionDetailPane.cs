@@ -18,7 +18,7 @@ public partial class SessionDetailPane : HBoxContainer
     [Export] private Label         _numberLabel;
     [Export] private LineEdit      _titleInput;
     [Export] private DatePicker    _playedOnInput;
-    [Export] private WikiNotes     _notes;
+    [Export] private MarkdownNotes     _notes;
     [Export] private Button        _deleteButton;
     [Export] private VBoxContainer _aliasChipsRow;
     [Export] private ImageCarousel _imageCarousel;

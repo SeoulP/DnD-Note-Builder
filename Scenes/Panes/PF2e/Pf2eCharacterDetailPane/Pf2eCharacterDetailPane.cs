@@ -56,7 +56,7 @@ public partial class Pf2eCharacterDetailPane : ScrollContainer
 
     // ── Flavor tab ────────────────────────────────────────────────────────────
     [Export] private TextEdit  _descInput;
-    [Export] private WikiNotes _notes;
+    [Export] private MarkdownNotes _notes;
 
     public override void _Ready()
     {

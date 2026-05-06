@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scenes/Panes/FactionDetailPane/FactionDetailPane.cs" id="1_facdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/MarkdownNotes/markdown_notes.tscn" id="4_wikinotes"]
 [ext_resource type="Script" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="5_typeopt"]
 
 [node name="FactionDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_typeInput", "_descInput", "_goalsInput", "_notes", "_deleteButton", "_imageCarousel", "_npcSelect", "_roleSelect", "_addNpcButton", "_npcRowsContainer", "_relFactionSelfLabel", "_relFactionTypeSelect", "_relFactionSelect", "_addRelFactionButton", "_relFactionRowsContainer")]
@@ -28,7 +28,7 @@ _relFactionTypeSelect    = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft
 _relFactionSelect        = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/RelatedFactionsSection/AddRelFactionRow/RelFactionSelect")
 _addRelFactionButton     = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/RelatedFactionsSection/AddRelFactionRow/AddRelFactionButton")
 _relFactionRowsContainer = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/RelatedFactionsSection/RelFactionRowsContainer")
-_notes                  = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/WikiNotes")
+_notes                  = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/MarkdownNotes")
 _imageCarousel          = NodePath("Margin/VBoxContainer/ContentHBox/CarouselColumn/ImageCarousel")
 
 [node name="Margin" type="MarginContainer" parent="."]
@@ -200,7 +200,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Notes"
 
-[node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("4_wikinotes")]
+[node name="MarkdownNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("4_wikinotes")]
 layout_mode = 2
 size_flags_horizontal = 3
 

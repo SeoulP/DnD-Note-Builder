@@ -1,12 +1,12 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scenes/Components/WikiNotes/WikiNotes.cs" id="1_wikinotes"]
+[ext_resource type="Script" path="res://Scenes/Components/MarkdownNotes/MarkdownNotes.cs" id="1_markdownnotes"]
 
-[node name="WikiNotes" type="VBoxContainer"]
+[node name="MarkdownNotes" type="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
-script = ExtResource("1_wikinotes")
+script = ExtResource("1_markdownnotes")
 
 [node name="NotesInput" type="TextEdit" parent="."]
 custom_minimum_size = Vector2(0, 120)
@@ -24,9 +24,15 @@ fit_content = true
 scroll_active = false
 visible = false
 
-[node name="StubHint" type="Label" parent="."]
+[node name="BottomBar" type="HBoxContainer" parent="."]
 layout_mode = 2
-text = "[[Name]] links to a note  ·  [[+NoteType]] creates a new one  (NPC, Location, Item, Faction, Quest)"
-autowrap_mode = 3
+size_flags_horizontal = 3
+
+[node name="HelpButton" type="Button" parent="BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "?"
+flat = true
+tooltip_text = "Markdown Formatting Tips"
+mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 10
-theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)

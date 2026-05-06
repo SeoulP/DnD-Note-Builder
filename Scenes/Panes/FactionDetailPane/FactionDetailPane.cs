@@ -20,7 +20,7 @@ public partial class FactionDetailPane : ScrollContainer
     [Export] private LineEdit      _typeInput;
     [Export] private TextEdit      _descInput;
     [Export] private TextEdit      _goalsInput;
-    [Export] private WikiNotes     _notes;
+    [Export] private MarkdownNotes     _notes;
     [Export] private Button        _deleteButton;
     [Export] private VBoxContainer _aliasChipsRow;
     [Export] private ImageCarousel _imageCarousel;

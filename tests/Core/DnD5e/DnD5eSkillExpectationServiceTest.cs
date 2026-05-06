@@ -5,7 +5,7 @@ using DndBuilder.Core.Models;
 using DndBuilder.Core.Repositories;
 using static GdUnit4.Assertions;
 
-namespace DndBuilder.Tests.Integration.Services
+namespace DndBuilder.Tests.Core.DnD5e
 {
     [TestSuite]
     public class DnD5eSkillExpectationServiceTest

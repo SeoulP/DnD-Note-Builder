@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Modals/MarkdownHelpModal/MarkdownHelpModal.cs" id="1_helpmodal"]
+
+[node name="MarkdownHelpModal" type="Window"]
+script = ExtResource("1_helpmodal")

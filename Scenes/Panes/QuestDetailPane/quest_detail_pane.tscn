@@ -3,10 +3,10 @@
 [ext_resource type="Script" path="res://Scenes/Panes/QuestDetailPane/QuestDetailPane.cs" id="1_script"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Script" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/MarkdownNotes/markdown_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
 
-[node name="QuestDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_aliasChipsRow","_statusInput","_questGiverInput","_locationInput","_rewardInput","_descInput","_notes","_historyContainer","_addHistoryButton","_deleteButton","_imageCarousel")]
+[node name="QuestDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput","_aliasChipsRow","_statusInput","_questGiverInput","_locationInput","_rewardsContainer","_addRewardButton","_descInput","_notes","_historyContainer","_addHistoryButton","_deleteButton","_imageCarousel")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -19,7 +19,8 @@ _deleteButton     = NodePath("Margin/VBox/NameRow/DeleteButton")
 _statusInput      = NodePath("Margin/VBox/ContentHBox/Fields/StatusRow/StatusInput")
 _questGiverInput  = NodePath("Margin/VBox/ContentHBox/Fields/QuestGiverRow/QuestGiverInput")
 _locationInput    = NodePath("Margin/VBox/ContentHBox/Fields/LocationRow/LocationInput")
-_rewardInput      = NodePath("Margin/VBox/ContentHBox/Fields/RewardInput")
+_rewardsContainer = NodePath("Margin/VBox/ContentHBox/Fields/RewardsContainer")
+_addRewardButton  = NodePath("Margin/VBox/ContentHBox/Fields/AddRewardButton")
 _descInput        = NodePath("Margin/VBox/ContentHBox/Fields/DescInput")
 _notes            = NodePath("Margin/VBox/ContentHBox/Fields/Notes")
 _historyContainer = NodePath("Margin/VBox/ContentHBox/Fields/HistoryContainer")
@@ -111,13 +112,21 @@ layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_typeopt")
 
-[node name="RewardLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields"]
+[node name="RewardsSep" type="HSeparator" parent="Margin/VBox/ContentHBox/Fields"]
 layout_mode = 2
-text = "Reward"
 
-[node name="RewardInput" type="LineEdit" parent="Margin/VBox/ContentHBox/Fields"]
+[node name="RewardsLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields"]
 layout_mode = 2
-placeholder_text = "Gold, items, favours..."
+text = "Rewards"
+theme_override_font_sizes/font_size = 14
+
+[node name="RewardsContainer" type="VBoxContainer" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="AddRewardButton" type="Button" parent="Margin/VBox/ContentHBox/Fields"]
+layout_mode = 2
+text = "+ Add Reward"
 
 [node name="DescLabel" type="Label" parent="Margin/VBox/ContentHBox/Fields"]
 layout_mode = 2

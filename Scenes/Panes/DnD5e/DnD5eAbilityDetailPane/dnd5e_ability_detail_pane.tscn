@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://550a58eid1yu" path="res://Scenes/Panes/DnD5e/DnD5eAbilityDetailPane/DnD5eAbilityDetailPane.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="3_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/MarkdownNotes/markdown_notes.tscn" id="3_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
 [ext_resource type="Script" uid="uid://cx5d0l4bcrqvh" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="5_typeopt"]
 [ext_resource type="Script" uid="uid://doequwy7gt0a7" path="res://Scenes/Components/IntInput/IntInput.cs" id="6_intinput"]

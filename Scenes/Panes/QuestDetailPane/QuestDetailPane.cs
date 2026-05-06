@@ -19,9 +19,10 @@ public partial class QuestDetailPane : ScrollContainer
     [Export] private TypesDropdown _statusInput;
     [Export] private TypesDropdown _questGiverInput;
     [Export] private TypesDropdown _locationInput;
-    [Export] private LineEdit         _rewardInput;
+    [Export] private VBoxContainer    _rewardsContainer;
+    [Export] private Button           _addRewardButton;
     [Export] private TextEdit         _descInput;
-    [Export] private WikiNotes        _notes;
+    [Export] private MarkdownNotes        _notes;
     [Export] private VBoxContainer    _historyContainer;
     [Export] private Button           _addHistoryButton;
     [Export] private Button           _deleteButton;
@@ -48,7 +49,12 @@ public partial class QuestDetailPane : ScrollContainer
         _locationInput.TypeSelected += id => _locNavBtn.Disabled = id <= 0;
         _locNavBtn.Pressed += () => { if (_locationInput.SelectedId.HasValue) EmitSignal(SignalName.NavigateTo, "location", _locationInput.SelectedId.Value); };
         _locationInput.GetParent().AddChild(_locNavBtn);
-        _rewardInput.TextChanged     += _ => Save();
+        _addRewardButton.Pressed += () =>
+        {
+            if (_quest == null) return;
+            _db.QuestRewards.Add(new QuestReward { QuestId = _quest.Id, SortOrder = _db.QuestRewards.GetAll(_quest.Id).Count });
+            LoadRewardRows();
+        };
         _descInput.TextChanged       += () => Save();
         _notes.TextChanged   += () => Save();
         _notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
@@ -95,18 +101,68 @@ public partial class QuestDetailPane : ScrollContainer
 
         _imageCarousel?.Setup(EntityType.Quest, quest.Id, _db, quest.CampaignId);
 
-        _nameInput.Text  = string.IsNullOrEmpty(quest.Name) ? "New Quest" : quest.Name;
-        _rewardInput.Text = quest.Reward;
-        _descInput.Text  = quest.Description;
+        _nameInput.Text = string.IsNullOrEmpty(quest.Name) ? "New Quest" : quest.Name;
+        _descInput.Text = quest.Description;
         _notes.Setup(quest.CampaignId, _db);
         _notes.Text = quest.Notes;
 
+        LoadRewardRows();
         LoadHistoryRows();
         LoadAliases();
     }
 
     private void LoadAliases() =>
         AliasChipsHelper.Reload(_aliasChipsRow, _db, "quest", _quest?.Id ?? 0, _quest?.CampaignId ?? 0, LoadAliases);
+
+    private void LoadRewardRows()
+    {
+        foreach (Node child in _rewardsContainer.GetChildren())
+            child.QueueFree();
+
+        foreach (var reward in _db.QuestRewards.GetAll(_quest.Id))
+            _rewardsContainer.AddChild(BuildRewardRow(reward));
+    }
+
+    private Control BuildRewardRow(QuestReward reward)
+    {
+        int rewardId = reward.Id;
+
+        var hbox = new HBoxContainer();
+
+        var claimed = new CheckBox { ButtonPressed = reward.IsClaimed };
+        claimed.Toggled += pressed =>
+        {
+            var r = _db.QuestRewards.GetAll(_quest.Id).Find(x => x.Id == rewardId);
+            if (r == null) return;
+            r.IsClaimed = pressed;
+            _db.QuestRewards.Edit(r);
+        };
+
+        var desc = new LineEdit
+        {
+            Text                = reward.Description,
+            PlaceholderText     = "Reward description...",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        desc.TextChanged += _ =>
+        {
+            var r = _db.QuestRewards.GetAll(_quest.Id).Find(x => x.Id == rewardId);
+            if (r == null) return;
+            r.Description = desc.Text;
+            _db.QuestRewards.Edit(r);
+        };
+
+        var deleteBtn  = new Button { Text = "×", Flat = true };
+        var delConfirm = DialogHelper.Make("Delete Reward");
+        AddChild(delConfirm);
+        delConfirm.Confirmed += () => { _db.QuestRewards.Delete(rewardId); LoadRewardRows(); };
+        deleteBtn.Pressed    += () => DialogHelper.Show(delConfirm, "Delete this reward?");
+
+        hbox.AddChild(claimed);
+        hbox.AddChild(desc);
+        hbox.AddChild(deleteBtn);
+        return hbox;
+    }
 
     private void LoadHistoryRows()
     {
@@ -118,13 +174,14 @@ public partial class QuestDetailPane : ScrollContainer
 
         foreach (var entry in entries)
         {
-            int entryId = entry.Id;
-            var row = BuildHistoryRow(entry, sessions);
-            _historyContainer.AddChild(row);
+            var (row, notes) = BuildHistoryRow(entry, sessions);
+            _historyContainer.AddChild(row); // _Ready() fires on notes here
+            notes.Setup(_quest.CampaignId, _db);
+            notes.Text = entry.Note;
         }
     }
 
-    private Control BuildHistoryRow(QuestHistory entry, List<Session> sessions)
+    private (Control row, MarkdownNotes notes) BuildHistoryRow(QuestHistory entry, List<Session> sessions)
     {
         int entryId = entry.Id;
 
@@ -169,25 +226,21 @@ public partial class QuestDetailPane : ScrollContainer
         hbox.AddChild(deleteBtn);
         vbox.AddChild(hbox);
 
-        // Note input
-        var noteInput = new TextEdit
-        {
-            Text               = entry.Note,
-            PlaceholderText    = "What happened...",
-            CustomMinimumSize  = new Vector2(0, 60),
-            WrapMode           = TextEdit.LineWrappingMode.Boundary,
-        };
-        noteInput.AddThemeFontSizeOverride("font_size", 12);
-        noteInput.TextChanged += () =>
+        var notes = GD.Load<PackedScene>("res://Scenes/Components/MarkdownNotes/markdown_notes.tscn")
+                      .Instantiate<MarkdownNotes>();
+        notes.PlaceholderText = "What happened...";
+        notes.TextChanged += () =>
         {
             var e = _db.QuestHistory.GetAll(_quest.Id).Find(h => h.Id == entryId);
             if (e == null) return;
-            e.Note = noteInput.Text;
+            e.Note = notes.Text;
             _db.QuestHistory.Edit(e);
         };
-        vbox.AddChild(noteInput);
+        notes.NavigateTo    += (type, id) => EmitSignal(SignalName.NavigateTo, type, id);
+        notes.EntityCreated += (type, id) => EmitSignal(SignalName.EntityCreated, type, id);
+        vbox.AddChild(notes);
 
-        return panel;
+        return (panel, notes);
     }
 
     private void Save()
@@ -197,7 +250,6 @@ public partial class QuestDetailPane : ScrollContainer
         _quest.StatusId     = _statusInput.SelectedId;
         _quest.QuestGiverId = _questGiverInput.SelectedId;
         _quest.LocationId   = _locationInput.SelectedId;
-        _quest.Reward       = _rewardInput.Text;
         _quest.Description  = _descInput.Text;
         _quest.Notes        = _notes.Text;
         _db.Quests.Edit(_quest);

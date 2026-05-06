@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Script" path="res://Scenes/Components/TypesDropdown/TypesDropdown.cs" id="3_typeopt"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="4_imgcar"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="5_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/MarkdownNotes/markdown_notes.tscn" id="5_wikinotes"]
 
 [node name="LocationDetailPane" type="ScrollContainer" node_paths=PackedStringArray("_nameInput", "_aliasChipsRow", "_typeInput", "_descInput", "_notes", "_deleteButton", "_factionRowsContainer", "_factionSelect", "_roleSelect", "_addFactionButton", "_setParentButton", "_parentLocationSelect", "_parentLocationContainer", "_subLocationSelect", "_addSubLocationButton", "_subLocationsContainer", "_imageCarousel")]
 anchors_preset = 15
@@ -18,7 +18,7 @@ _aliasChipsRow         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/A
 _deleteButton          = NodePath("Margin/VBoxContainer/NameRow/DeleteButton")
 _typeInput             = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/TypeRow/TypeInput")
 _descInput             = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/DescriptionInput")
-_notes                 = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/WikiNotes")
+_notes                 = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/MarkdownNotes")
 _factionRowsContainer  = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/FactionRowsContainer")
 _factionSelect         = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/FactionSelect")
 _roleSelect            = NodePath("Margin/VBoxContainer/ContentHBox/FieldsLeft/FactionsLabel/FactionsVBox/AddFactionRow/RoleSelect")
@@ -200,7 +200,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Notes"
 
-[node name="WikiNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("5_wikinotes")]
+[node name="MarkdownNotes" parent="Margin/VBoxContainer/ContentHBox/FieldsLeft" instance=ExtResource("5_wikinotes")]
 layout_mode = 2
 size_flags_horizontal = 3
 

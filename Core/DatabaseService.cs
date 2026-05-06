@@ -27,6 +27,7 @@ public partial class DatabaseService : Node
     public QuestStatusRepository          QuestStatuses         { get; private set; }
     public QuestRepository                Quests                { get; private set; }
     public QuestHistoryRepository         QuestHistory          { get; private set; }
+    public QuestRewardRepository          QuestRewards          { get; private set; }
     public SettingsRepository             Settings              { get; private set; }
     public DnD5eClassRepository                Classes               { get; private set; }
     public DnD5eAbilityRepository              Abilities             { get; private set; }
@@ -176,6 +177,7 @@ public partial class DatabaseService : Node
         QuestStatuses        = new QuestStatusRepository(_conn);
         Quests               = new QuestRepository(_conn);
         QuestHistory         = new QuestHistoryRepository(_conn);
+        QuestRewards         = new QuestRewardRepository(_conn);
         Settings             = new SettingsRepository(_conn);
         Classes              = new DnD5eClassRepository(_conn);
         Abilities            = new DnD5eAbilityRepository(_conn);
@@ -290,6 +292,7 @@ public partial class DatabaseService : Node
         QuestStatuses       .Migrate();  // references campaigns; must precede Quests
         Quests              .Migrate();  // references campaigns, quest_statuses, characters, locations
         QuestHistory        .Migrate();  // references quests, sessions
+        QuestRewards        .Migrate();  // references quests; includes one-time reward-column migration
         Classes             .Migrate();  // references campaigns; creates classes + subclasses
         Subspecies          .Migrate();  // references campaigns, species
         AbilityTypes        .Migrate();  // references campaigns

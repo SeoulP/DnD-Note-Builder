@@ -17,7 +17,7 @@ public partial class DnD5eSubclassDetailPane : ScrollContainer
     [Export] private LineEdit         _nameInput;
     [Export] private VBoxContainer    _parentClassContainer;
     [Export] private TextEdit         _descInput;
-    [Export] private WikiNotes        _notes;
+    [Export] private MarkdownNotes        _notes;
     [Export] private Button           _levelsToggle;
     [Export] private Control          _levelsInset;
     [Export] private VBoxContainer    _levelsContainer;

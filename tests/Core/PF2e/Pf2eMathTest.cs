@@ -2,7 +2,7 @@ using GdUnit4;
 using DndBuilder.Core;
 using static GdUnit4.Assertions;
 
-namespace DndBuilder.Tests.Unit.Core.PF2e
+namespace DndBuilder.Tests.Core.PF2e
 {
     [TestSuite]
     public class Pf2eMathTest
@@ -48,7 +48,6 @@ namespace DndBuilder.Tests.Unit.Core.PF2e
             AssertThat(Pf2eMath.AbilityMod(18)).IsEqual(4);
 
         // ── ProfBonus ─────────────────────────────────────────────────────────
-        // Pf2e formula: rank 0 = 0; otherwise level + rank*2
 
         [TestCase]
         public void ProfBonus_Untrained_IsZero() =>
@@ -56,19 +55,19 @@ namespace DndBuilder.Tests.Unit.Core.PF2e
 
         [TestCase]
         public void ProfBonus_Trained_Rank1_Level5_Is7() =>
-            AssertThat(Pf2eMath.ProfBonus(rankValue: 1, level: 5)).IsEqual(7); // 5 + 1*2
+            AssertThat(Pf2eMath.ProfBonus(rankValue: 1, level: 5)).IsEqual(7);
 
         [TestCase]
         public void ProfBonus_Expert_Rank2_Level5_Is9() =>
-            AssertThat(Pf2eMath.ProfBonus(rankValue: 2, level: 5)).IsEqual(9); // 5 + 2*2
+            AssertThat(Pf2eMath.ProfBonus(rankValue: 2, level: 5)).IsEqual(9);
 
         [TestCase]
         public void ProfBonus_Master_Rank3_Level10_Is16() =>
-            AssertThat(Pf2eMath.ProfBonus(rankValue: 3, level: 10)).IsEqual(16); // 10 + 3*2
+            AssertThat(Pf2eMath.ProfBonus(rankValue: 3, level: 10)).IsEqual(16);
 
         [TestCase]
         public void ProfBonus_Legendary_Rank4_Level10_Is18() =>
-            AssertThat(Pf2eMath.ProfBonus(rankValue: 4, level: 10)).IsEqual(18); // 10 + 4*2
+            AssertThat(Pf2eMath.ProfBonus(rankValue: 4, level: 10)).IsEqual(18);
 
         // ── SignStr ───────────────────────────────────────────────────────────
 

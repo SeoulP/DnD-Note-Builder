@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scenes/Panes/SessionDetailPane/SessionDetailPane.cs" id="1_sesdet"]
 [ext_resource type="Texture2D" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="3_imgcar"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/MarkdownNotes/markdown_notes.tscn" id="4_wikinotes"]
 [ext_resource type="Script" path="res://Scenes/Components/DatePicker/DatePicker.cs" id="5_datepick"]
 
 [node name="SessionDetailPane" type="HBoxContainer" node_paths=PackedStringArray("_numberLabel", "_titleInput", "_aliasChipsRow", "_playedOnInput", "_notes", "_deleteButton", "_imageCarousel", "_relatedLinksContainer")]
@@ -18,7 +18,7 @@ _titleInput            = NodePath("ScrollContainer/Margin/VBoxContainer/TitleRow
 _aliasChipsRow         = NodePath("ScrollContainer/Margin/VBoxContainer/AliasChipsRow")
 _deleteButton          = NodePath("ScrollContainer/Margin/VBoxContainer/TitleRow/DeleteButton")
 _playedOnInput         = NodePath("ScrollContainer/Margin/VBoxContainer/PlayedOnRow/DatePicker")
-_notes                 = NodePath("ScrollContainer/Margin/VBoxContainer/WikiNotes")
+_notes                 = NodePath("ScrollContainer/Margin/VBoxContainer/MarkdownNotes")
 _imageCarousel         = NodePath("CarouselColumn/ImageCarousel")
 _relatedLinksContainer = NodePath("CarouselColumn/RelatedLinks")
 
@@ -83,7 +83,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Notes"
 
-[node name="WikiNotes" parent="ScrollContainer/Margin/VBoxContainer" instance=ExtResource("4_wikinotes")]
+[node name="MarkdownNotes" parent="ScrollContainer/Margin/VBoxContainer" instance=ExtResource("4_wikinotes")]
 layout_mode = 2
 size_flags_horizontal = 3
 PlaceholderText = "Session recap... use [[Name]] to link"

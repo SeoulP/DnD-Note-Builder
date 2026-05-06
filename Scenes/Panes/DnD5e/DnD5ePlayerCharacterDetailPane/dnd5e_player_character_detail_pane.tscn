@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b6vc312gicham" path="res://Scenes/Panes/DnD5e/DnD5ePlayerCharacterDetailPane/DnD5ePlayerCharacterDetailPane.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://dpjioyblyt0tw" path="res://Scenes/Icons/Trashcan.png" id="2_trash"]
 [ext_resource type="Theme" uid="uid://serwwl5j7fdu" path="res://theme.tres" id="3_5j2cg"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/WikiNotes/wiki_notes.tscn" id="4_wikinotes"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/MarkdownNotes/markdown_notes.tscn" id="4_wikinotes"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/ImageCarousel/ImageCarousel.tscn" id="5_imgcar"]
 [ext_resource type="PackedScene" uid="uid://bgpk7xm3y02ql" path="res://Scenes/Modals/DnD5e/DnD5eBackgroundPickerModal/dnd5e_background_picker_modal.tscn" id="6_bgmodal"]
 [ext_resource type="Script" uid="uid://doequwy7gt0a7" path="res://Scenes/Components/IntInput/IntInput.cs" id="7_intinput"]

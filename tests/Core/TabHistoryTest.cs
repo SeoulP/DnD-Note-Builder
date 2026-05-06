@@ -1,7 +1,7 @@
 using GdUnit4;
 using static GdUnit4.Assertions;
 
-namespace DndBuilder.Tests.Unit.Core
+namespace DndBuilder.Tests.Core
 {
     [TestSuite]
     public class TabHistoryTest
@@ -85,7 +85,7 @@ namespace DndBuilder.Tests.Unit.Core
         {
             var h = new TabHistory();
             h.Push("npc", 1);
-            h.Back(); // can't go back, stays at index 0
+            h.Back();
             AssertThat(h.Current).IsEqual(("npc", 1));
         }
 
@@ -95,7 +95,7 @@ namespace DndBuilder.Tests.Unit.Core
             var h = new TabHistory();
             h.Push("npc", 1);
             h.Push("faction", 2);
-            h.Forward(); // can't go forward, stays at last
+            h.Forward();
             AssertThat(h.Current).IsEqual(("faction", 2));
         }
     }

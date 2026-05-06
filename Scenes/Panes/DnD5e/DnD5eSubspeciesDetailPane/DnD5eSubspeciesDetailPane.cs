@@ -16,7 +16,7 @@ public partial class DnD5eSubspeciesDetailPane : ScrollContainer
     [Export] private LineEdit         _nameInput;
     [Export] private HBoxContainer    _parentRow;
     [Export] private TextEdit         _descInput;
-    [Export] private WikiNotes        _notes;
+    [Export] private MarkdownNotes        _notes;
     [Export] private VBoxContainer    _abilitiesContainer;
     [Export] private TypesDropdown _addAbilityButton;
     [Export] private Button           _deleteButton;

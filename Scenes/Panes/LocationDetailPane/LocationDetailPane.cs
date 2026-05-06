@@ -21,7 +21,7 @@ public partial class LocationDetailPane : ScrollContainer
     [Export] private LineEdit         _nameInput;
     [Export] private LineEdit         _typeInput;
     [Export] private TextEdit         _descInput;
-    [Export] private WikiNotes _notes;
+    [Export] private MarkdownNotes _notes;
     [Export] private Button           _deleteButton;
     [Export] private VBoxContainer    _aliasChipsRow;
     [Export] private VBoxContainer    _factionRowsContainer;

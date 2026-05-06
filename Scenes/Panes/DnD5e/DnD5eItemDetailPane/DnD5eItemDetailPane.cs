@@ -17,7 +17,7 @@ public partial class DnD5eItemDetailPane : ScrollContainer
     [Export] private TypesDropdown _typeInput;
     [Export] private CheckBox         _isUniqueInput;
     [Export] private TextEdit         _descInput;
-    [Export] private WikiNotes _notes;
+    [Export] private MarkdownNotes _notes;
     [Export] private Button           _deleteButton;
     [Export] private VBoxContainer    _aliasChipsRow;
     [Export] private ImageCarousel    _imageCarousel;

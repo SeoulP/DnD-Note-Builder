@@ -79,7 +79,7 @@ public partial class DnD5eClassDetailPane : ScrollContainer
     [Export] private TypesDropdown _addAbilityButton;
     [Export] private Button           _notesToggle;
     [Export] private Control          _notesInset;
-    [Export] private WikiNotes        _notes;
+    [Export] private MarkdownNotes        _notes;
     [Export] private ImageCarousel    _imageCarousel;
 
     public override void _Ready()

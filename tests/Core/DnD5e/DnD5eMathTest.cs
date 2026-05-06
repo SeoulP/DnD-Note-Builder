@@ -3,7 +3,7 @@ using DndBuilder.Core;
 using DndBuilder.Core.Models;
 using static GdUnit4.Assertions;
 
-namespace DndBuilder.Tests.Unit.Core.DnD5e
+namespace DndBuilder.Tests.Core.DnD5e
 {
     [TestSuite]
     public class DnD5eMathTest
@@ -99,7 +99,7 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         {
             var pc = new DnD5ePlayerCharacter { Wisdom = 14 };
             int bonus = DnD5eMath.SkillBonus("wis", pc, profBonus: 2, isProficient: false, isExpertise: false);
-            AssertThat(bonus).IsEqual(2); // Wis mod = +2
+            AssertThat(bonus).IsEqual(2);
         }
 
         [TestCase]
@@ -107,7 +107,7 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         {
             var pc = new DnD5ePlayerCharacter { Dexterity = 16 };
             int bonus = DnD5eMath.SkillBonus("dex", pc, profBonus: 3, isProficient: true, isExpertise: false);
-            AssertThat(bonus).IsEqual(6); // Dex mod(+3) + prof(3) = 6
+            AssertThat(bonus).IsEqual(6);
         }
 
         [TestCase]
@@ -115,7 +115,7 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         {
             var pc = new DnD5ePlayerCharacter { Dexterity = 16 };
             int bonus = DnD5eMath.SkillBonus("dex", pc, profBonus: 3, isProficient: false, isExpertise: true);
-            AssertThat(bonus).IsEqual(9); // Dex mod(+3) + 2*prof(6) = 9
+            AssertThat(bonus).IsEqual(9);
         }
 
         [TestCase]
@@ -123,7 +123,7 @@ namespace DndBuilder.Tests.Unit.Core.DnD5e
         {
             var pc = new DnD5ePlayerCharacter();
             int bonus = DnD5eMath.SkillBonus("xyz", pc, profBonus: 2, isProficient: false, isExpertise: false);
-            AssertThat(bonus).IsEqual(0); // AbilityMod(10) = 0
+            AssertThat(bonus).IsEqual(0);
         }
 
         // ── SignStr ───────────────────────────────────────────────────────────

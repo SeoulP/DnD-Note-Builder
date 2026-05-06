@@ -64,7 +64,7 @@ public partial class DnD5ePlayerCharacterDetailPane : ScrollContainer
     [Export] private VBoxContainer _abilityChoicesContainer;
     [Export] private Control       _resourcesSection;
     [Export] private VBoxContainer _resourcesContainer;
-    [Export] private WikiNotes     _notes;
+    [Export] private MarkdownNotes     _notes;
     [Export] private ImageCarousel _imageCarousel;
     [Export] private Button        _deleteButton;
     [Export] private VBoxContainer    _aliasChipsRow;

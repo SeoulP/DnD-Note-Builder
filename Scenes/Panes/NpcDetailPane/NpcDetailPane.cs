@@ -31,7 +31,7 @@ public partial class NpcDetailPane : ScrollContainer
     [Export] private Button            _deleteButton;
     [Export] private VBoxContainer     _aliasChipsRow;
     [Export] private TextEdit          _descInput;
-    [Export] private WikiNotes _notes;
+    [Export] private MarkdownNotes _notes;
     [Export] private ImageCarousel     _imageCarousel;
     [Export] private Button            _relNpcSelfLabel;
     [Export] private TypesDropdown  _relTypeSelect;

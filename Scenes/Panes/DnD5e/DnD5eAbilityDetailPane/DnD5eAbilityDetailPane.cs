@@ -27,7 +27,7 @@ public partial class DnD5eAbilityDetailPane : ScrollContainer
     [Export] private VBoxContainer _costsContainer;
     [Export] private Button        _addCostButton;
     [Export] private TextEdit      _effectInput;
-    [Export] private WikiNotes     _notes;
+    [Export] private MarkdownNotes     _notes;
     [Export] private Button        _deleteButton;
     [Export] private ImageCarousel _imageCarousel;
 
