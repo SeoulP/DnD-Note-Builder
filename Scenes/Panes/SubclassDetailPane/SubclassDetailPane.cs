@@ -6,7 +6,7 @@ using Godot;
 public partial class SubclassDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
-    private Subclass           _subclass;
+    private DnD5eSubclass           _subclass;
     private ConfirmationDialog _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
@@ -43,7 +43,7 @@ public partial class SubclassDetailPane : ScrollContainer
         _deleteButton.Pressed    += () => DialogHelper.Show(_confirmDialog, $"Delete \"{_subclass?.Name}\"? This cannot be undone.");
     }
 
-    public void Load(Subclass subclass)
+    public void Load(DnD5eSubclass subclass)
     {
         _subclass = subclass;
         _nameInput.Text = subclass.Name;
@@ -90,7 +90,7 @@ public partial class SubclassDetailPane : ScrollContainer
             _levelsContainer.AddChild(BuildSubclassLevelRow(lvl));
     }
 
-    private Control BuildSubclassLevelRow(ClassLevel lvl)
+    private Control BuildSubclassLevelRow(DnD5eClassLevel lvl)
     {
         var box = new VBoxContainer();
         box.AddThemeConstantOverride("separation", 2);

@@ -114,7 +114,7 @@ namespace DndBuilder.Core
             {
                 var all = db.Classes.GetAll(campaignId);
                 pkg.Classes = sel.AllClasses ? all : all.Where(c => sel.ClassIds.Contains(c.Id)).ToList();
-                foreach (var c in pkg.Classes) c.Subclasses = new List<Models.Subclass>(); // export flat
+                foreach (var c in pkg.Classes) c.Subclasses = new List<Models.DnD5eSubclass>(); // export flat
             }
 
             if (sel.AllSubclasses || sel.SubclassIds.Count > 0)
@@ -203,10 +203,10 @@ namespace DndBuilder.Core
             var statusMap     = ImportTypes(pkg.NpcStatuses,               sel.AllTypes || sel.NpcStatuses,                campaignId, db.NpcStatuses.GetAll(campaignId),               (t, cid) => db.NpcStatuses.Add(new NpcStatus                   { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var relTypeMap    = ImportTypes(pkg.NpcRelationshipTypes,      sel.AllTypes || sel.NpcRelationshipTypes,       campaignId, db.NpcRelationshipTypes.GetAll(campaignId),      (t, cid) => db.NpcRelationshipTypes.Add(new NpcRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var npcRoleMap    = ImportTypes(pkg.NpcFactionRoles,           sel.AllTypes || sel.NpcFactionRoles,            campaignId, db.NpcFactionRoles.GetAll(campaignId),           (t, cid) => db.NpcFactionRoles.Add(new NpcFactionRole           { CampaignId = cid, Name = t.Name, Description = t.Description }));
-            var charRelMap    = ImportTypes(pkg.CharacterRelationshipTypes,sel.AllTypes || sel.CharacterRelationshipTypes, campaignId, db.CharacterRelationshipTypes.GetAll(campaignId),(t, cid) => db.CharacterRelationshipTypes.Add(new CharacterRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
+            var charRelMap    = ImportTypes(pkg.CharacterRelationshipTypes,sel.AllTypes || sel.CharacterRelationshipTypes, campaignId, db.CharacterRelationshipTypes.GetAll(campaignId),(t, cid) => db.CharacterRelationshipTypes.Add(new DnD5eCharacterRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var locRoleMap    = ImportTypes(pkg.LocationFactionRoles,      sel.AllTypes || sel.LocationFactionRoles,       campaignId, db.LocationFactionRoles.GetAll(campaignId),      (t, cid) => db.LocationFactionRoles.Add(new LocationFactionRole { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var facRelTypeMap = ImportTypes(pkg.FactionRelationshipTypes,  sel.AllTypes || sel.FactionRelationshipTypes,   campaignId, db.FactionRelationshipTypes.GetAll(campaignId),  (t, cid) => db.FactionRelationshipTypes.Add(new FactionRelationshipType { CampaignId = cid, Name = t.Name, Description = t.Description }));
-            var itemTypeMap      = ImportTypes(pkg.ItemTypes,      sel.AllTypes || sel.ItemTypes,      campaignId, db.ItemTypes.GetAll(campaignId),      (t, cid) => db.ItemTypes.Add(new ItemType           { CampaignId = cid, Name = t.Name, Description = t.Description }));
+            var itemTypeMap      = ImportTypes(pkg.ItemTypes,      sel.AllTypes || sel.ItemTypes,      campaignId, db.ItemTypes.GetAll(campaignId),      (t, cid) => db.ItemTypes.Add(new DnD5eItemType           { CampaignId = cid, Name = t.Name, Description = t.Description }));
             var questStatusMap   = ImportTypes(pkg.QuestStatuses,  sel.AllTypes || sel.QuestStatuses,  campaignId, db.QuestStatuses.GetAll(campaignId),  (t, cid) => db.QuestStatuses.Add(new QuestStatus   { CampaignId = cid, Name = t.Name, Description = t.Description }));
 
             // ── Step 1b: classes ──────────────────────────────────────────────
@@ -218,7 +218,7 @@ namespace DndBuilder.Core
                 if (existing != null)
                     classMap[cls.Id] = existing.Id;
                 else
-                    classMap[cls.Id] = db.Classes.Add(new Models.Class
+                    classMap[cls.Id] = db.Classes.Add(new Models.DnD5eClass
                     {
                         CampaignId          = campaignId,
                         Name                = cls.Name,
@@ -239,7 +239,7 @@ namespace DndBuilder.Core
                 if (existingSub != null)
                     subclassMap[sub.Id] = existingSub.Id;
                 else
-                    subclassMap[sub.Id] = db.Classes.AddSubclass(new Models.Subclass
+                    subclassMap[sub.Id] = db.Classes.AddSubclass(new Models.DnD5eSubclass
                     {
                         CampaignId  = campaignId,
                         ClassId     = newClassId,
@@ -391,7 +391,7 @@ namespace DndBuilder.Core
             var itemMap = new Dictionary<int, int>();
             foreach (var item in GetEntities(pkg.Items, sel.AllItems, sel.ItemIds))
             {
-                itemMap[item.Id] = db.Items.Add(new Item
+                itemMap[item.Id] = db.Items.Add(new DnD5eItem
                 {
                     CampaignId  = campaignId,
                     Name        = item.Name,

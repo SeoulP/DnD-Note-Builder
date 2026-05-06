@@ -9,6 +9,6 @@ namespace DndBuilder.Core.Models
         public int? RelationshipTypeId  { get; set; }  // FK -> NpcRelationshipType.Id
         public int? StatusId            { get; set; }  // FK -> NpcStatus.Id
         public List<NpcFaction> Factions { get; set; } = new();
-        public List<CharacterRelationship> Relationships { get; set; } = new();
+        public List<DnD5eCharacterRelationship> Relationships { get; set; } = new();
     }
 }

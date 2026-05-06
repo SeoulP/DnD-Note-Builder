@@ -6,17 +6,17 @@ namespace DndBuilder.Core
 {
     /// <summary>
     /// Pure calculation service — no DB writes.
-    /// Returns expected skill slot counts per source for a given PlayerCharacter.
+    /// Returns expected skill slot counts per source for a given DnD5ePlayerCharacter.
     /// </summary>
     public class SkillExpectationService
     {
-        private readonly ClassRepository         _classes;
-        private readonly AbilityRepository       _abilities;
+        private readonly DnD5eClassRepository         _classes;
+        private readonly DnD5eAbilityRepository       _abilities;
         private readonly DnD5eBackgroundRepository _backgrounds;
 
         public SkillExpectationService(
-            ClassRepository classes,
-            AbilityRepository abilities,
+            DnD5eClassRepository classes,
+            DnD5eAbilityRepository abilities,
             DnD5eBackgroundRepository backgrounds)
         {
             _classes     = classes;
@@ -24,17 +24,17 @@ namespace DndBuilder.Core
             _backgrounds = backgrounds;
         }
 
-        public List<SkillExpectation> GetExpectations(PlayerCharacter pc)
+        public List<DnD5eSkillExpectation> GetExpectations(DnD5ePlayerCharacter pc)
         {
-            var result = new List<SkillExpectation>();
+            var result = new List<DnD5eSkillExpectation>();
 
-            // ── Class ─────────────────────────────────────────────────────────
-            // Base skill grant stored directly on the Class record.
+            // ── DnD5eClass ─────────────────────────────────────────────────────────
+            // Base skill grant stored directly on the DnD5eClass record.
             if (pc.ClassId.HasValue)
             {
                 var cls = _classes.Get(pc.ClassId.Value);
                 if (cls != null && cls.SkillChoicesCount > 0)
-                    result.Add(new SkillExpectation
+                    result.Add(new DnD5eSkillExpectation
                     {
                         Source        = "class",
                         SourceId      = cls.Id,
@@ -48,7 +48,7 @@ namespace DndBuilder.Core
             {
                 var bg = _backgrounds.Get(pc.BackgroundId.Value);
                 if (bg != null && bg.SkillCount > 0)
-                    result.Add(new SkillExpectation
+                    result.Add(new DnD5eSkillExpectation
                     {
                         Source        = "background",
                         SourceId      = bg.Id,
@@ -70,7 +70,7 @@ namespace DndBuilder.Core
                 int count = _abilities.ResolveChoiceCount(ability, pc.Level, pc);
                 if (count <= 0) continue;
 
-                result.Add(new SkillExpectation
+                result.Add(new DnD5eSkillExpectation
                 {
                     Source        = "feat",
                     SourceId      = ability.Id,
@@ -82,7 +82,7 @@ namespace DndBuilder.Core
             return result;
         }
 
-        private HashSet<int> GetAllOwnedAbilityIds(PlayerCharacter pc)
+        private HashSet<int> GetAllOwnedAbilityIds(DnD5ePlayerCharacter pc)
         {
             var ids = new HashSet<int>();
 

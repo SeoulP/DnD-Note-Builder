@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public partial class PlayerCharacterDetailPane : ScrollContainer
 {
     private DatabaseService          _db;
-    private PlayerCharacter          _pc;
+    private DnD5ePlayerCharacter          _pc;
     private ConfirmationDialog       _confirmDialog;
     private int                      _subclassUnlockLevel   = 3;
     private bool                     _loading               = false;
@@ -165,7 +165,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         }
     }
 
-    public void Load(PlayerCharacter pc)
+    public void Load(DnD5ePlayerCharacter pc)
     {
         _loading = true;
         _pc = pc;
@@ -471,7 +471,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         int bonus,
         int profBonus,
         Dictionary<int, DnD5eCharacterSkill> skillMap,
-        List<SkillExpectation> expectations,
+        List<DnD5eSkillExpectation> expectations,
         List<DnD5eSkill> allSkills,
         string bgName,
         Dictionary<string, int> actualCounts,
@@ -582,7 +582,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return row;
     }
 
-    private void BuildSourceChips(List<SkillExpectation> expectations, Dictionary<string, int> actualCounts, Dictionary<string, int> expectedCounts)
+    private void BuildSourceChips(List<DnD5eSkillExpectation> expectations, Dictionary<string, int> actualCounts, Dictionary<string, int> expectedCounts)
     {
         int totalActual   = 0;
         int totalExpected = 0;
@@ -628,7 +628,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
     }
 
     private string InferSource(int skillId, Dictionary<int, DnD5eCharacterSkill> skillMap,
-        List<SkillExpectation> expectations, List<DnD5eSkill> allSkills)
+        List<DnD5eSkillExpectation> expectations, List<DnD5eSkill> allSkills)
     {
         var counts   = new Dictionary<string, int> { ["class"] = 0, ["feat"] = 0 };
         var expected = new Dictionary<string, int> { ["class"] = 0, ["feat"] = 0 };
@@ -649,7 +649,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return "custom";
     }
 
-    // ── Ability choices ───────────────────────────────────────────────────────
+    // ── DnD5eAbility choices ───────────────────────────────────────────────────────
 
     private void LoadAbilityChoices()
     {
@@ -675,7 +675,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         // Remove abilities that are choice-linked options inside a fixed-choice parent —
         // they must not appear as duplicate top-level rows.
         var choiceLinkedIds = new HashSet<int>();
-        var choicesCache    = new Dictionary<int, List<AbilityChoice>>();
+        var choicesCache    = new Dictionary<int, List<DnD5eAbilityChoice>>();
         foreach (var a in abilities)
         {
             if (a.ChoicePoolType != "fixed") continue;
@@ -686,7 +686,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
                     choiceLinkedIds.Add(ch.LinkedAbilityId.Value);
         }
 
-        var filtered = new List<Ability>();
+        var filtered = new List<DnD5eAbility>();
         foreach (var a in abilities)
             if (!choiceLinkedIds.Contains(a.Id))
                 filtered.Add(a);
@@ -800,7 +800,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         picker.ShowPopup();
     }
 
-    private static string CostTooltip(List<AbilityCost> costs, Dictionary<int, string> resourceNames)
+    private static string CostTooltip(List<DnD5eAbilityCost> costs, Dictionary<int, string> resourceNames)
     {
         var parts = new System.Text.StringBuilder();
         foreach (var cost in costs)
@@ -812,7 +812,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return parts.ToString();
     }
 
-    private VBoxContainer BuildAbilityBlock(Ability ability, Dictionary<int, int> resourceAmounts, Dictionary<int, string> resourceNames, bool isManual = false)
+    private VBoxContainer BuildAbilityBlock(DnD5eAbility ability, Dictionary<int, int> resourceAmounts, Dictionary<int, string> resourceNames, bool isManual = false)
     {
         var abilityBlock = new VBoxContainer();
         abilityBlock.AddThemeConstantOverride("separation", 2);
@@ -1015,15 +1015,15 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return abilityBlock;
     }
 
-    private Dictionary<string, List<Ability>> GroupAbilitiesByAction(List<Ability> abilities)
+    private Dictionary<string, List<DnD5eAbility>> GroupAbilitiesByAction(List<DnD5eAbility> abilities)
     {
-        var grouped = new Dictionary<string, List<Ability>>(StringComparer.OrdinalIgnoreCase);
+        var grouped = new Dictionary<string, List<DnD5eAbility>>(StringComparer.OrdinalIgnoreCase);
         foreach (var ability in abilities)
         {
             string sectionName = GetAbilityActionSectionName(ability);
             if (!grouped.TryGetValue(sectionName, out var sectionAbilities))
             {
-                sectionAbilities = new List<Ability>();
+                sectionAbilities = new List<DnD5eAbility>();
                 grouped[sectionName] = sectionAbilities;
             }
             sectionAbilities.Add(ability);
@@ -1050,7 +1050,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return ordered;
     }
 
-    private static string GetAbilityActionSectionName(Ability ability)
+    private static string GetAbilityActionSectionName(DnD5eAbility ability)
     {
         string action = ability.Action?.Trim() ?? "";
         return string.IsNullOrEmpty(action) ? "Unspecified" : action;
@@ -1104,7 +1104,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
                         if (!box.ButtonPressed) remaining++;
 
                     countLabel.Text = $"{remaining}/{max}";
-                    _db.PlayerCharacters.UpsertResource(new CharacterResource
+                    _db.PlayerCharacters.UpsertResource(new DnD5eCharacterResource
                     {
                         CharacterId    = capturedRes.CharacterId,
                         ResourceTypeId = capturedRes.ResourceTypeId,
@@ -1123,7 +1123,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         }
     }
 
-    private static bool IsOutOfUses(List<AbilityCost> costs, Dictionary<int, int> resourceAmounts)
+    private static bool IsOutOfUses(List<DnD5eAbilityCost> costs, Dictionary<int, int> resourceAmounts)
     {
         foreach (var cost in costs)
             if (!resourceAmounts.TryGetValue(cost.ResourceTypeId, out int cur) || cur < cost.Amount)
@@ -1131,13 +1131,13 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         return false;
     }
 
-    private void SpendResources(List<AbilityCost> costs)
+    private void SpendResources(List<DnD5eAbilityCost> costs)
     {
         if (_pc == null) return;
         var resources = _db.PlayerCharacters.GetResources(_pc.Id);
         foreach (var cost in costs)
         {
-            CharacterResource match = null;
+            DnD5eCharacterResource match = null;
             foreach (var r in resources)
                 if (r.ResourceTypeId == cost.ResourceTypeId) { match = r; break; }
             if (match == null) continue;
@@ -1148,7 +1148,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         LoadAbilityChoices();
     }
 
-    private List<Ability> GetAllOwnedAbilities()
+    private List<DnD5eAbility> GetAllOwnedAbilities()
     {
         var ids = new HashSet<int>();
 
@@ -1186,7 +1186,7 @@ public partial class PlayerCharacterDetailPane : ScrollContainer
         foreach (var abilityId in _db.PlayerCharacters.GetBackgroundAbilityIds(_pc.Id))
             ids.Add(abilityId);
 
-        var abilities = new List<Ability>();
+        var abilities = new List<DnD5eAbility>();
         foreach (var id in ids)
         {
             var ability = _db.Abilities.Get(id);

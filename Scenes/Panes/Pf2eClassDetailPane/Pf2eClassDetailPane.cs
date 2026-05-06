@@ -85,7 +85,7 @@ public partial class Pf2eClassDetailPane : ScrollContainer
         };
         fields.AddChild(_descInput);
 
-        // ── Class Feats section ───────────────────────────────────────────────
+        // ── DnD5eClass Feats section ───────────────────────────────────────────────
         fields.AddChild(new HSeparator());
         var featsHeader = new HBoxContainer();
         featsHeader.SizeFlagsHorizontal = SizeFlags.ExpandFill;

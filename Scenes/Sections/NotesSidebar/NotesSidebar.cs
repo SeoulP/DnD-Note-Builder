@@ -52,7 +52,7 @@ public partial class NotesSidebar : VBoxContainer
             }
             else
             {
-                var pc = new PlayerCharacter { CampaignId = _campaignId, Name = "New Character" };
+                var pc = new DnD5ePlayerCharacter { CampaignId = _campaignId, Name = "New Character" };
                 int id = _db.PlayerCharacters.Add(pc);
                 LoadParty();
                 EmitSignal(SignalName.EntitySelected, "playercharacter", id);
@@ -90,7 +90,7 @@ public partial class NotesSidebar : VBoxContainer
         };
         _addItemsButton.Pressed += () =>
         {
-            var item = new Item { CampaignId = _campaignId, Name = "New Item" };
+            var item = new DnD5eItem { CampaignId = _campaignId, Name = "New Item" };
             int id   = _db.Items.Add(item);
             LoadItems();
             EmitSignal(SignalName.EntitySelected, "item", id);

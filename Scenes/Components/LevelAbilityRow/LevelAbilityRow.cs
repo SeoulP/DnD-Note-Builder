@@ -2,7 +2,7 @@ using DndBuilder.Core;
 using Godot;
 using System;
 
-// Builds the ability row used inside level-progression accordion rows (Class, Species, Subclass).
+// Builds the ability row used inside level-progression accordion rows (DnD5eClass, Species, DnD5eSubclass).
 public static class LevelAbilityRow
 {
     public static HBoxContainer Make(

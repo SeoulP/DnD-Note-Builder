@@ -51,7 +51,7 @@ public partial class SystemSidebar : VBoxContainer
             }
             else
             {
-                var cls = new Class { CampaignId = _campaignId, Name = $"New {_vocab.Class}" };
+                var cls = new DnD5eClass { CampaignId = _campaignId, Name = $"New {_vocab.Class}" };
                 int id  = _db.Classes.Add(cls);
                 LoadClasses();
                 EmitSignal(SignalName.EntitySelected, "class", id);
@@ -88,7 +88,7 @@ public partial class SystemSidebar : VBoxContainer
             }
             else
             {
-                var ability = new Ability { CampaignId = _campaignId, Name = $"New {_vocab.Ability}" };
+                var ability = new DnD5eAbility { CampaignId = _campaignId, Name = $"New {_vocab.Ability}" };
                 int id      = _db.Abilities.Add(ability);
                 LoadAbilities();
                 EmitSignal(SignalName.EntitySelected, "ability", id);

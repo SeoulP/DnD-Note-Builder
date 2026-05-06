@@ -87,7 +87,7 @@ public partial class Pf2eFeatDetailPane : ScrollContainer
         _actionCostInput = new OptionButton { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         row1.AddChild(MakeRow("Cost", _actionCostInput, 40));
 
-        // Row 2: Class + Ancestry (optional links)
+        // Row 2: DnD5eClass + Ancestry (optional links)
         var row2 = new HBoxContainer();
         row2.AddThemeConstantOverride("separation", 12);
         fields.AddChild(row2);
@@ -228,7 +228,7 @@ public partial class Pf2eFeatDetailPane : ScrollContainer
         if (_actionCosts.Count > 0 && _actionCostInput.Selected >= 0 && _actionCostInput.Selected < _actionCosts.Count)
             _feat.ActionCostId = _actionCosts[_actionCostInput.Selected].Id;
 
-        // Class: index 0 = (Any) = null; index N+1 = _classes[N]
+        // DnD5eClass: index 0 = (Any) = null; index N+1 = _classes[N]
         int cSel = _classInput.Selected;
         _feat.ClassId = cSel > 0 && cSel - 1 < _classes.Count ? (int?)_classes[cSel - 1].Id : null;
 

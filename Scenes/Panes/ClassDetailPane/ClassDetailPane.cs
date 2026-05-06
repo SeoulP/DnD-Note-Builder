@@ -8,7 +8,7 @@ using Godot;
 public partial class ClassDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
-    private Class              _class;
+    private DnD5eClass              _class;
     private ConfirmationDialog _confirmDialog;
     private bool               _loading;
 
@@ -158,7 +158,7 @@ public partial class ClassDetailPane : ScrollContainer
         _deleteButton.Pressed    += () => DialogHelper.Show(_confirmDialog, $"Delete \"{_class?.Name}\"? All subclasses will also be deleted. This cannot be undone.");
     }
 
-    public void Load(Class cls)
+    public void Load(DnD5eClass cls)
     {
         _loading = true;
         _class   = cls;
@@ -206,7 +206,7 @@ public partial class ClassDetailPane : ScrollContainer
         _startingEquipAInput.Text = cls.StartingEquipA;
         _startingEquipBInput.Text = cls.StartingEquipB;
 
-        // Subclass unlock level
+        // DnD5eSubclass unlock level
         _unlockLevelInput.Value = cls.SubclassUnlockLevel;
 
         _loading = false;
@@ -301,7 +301,7 @@ public partial class ClassDetailPane : ScrollContainer
             _levelsContainer.AddChild(BuildLevelRow(lvl));
     }
 
-    private Control BuildLevelRow(ClassLevel lvl)
+    private Control BuildLevelRow(DnD5eClassLevel lvl)
     {
         var box = new VBoxContainer();
         box.AddThemeConstantOverride("separation", 2);
@@ -319,7 +319,7 @@ public partial class ClassDetailPane : ScrollContainer
             SizeFlagsHorizontal     = SizeFlags.ExpandFill,
         };
 
-        // Ability rows container (above the add button)
+        // DnD5eAbility rows container (above the add button)
         var abilityRows = new VBoxContainer();
         abilityRows.AddThemeConstantOverride("separation", 2);
 
@@ -410,7 +410,7 @@ public partial class ClassDetailPane : ScrollContainer
         return box;
     }
 
-    private static string FormatLevelHeader(ClassLevel lvl) => $"Level {lvl.Level,2}";
+    private static string FormatLevelHeader(DnD5eClassLevel lvl) => $"Level {lvl.Level,2}";
 
     // ── Subclasses ────────────────────────────────────────────────────────────
 
@@ -442,7 +442,7 @@ public partial class ClassDetailPane : ScrollContainer
     private void AddSubclass()
     {
         if (_class == null) return;
-        var sub = new Subclass { CampaignId = _class.CampaignId, ClassId = _class.Id, Name = "New Subclass" };
+        var sub = new DnD5eSubclass { CampaignId = _class.CampaignId, ClassId = _class.Id, Name = "New Subclass" };
         int newId = _db.Classes.AddSubclass(sub);
         LoadSubclasses();
         EmitSignal(SignalName.SubclassAdded, _class.Id, newId);

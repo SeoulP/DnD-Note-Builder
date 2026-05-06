@@ -24,7 +24,7 @@ public partial class Pf2eEncounterDetailPane : VBoxContainer
     [Export] private PackedScene   _combatantRowScene;
 
     private DatabaseService             _db;
-    private Encounter                   _encounter;
+    private DnD5eEncounter                   _encounter;
     private int                         _activeTurnCombatantId  = -1;
     private int                         _selectedCombatantId    = -1;
     private int                         _liveDragLastTargetId   = -1;
@@ -66,7 +66,7 @@ public partial class Pf2eEncounterDetailPane : VBoxContainer
         _nextTurnButton.Pressed += AdvanceTurn;
     }
 
-    public void Load(Encounter enc)
+    public void Load(DnD5eEncounter enc)
     {
         _encounter             = enc;
         _activeTurnCombatantId = -1;

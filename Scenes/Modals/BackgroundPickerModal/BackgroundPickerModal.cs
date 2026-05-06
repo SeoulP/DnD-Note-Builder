@@ -194,7 +194,7 @@ public partial class BackgroundPickerModal : Window
 
         _standardName.Text = bg.Name;
 
-        // Ability score options label
+        // DnD5eAbility score options label
         _standardAttrsLabel.Text = FormatAttrOptions(bg.AbilityScoreOptions);
 
         // ASI — 3 pickers limited to this background's fixed attrs

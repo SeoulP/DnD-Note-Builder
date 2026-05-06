@@ -20,7 +20,7 @@ namespace DndBuilder.Core
         // +2 at level 1, increases by +1 every 4 levels
         public static int ProfBonus(int level) => 2 + (level - 1) / 4;
 
-        public static int SkillBonus(string attr, PlayerCharacter pc, int profBonus, bool isProficient, bool isExpertise)
+        public static int SkillBonus(string attr, DnD5ePlayerCharacter pc, int profBonus, bool isProficient, bool isExpertise)
         {
             int score = attr switch
             {

@@ -19,21 +19,21 @@ public partial class DatabaseService : Node
     public NpcStatusRepository            NpcStatuses           { get; private set; }
     public NpcFactionRoleRepository            NpcFactionRoles            { get; private set; }
     public FactionRelationshipTypeRepository  FactionRelationshipTypes   { get; private set; }
-    public CharacterRelationshipTypeRepository CharacterRelationshipTypes { get; private set; }
+    public DnD5eCharacterRelationshipTypeRepository CharacterRelationshipTypes { get; private set; }
     public NpcRepository                  Npcs                  { get; private set; }
-    public ItemTypeRepository             ItemTypes             { get; private set; }
-    public ItemRepository                 Items                 { get; private set; }
+    public DnD5eItemTypeRepository             ItemTypes             { get; private set; }
+    public DnD5eItemRepository                 Items                 { get; private set; }
     public EntityImageRepository          EntityImages          { get; private set; }
     public QuestStatusRepository          QuestStatuses         { get; private set; }
     public QuestRepository                Quests                { get; private set; }
     public QuestHistoryRepository         QuestHistory          { get; private set; }
     public SettingsRepository             Settings              { get; private set; }
-    public ClassRepository                Classes               { get; private set; }
-    public AbilityRepository              Abilities             { get; private set; }
-    public AbilityTypeRepository          AbilityTypes          { get; private set; }
-    public AbilityResourceTypeRepository  AbilityResourceTypes  { get; private set; }
+    public DnD5eClassRepository                Classes               { get; private set; }
+    public DnD5eAbilityRepository              Abilities             { get; private set; }
+    public DnD5eAbilityTypeRepository          AbilityTypes          { get; private set; }
+    public DnD5eAbilityResourceTypeRepository  AbilityResourceTypes  { get; private set; }
     public SubspeciesRepository           Subspecies            { get; private set; }
-    public PlayerCharacterRepository      PlayerCharacters      { get; private set; }
+    public DnD5ePlayerCharacterRepository      PlayerCharacters      { get; private set; }
     public DnD5eSkillRepository           DnD5eSkills           { get; private set; }
     public DnD5eBackgroundRepository      DnD5eBackgrounds      { get; private set; }
     public DnD5eCharacterSkillRepository  DnD5eCharacterSkills  { get; private set; }
@@ -107,7 +107,7 @@ public partial class DatabaseService : Node
     public Pf2eCharacterStrikeTraitRepository  Pf2eCharacterStrikeTraits  { get; private set; }
 
     // ── Encounters (Battle Tracker) ───────────────────────────────────────────
-    public EncounterRepository                           Encounters                       { get; private set; }
+    public DnD5eEncounterRepository                           Encounters                       { get; private set; }
     public Pf2eEncounterCombatantRepository              Pf2eEncounterCombatants          { get; private set; }
     public Pf2eEncounterCombatantHpLogRepository         Pf2eEncounterCombatantHpLog      { get; private set; }
     public Pf2eEncounterCombatantConditionRepository     Pf2eEncounterCombatantConditions { get; private set; }
@@ -168,21 +168,21 @@ public partial class DatabaseService : Node
         NpcStatuses          = new NpcStatusRepository(_conn);
         NpcFactionRoles            = new NpcFactionRoleRepository(_conn);
         FactionRelationshipTypes   = new FactionRelationshipTypeRepository(_conn);
-        CharacterRelationshipTypes = new CharacterRelationshipTypeRepository(_conn);
+        CharacterRelationshipTypes = new DnD5eCharacterRelationshipTypeRepository(_conn);
         Npcs                       = new NpcRepository(_conn);
-        ItemTypes            = new ItemTypeRepository(_conn);
-        Items                = new ItemRepository(_conn);
+        ItemTypes            = new DnD5eItemTypeRepository(_conn);
+        Items                = new DnD5eItemRepository(_conn);
         EntityImages         = new EntityImageRepository(_conn);
         QuestStatuses        = new QuestStatusRepository(_conn);
         Quests               = new QuestRepository(_conn);
         QuestHistory         = new QuestHistoryRepository(_conn);
         Settings             = new SettingsRepository(_conn);
-        Classes              = new ClassRepository(_conn);
-        Abilities            = new AbilityRepository(_conn);
-        AbilityTypes         = new AbilityTypeRepository(_conn);
-        AbilityResourceTypes = new AbilityResourceTypeRepository(_conn);
+        Classes              = new DnD5eClassRepository(_conn);
+        Abilities            = new DnD5eAbilityRepository(_conn);
+        AbilityTypes         = new DnD5eAbilityTypeRepository(_conn);
+        AbilityResourceTypes = new DnD5eAbilityResourceTypeRepository(_conn);
         Subspecies           = new SubspeciesRepository(_conn);
-        PlayerCharacters     = new PlayerCharacterRepository(_conn);
+        PlayerCharacters     = new DnD5ePlayerCharacterRepository(_conn);
         DnD5eSkills          = new DnD5eSkillRepository(_conn);
         DnD5eBackgrounds     = new DnD5eBackgroundRepository(_conn);
         DnD5eCharacterSkills = new DnD5eCharacterSkillRepository(_conn);
@@ -259,7 +259,7 @@ public partial class DatabaseService : Node
         Pf2eEncounterCombatantHpLog      = new Pf2eEncounterCombatantHpLogRepository(_conn);
         Pf2eEncounterCombatants          = new Pf2eEncounterCombatantRepository(_conn, Pf2eEncounterCombatantHpLog);
         Pf2eEncounterCombatantConditions = new Pf2eEncounterCombatantConditionRepository(_conn);
-        Encounters                       = new EncounterRepository(_conn);
+        Encounters                       = new DnD5eEncounterRepository(_conn);
 
         // ── Seeding Services ──────────────────────────────────────────────────
         DnD5eSeedingService = new DnD5eSeedingService(_conn);

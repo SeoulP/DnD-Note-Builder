@@ -604,7 +604,7 @@ public override void _ExitTree()
         {
             "npc"      => _db.Npcs.Add(new DndBuilder.Core.Models.Npc      { CampaignId = _campaignId, Name = name }),
             "location" => _db.Locations.Add(new DndBuilder.Core.Models.Location { CampaignId = _campaignId, Name = name }),
-            "item"     => _db.Items.Add(new DndBuilder.Core.Models.Item    { CampaignId = _campaignId, Name = name }),
+            "item"     => _db.Items.Add(new DndBuilder.Core.Models.DnD5eItem    { CampaignId = _campaignId, Name = name }),
             "faction"  => _db.Factions.Add(new DndBuilder.Core.Models.Faction  { CampaignId = _campaignId, Name = name }),
             "quest"    => _db.Quests.Add(new DndBuilder.Core.Models.Quest  { CampaignId = _campaignId, Name = name }),
             _          => 0,

@@ -129,7 +129,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
 
         _statsTab.AddChild(new HSeparator());
 
-        // Ability mod grid — horizontal scroll is disabled in .tscn so ExpandFill = 1/6th each
+        // DnD5eAbility mod grid — horizontal scroll is disabled in .tscn so ExpandFill = 1/6th each
         var grid = new GridContainer { Columns = 6, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         grid.AddThemeConstantOverride("h_separation", 6);
         grid.AddThemeConstantOverride("v_separation", 2);
@@ -1190,7 +1190,7 @@ public partial class Pf2eCreatureDetailPane : ScrollContainer
         hbox.AddChild(descEdit);
     }
 
-    // ── Ability card style ────────────────────────────────────────────────────
+    // ── DnD5eAbility card style ────────────────────────────────────────────────────
 
     private static void StyleAbilityCard(FoldableContainer fc)
     {

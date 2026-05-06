@@ -27,7 +27,7 @@ public partial class TrackerSidebar : VBoxContainer
             foreach (var e in existing)
                 if (e.Name != null && e.Name.StartsWith(today)) count++;
             count++;
-            var enc = new Encounter { CampaignId = _campaignId, Name = $"{today} #{count}", StartedAt = System.DateTime.UtcNow.ToString("o") };
+            var enc = new DnD5eEncounter { CampaignId = _campaignId, Name = $"{today} #{count}", StartedAt = System.DateTime.UtcNow.ToString("o") };
             int eid = _db.Encounters.Add(enc);
             LoadEncounters();
             EmitSignal(SignalName.EntitySelected, "encounter", eid);

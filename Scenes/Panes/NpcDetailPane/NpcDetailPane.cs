@@ -152,7 +152,7 @@ public partial class NpcDetailPane : ScrollContainer
         _relTypeSelect.AutoSelectOnAdd = true;
         _relTypeSelect.Setup(
             () => _db.CharacterRelationshipTypes.GetAll(npc.CampaignId).ConvertAll(t => (t.Id, t.Name)),
-            name => { _db.CharacterRelationshipTypes.Add(new DndBuilder.Core.Models.CharacterRelationshipType { CampaignId = _npc.CampaignId, Name = name, Description = "" }); },
+            name => { _db.CharacterRelationshipTypes.Add(new DndBuilder.Core.Models.DnD5eCharacterRelationshipType { CampaignId = _npc.CampaignId, Name = name, Description = "" }); },
             id   => _db.CharacterRelationshipTypes.Delete(id));
         _relTypeSelect.SelectById(null);
 

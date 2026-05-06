@@ -6,7 +6,7 @@ using Godot;
 public partial class AbilityDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
-    private Ability            _ability;
+    private DnD5eAbility            _ability;
     private ConfirmationDialog _confirmDialog;
 
     private static readonly string[] _actionTypes    = { "—", "Action", "Bonus Action", "Reaction", "No Action", "Passive", "Free" };
@@ -97,14 +97,14 @@ public partial class AbilityDetailPane : ScrollContainer
         _deleteButton.Pressed    += () => DialogHelper.Show(_confirmDialog, $"Delete \"{_ability?.Name}\"? This cannot be undone.");
     }
 
-    public void Load(Ability ability)
+    public void Load(DnD5eAbility ability)
     {
         _ability = ability;
 
         _nameInput.Text    = ability.Name;
         _typeInput.Setup(
             () => _db.AbilityTypes.GetAll(ability.CampaignId).ConvertAll(t => (t.Id, t.Name)),
-            name => _db.AbilityTypes.Add(new AbilityType { CampaignId = ability.CampaignId, Name = name }),
+            name => _db.AbilityTypes.Add(new DnD5eAbilityType { CampaignId = ability.CampaignId, Name = name }),
             id   => _db.AbilityTypes.Delete(id));
         _typeInput.SelectById(ability.TypeId);
         _triggerInput.Text = ability.Trigger;
@@ -217,7 +217,7 @@ public partial class AbilityDetailPane : ScrollContainer
             if (id < 0) return;
             var selected = _db.Abilities.Get(id);
             if (selected == null) return;
-            _db.Abilities.AddChoice(new AbilityChoice
+            _db.Abilities.AddChoice(new DnD5eAbilityChoice
             {
                 AbilityId       = _ability.Id,
                 Name            = selected.Name,
@@ -268,7 +268,7 @@ public partial class AbilityDetailPane : ScrollContainer
         // Setup AFTER node is in the scene tree so _Ready() has run
         typePicker.Setup(
             () => _db.AbilityResourceTypes.GetAll(_ability.CampaignId).ConvertAll(t => (t.Id, t.Name)),
-            name => _db.AbilityResourceTypes.Add(new AbilityResourceType { CampaignId = _ability.CampaignId, Name = name }),
+            name => _db.AbilityResourceTypes.Add(new DnD5eAbilityResourceType { CampaignId = _ability.CampaignId, Name = name }),
             id   => _db.AbilityResourceTypes.Delete(id));
 
         if (!pending && resourceTypeId != -1)
@@ -282,7 +282,7 @@ public partial class AbilityDetailPane : ScrollContainer
             if (newId != -1)
             {
                 resourceTypeId = newId;
-                _db.Abilities.AddCost(new AbilityCost { AbilityId = _ability.Id, ResourceTypeId = resourceTypeId, Amount = amount });
+                _db.Abilities.AddCost(new DnD5eAbilityCost { AbilityId = _ability.Id, ResourceTypeId = resourceTypeId, Amount = amount });
                 pending = false;
             }
             else
@@ -337,7 +337,7 @@ public partial class AbilityDetailPane : ScrollContainer
     private void AddChoiceProgression()
     {
         if (_ability == null) return;
-        _db.Abilities.AddChoiceProgression(new AbilityChoiceProgression
+        _db.Abilities.AddChoiceProgression(new DnD5eAbilityChoiceProgression
         {
             AbilityId = _ability.Id,
             RequiredLevel = 1,

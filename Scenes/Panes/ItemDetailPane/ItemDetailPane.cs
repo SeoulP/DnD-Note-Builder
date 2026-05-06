@@ -5,7 +5,7 @@ using Godot;
 public partial class ItemDetailPane : ScrollContainer
 {
     private DatabaseService    _db;
-    private Item               _item;
+    private DnD5eItem               _item;
     private ConfirmationDialog _confirmDialog;
 
     [Signal] public delegate void NavigateToEventHandler(string entityType, int entityId);
@@ -45,7 +45,7 @@ public partial class ItemDetailPane : ScrollContainer
         };
     }
 
-    public void Load(Item item)
+    public void Load(DnD5eItem item)
     {
         _item = item;
 
@@ -53,7 +53,7 @@ public partial class ItemDetailPane : ScrollContainer
         _typeInput.AutoSelectOnAdd = true;
         _typeInput.Setup(
             () => _db.ItemTypes.GetAll(item.CampaignId).ConvertAll(t => (t.Id, t.Name)),
-            name => { _db.ItemTypes.Add(new ItemType { CampaignId = item.CampaignId, Name = name, Description = "" }); },
+            name => { _db.ItemTypes.Add(new DnD5eItemType { CampaignId = item.CampaignId, Name = name, Description = "" }); },
             id   => _db.ItemTypes.Delete(id));
         _typeInput.SelectById(item.TypeId);
 
